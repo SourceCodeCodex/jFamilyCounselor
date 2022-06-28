@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: JFamilyCounselorPlugIn
+Bundle-SymbolicName: jFamilyCounselorPlugIn;singleton:=true
+Bundle-Version: 1.0.0
+Automatic-Module-Name: jFamilyCounselorPlugIn
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Import-Package: ro.lrg.xcore.metametamodel
+Require-Bundle: ro.lrg.insider,
+ org.eclipse.jdt.core,
+ org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jdt.ui
+Bundle-ClassPath: .,
+ lib/jFamilyCounselorImpl-1.0.0.jar
