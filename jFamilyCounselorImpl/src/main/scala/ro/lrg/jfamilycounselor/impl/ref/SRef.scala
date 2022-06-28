@@ -1,5 +1,6 @@
 package ro.lrg.jfamilycounselor.impl.ref
 
+import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core._
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil
 import ro.lrg.jfamilycounselor.impl.SType
@@ -24,10 +25,9 @@ private[jfamilycounselor] abstract class SRef {
     val typeName =
       JavaModelUtil.getResolvedTypeName(typeSignature, declaringType)
     val project = jdtElement.getJavaProject
-    val declaredType = Some(project.findType(typeName))
+    val declaredType = Some(project.findType(typeName, new NullProgressMonitor()))
       .filter(_ != null)
 
-    println(declaredType)
     declaredType.map(new SType(_))
   }
   protected def typeSignature: String
