@@ -1,10 +1,11 @@
 package ro.lrg.jfamilycounselor.impl.alg
+
+import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
 import ro.lrg.jfamilycounselor.impl.SType
-import ro.lrg.jfamilycounselor.UsedConcreteTypePairsAlgorithm
 import ro.lrg.jfamilycounselor.impl.pair.{SConcreteTypePair, SRefPair}
 import ro.lrg.jfamilycounselor.impl.ref.SRef
 
-private[jfamilycounselor] class NameBasedAlgorithm
+object NameBasedAlgorithm
     extends UsedConcreteTypePairsAlgorithm {
   private implicit class STypeOps(sType: SType) {
     private val tokensR =

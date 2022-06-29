@@ -1,6 +1,7 @@
 package ro.lrg.jfamilycounselor
 
 import org.eclipse.jdt.core.IType
+import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
 import ro.lrg.jfamilycounselor.impl.SType
 
 trait MType {

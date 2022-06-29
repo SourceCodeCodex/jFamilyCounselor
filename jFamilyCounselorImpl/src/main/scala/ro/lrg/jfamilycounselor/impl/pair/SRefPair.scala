@@ -1,10 +1,10 @@
 package ro.lrg.jfamilycounselor.impl.pair
 
+import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
 import ro.lrg.jfamilycounselor.impl.ref.SRef
 import ro.lrg.jfamilycounselor.{
   MConcreteTypePair,
-  MRefPair,
-  UsedConcreteTypePairsAlgorithm
+  MRefPair
 }
 
 import scala.jdk.CollectionConverters._

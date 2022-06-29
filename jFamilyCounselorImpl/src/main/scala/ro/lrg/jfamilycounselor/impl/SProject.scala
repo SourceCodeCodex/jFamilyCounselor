@@ -3,6 +3,7 @@ package ro.lrg.jfamilycounselor.impl
 import org.eclipse.jdt.core.IJavaProject
 import ro.lrg.jfamilycounselor.{MProject, MType}
 
+import java.util.concurrent.atomic.AtomicInteger
 import scala.jdk.CollectionConverters._
 
 private[jfamilycounselor] final class SProject(javaProject: IJavaProject)
@@ -13,14 +14,15 @@ private[jfamilycounselor] final class SProject(javaProject: IJavaProject)
   override def maybeFamilyPolymorphismClients: java.util.List[MType] =
     (maybeFamilyPolymorphismClients0: List[MType]).asJava
 
-  def allTypes: List[SType] = for {
+  lazy val allTypes: List[SType] = for {
     fragment <- javaProject.getPackageFragments.toList
     compilationUnit <- fragment.getCompilationUnits.toList
     sType <- compilationUnit.getTypes.map(new SType(_))
   } yield sType
 
-  def maybeFamilyPolymorphismClients0: List[SType] = {
+  lazy val maybeFamilyPolymorphismClients0: List[SType] = {
     import scala.collection.parallel.CollectionConverters._
+
     allTypes.par.filter(_.canBeFamilyPolymorphismClient).toList
   }
 

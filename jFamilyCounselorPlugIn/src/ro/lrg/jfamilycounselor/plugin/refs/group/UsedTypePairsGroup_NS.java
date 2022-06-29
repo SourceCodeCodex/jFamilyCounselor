@@ -3,7 +3,6 @@ package ro.lrg.jfamilycounselor.plugin.refs.group;
 import jfamilycounselorplugin.metamodel.entity.MConcreteTypePair;
 import jfamilycounselorplugin.metamodel.entity.MRefPair;
 import jfamilycounselorplugin.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.UsedConcreteTypePairsAlgorithm;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;
@@ -16,7 +15,8 @@ public class UsedTypePairsGroup_NS implements IRelationBuilder<MConcreteTypePair
 	var group = new Group<MConcreteTypePair>();
 
 	for (ro.lrg.jfamilycounselor.MConcreteTypePair refPair : mRefPair.getUnderlyingObject()
-		.usedConcreteTypePairs(UsedConcreteTypePairsAlgorithm.nameBasedAlgorithm())) {
+		.usedConcreteTypePairs(
+			ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm.nameBasedAlgorithm())) {
 	    group.add(Factory.getInstance().createMConcreteTypePair(refPair));
 	}
 

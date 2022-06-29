@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor
+package ro.lrg.jfamilycounselor.alg
 
 import ro.lrg.jfamilycounselor.impl.alg.NameBasedAlgorithm
 import ro.lrg.jfamilycounselor.impl.pair.{SConcreteTypePair, SRefPair}
@@ -9,5 +9,5 @@ private[jfamilycounselor] trait UsedConcreteTypePairsAlgorithm {
 }
 
 object UsedConcreteTypePairsAlgorithm {
-  val nameBasedAlgorithm: UsedConcreteTypePairsAlgorithm = new NameBasedAlgorithm()
+  val nameBasedAlgorithm: UsedConcreteTypePairsAlgorithm = NameBasedAlgorithm
 }
