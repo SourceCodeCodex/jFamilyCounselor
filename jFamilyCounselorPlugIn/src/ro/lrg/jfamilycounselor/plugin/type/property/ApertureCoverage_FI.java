@@ -10,7 +10,8 @@ public class ApertureCoverage_FI implements IPropertyComputer<Double, MType> {
     @Override
     public Double compute(MType mType) {
 	return mType.getUnderlyingObject()
-		.apertureCoverage(ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm.nameBasedAlgorithm());
+		.apertureCoverage(
+			ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm.assignmentsBasedAlgorithm());
     }
 
 }

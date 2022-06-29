@@ -1,11 +1,8 @@
-package ro.lrg.jfamilycounselor.impl.pair
+package ro.lrg.jfamilycounselor.impl.model.pair
 
 import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
-import ro.lrg.jfamilycounselor.impl.ref.SRef
-import ro.lrg.jfamilycounselor.{
-  MConcreteTypePair,
-  MRefPair
-}
+import ro.lrg.jfamilycounselor.impl.model.ref.SRef
+import ro.lrg.jfamilycounselor.{MConcreteTypePair, MRefPair}
 
 import scala.jdk.CollectionConverters._
 

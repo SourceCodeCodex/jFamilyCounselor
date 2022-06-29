@@ -1,7 +1,6 @@
-package ro.lrg.jfamilycounselor.impl.pair
+package ro.lrg.jfamilycounselor.impl.model.pair
 
-import org.eclipse.jdt.core.{IField, ILocalVariable}
-import ro.lrg.jfamilycounselor.impl.ref.SParam
+import ro.lrg.jfamilycounselor.impl.model.ref.SParam
 
 private[jfamilycounselor] final class SParamPair(
     override val _1: SParam,

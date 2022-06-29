@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.impl.ref
+package ro.lrg.jfamilycounselor.impl.model.ref
 
 import org.eclipse.jdt.core.{Flags, IField, IType}
 

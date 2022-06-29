@@ -1,8 +1,8 @@
-package ro.lrg.jfamilycounselor.impl.pair
+package ro.lrg.jfamilycounselor.impl.model.pair
 
 import org.eclipse.jdt.core.IType
 import ro.lrg.jfamilycounselor.MConcreteTypePair
-import ro.lrg.jfamilycounselor.impl.SType
+import ro.lrg.jfamilycounselor.impl.model.`type`.SType
 
 private[jfamilycounselor] final class SConcreteTypePair(
     val _1: SType,

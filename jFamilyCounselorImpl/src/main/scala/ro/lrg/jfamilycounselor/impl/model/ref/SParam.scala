@@ -1,7 +1,7 @@
-package ro.lrg.jfamilycounselor.impl.ref
+package ro.lrg.jfamilycounselor.impl.model.ref
 
 import org.eclipse.jdt.core.{ILocalVariable, IMethod, IType}
-import ro.lrg.jfamilycounselor.impl.SMethod
+import ro.lrg.jfamilycounselor.impl.model.method.SMethod
 
 private[jfamilycounselor] final class SParam(param: ILocalVariable)
     extends SRef {

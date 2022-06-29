@@ -1,9 +1,9 @@
 package ro.lrg.jfamilycounselor.impl.alg
 
 import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
-import ro.lrg.jfamilycounselor.impl.SType
-import ro.lrg.jfamilycounselor.impl.pair.{SConcreteTypePair, SRefPair}
-import ro.lrg.jfamilycounselor.impl.ref.SRef
+import ro.lrg.jfamilycounselor.impl.model.`type`.SType
+import ro.lrg.jfamilycounselor.impl.model.pair.{SConcreteTypePair, SRefPair}
+import ro.lrg.jfamilycounselor.impl.model.ref.SRef
 
 object NameBasedAlgorithm
     extends UsedConcreteTypePairsAlgorithm {

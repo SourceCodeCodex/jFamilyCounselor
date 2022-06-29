@@ -1,10 +1,9 @@
-package ro.lrg.jfamilycounselor.impl
+package ro.lrg.jfamilycounselor.impl.model.`type`
 
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core.{Flags, IType}
 import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
-import ro.lrg.jfamilycounselor.impl.cache.ConcreteConeOfTypeCache
-import ro.lrg.jfamilycounselor.impl.pair.SRefPair
+import ro.lrg.jfamilycounselor.impl.model.pair.SRefPair
 import ro.lrg.jfamilycounselor.{MRefPair, MType}
 
 import scala.jdk.CollectionConverters._
@@ -20,12 +19,12 @@ private[jfamilycounselor] final class SType(`type`: IType) extends MType {
     (susceptibleRefPairs0: List[MRefPair]).asJava
 
   /** All pairing logic is relocated using class extension in
-    * [[ro.lrg.jfamilycounselor.impl.pair.SRefPairSyntax]]
+    * [[SRefPairSyntax]]
     * as it might change in the future. This is done in order to provide
     * flexibility on [[SRefPair]] creation.
     */
   lazy val susceptibleRefPairs0: List[SRefPair[_]] = {
-    import ro.lrg.jfamilycounselor.impl.pair.SRefPairSyntax._
+    import SRefPairSyntax._
     this.paramPairs
   }
 
@@ -36,6 +35,7 @@ private[jfamilycounselor] final class SType(`type`: IType) extends MType {
   }
 
   lazy val concreteCone: List[SType] = {
+    import ro.lrg.jfamilycounselor.cache.implicits._
     def computeConcreteCone(tpe: IType): List[IType] = {
       val subtypes = tpe
         .newTypeHierarchy(new NullProgressMonitor())
@@ -49,9 +49,7 @@ private[jfamilycounselor] final class SType(`type`: IType) extends MType {
         .filterNot(t => Flags.isSynthetic(t.getFlags))
     }
 
-    ConcreteConeOfTypeCache
-      .compute(`type`)(computeConcreteCone)
-      .map(new SType(_))
+    computeConcreteCone(jdtElement).cachedBy(jdtElement).map(new SType(_))
   }
 
   override def toString: String = `type`.getFullyQualifiedName

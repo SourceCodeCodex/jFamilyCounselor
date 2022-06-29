@@ -14,9 +14,11 @@ public class MaybeFamilyPolymorphishmClientsGroup implements IRelationBuilder<MT
     public Group<MType> buildGroup(MProject mProject) {
 	var group = new Group<MType>();
 
+	System.out.println(System.nanoTime());
 	for (ro.lrg.jfamilycounselor.MType refPair : mProject.getUnderlyingObject().maybeFamilyPolymorphismClients()) {
 	    group.add(Factory.getInstance().createMType(refPair));
 	}
+	System.out.println(System.nanoTime());
 
 	return group;
     }

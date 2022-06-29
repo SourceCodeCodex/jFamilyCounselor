@@ -1,8 +1,8 @@
 package ro.lrg.jfamilycounselor
 
 import org.eclipse.jdt.core.IType
-import ro.lrg.jfamilycounselor.impl.SType
-import ro.lrg.jfamilycounselor.impl.pair.SConcreteTypePair
+import ro.lrg.jfamilycounselor.impl.model.`type`.SType
+import ro.lrg.jfamilycounselor.impl.model.pair.SConcreteTypePair
 
 trait MConcreteTypePair {
   def jdtElement1: IType

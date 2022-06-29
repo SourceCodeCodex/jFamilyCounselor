@@ -1,18 +1,14 @@
 package ro.lrg.jfamilycounselor.cache
 
-import ro.lrg.jfamilycounselor.impl.cache.{
-  ConcreteConeOfTypeCache,
-  ResolvedTypesByQualifiedNameCache
-}
 
-trait Cache[I, O] {
+class Cache[I, O] {
   private val cache: scala.collection.mutable.Map[I, O] = scala.collection.concurrent.TrieMap()
 
-  def compute(input: I)(computation: I => O): O =
+  def cache(input: I)(computation: => O): O =
     if (cache.contains(input))
       cache(input)
     else {
-      val output = computation(input)
+      val output = computation
       cache.put(input, output)
       output
     }
@@ -23,7 +19,9 @@ trait Cache[I, O] {
 object Cache {
   def clearAllCaches(): Unit =
     List(
-      ResolvedTypesByQualifiedNameCache,
-      ConcreteConeOfTypeCache
+      implicits.concreteConeOfTypeCache,
+      implicits.resolvedTypesByQualifiedNameCache,
+      implicits.cuParsingCache,
+      implicits.methodInvocationParentisCache
     ).foreach(_.clear())
 }

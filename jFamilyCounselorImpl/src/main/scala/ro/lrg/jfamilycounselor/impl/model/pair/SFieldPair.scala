@@ -1,7 +1,6 @@
-package ro.lrg.jfamilycounselor.impl.pair
+package ro.lrg.jfamilycounselor.impl.model.pair
 
-import org.eclipse.jdt.core.IField
-import ro.lrg.jfamilycounselor.impl.ref.SField
+import ro.lrg.jfamilycounselor.impl.model.ref.SField
 
 private[jfamilycounselor] final class SFieldPair(
     override val _1: SField,

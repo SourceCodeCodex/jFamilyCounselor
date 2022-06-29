@@ -16,7 +16,7 @@ public class UsedTypePairsGroup_FI implements IRelationBuilder<MConcreteTypePair
 
 	for (ro.lrg.jfamilycounselor.MConcreteTypePair refPair : mRefPair.getUnderlyingObject()
 		.usedConcreteTypePairs(
-			ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm.nameBasedAlgorithm())) {
+			ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm.assignmentsBasedAlgorithm())) {
 	    group.add(Factory.getInstance().createMConcreteTypePair(refPair));
 	}
 

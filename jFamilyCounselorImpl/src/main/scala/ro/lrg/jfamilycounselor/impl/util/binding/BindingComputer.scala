@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.impl.util
+package ro.lrg.jfamilycounselor.impl.util.binding
 
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core.IJavaElement

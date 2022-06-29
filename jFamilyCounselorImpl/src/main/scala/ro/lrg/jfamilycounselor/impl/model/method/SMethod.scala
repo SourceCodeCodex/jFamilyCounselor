@@ -1,10 +1,14 @@
-package ro.lrg.jfamilycounselor.impl
+package ro.lrg.jfamilycounselor.impl.model.method
 
 import org.eclipse.jdt.core.IMethod
+import ro.lrg.jfamilycounselor.impl.model.method.invocation.ztatic.StaticInvocationsSearch
 
 private[jfamilycounselor] final class SMethod(method: IMethod) {
 
   val jdtElement: IMethod = method
+
+  lazy val invocations: List[SInvocation] =
+    StaticInvocationsSearch.findInvocations(jdtElement)
 
   override def toString: String = method.getElementName
 

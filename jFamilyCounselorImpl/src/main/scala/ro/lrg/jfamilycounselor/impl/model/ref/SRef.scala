@@ -1,10 +1,9 @@
-package ro.lrg.jfamilycounselor.impl.ref
+package ro.lrg.jfamilycounselor.impl.model.ref
 
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.jdt.core._
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil
-import ro.lrg.jfamilycounselor.impl.SType
-import ro.lrg.jfamilycounselor.impl.cache.ResolvedTypesByQualifiedNameCache
+import ro.lrg.jfamilycounselor.impl.model.`type`.SType
 
 private[jfamilycounselor] abstract class SRef {
   type jdtType <: IJavaElement
@@ -34,18 +33,18 @@ private[jfamilycounselor] abstract class SRef {
     * Option is used in case some computations end up in null values
     */
   lazy val declaredType0: Option[SType] = {
+    import ro.lrg.jfamilycounselor.cache.implicits._
+
     val typeName: Option[String] = Some(
       JavaModelUtil.getResolvedTypeName(typeSignature, declaringType)
     ).filter(_ != null)
 
+    def searchTypeByFQN(fqn: String) =
+      jdtElement.getJavaProject.findType(fqn, new NullProgressMonitor())
+
     val declaredType =
       typeName
-        .map { name =>
-          ResolvedTypesByQualifiedNameCache
-            .compute(name)(fqn =>
-              jdtElement.getJavaProject.findType(fqn, new NullProgressMonitor())
-            )
-        }
+        .map { name => searchTypeByFQN(name).cachedBy(name) }
         .filter(_ != null)
 
     declaredType.map(new SType(_))

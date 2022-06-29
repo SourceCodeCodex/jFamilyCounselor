@@ -2,8 +2,8 @@ package ro.lrg.jfamilycounselor
 
 import org.eclipse.jdt.core.{IField, IJavaElement, ILocalVariable}
 import ro.lrg.jfamilycounselor.alg.UsedConcreteTypePairsAlgorithm
-import ro.lrg.jfamilycounselor.impl.pair.{SFieldPair, SParamPair}
-import ro.lrg.jfamilycounselor.impl.ref.{SField, SParam}
+import ro.lrg.jfamilycounselor.impl.model.pair.{SFieldPair, SParamPair}
+import ro.lrg.jfamilycounselor.impl.model.ref.{SField, SParam}
 
 trait MRefPair {
   type jdtRefType <: IJavaElement

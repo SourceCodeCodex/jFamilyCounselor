@@ -1,9 +1,9 @@
-package ro.lrg.jfamilycounselor.impl
+package ro.lrg.jfamilycounselor.impl.model.project
 
 import org.eclipse.jdt.core.IJavaProject
+import ro.lrg.jfamilycounselor.impl.model.`type`.SType
 import ro.lrg.jfamilycounselor.{MProject, MType}
 
-import java.util.concurrent.atomic.AtomicInteger
 import scala.jdk.CollectionConverters._
 
 private[jfamilycounselor] final class SProject(javaProject: IJavaProject)

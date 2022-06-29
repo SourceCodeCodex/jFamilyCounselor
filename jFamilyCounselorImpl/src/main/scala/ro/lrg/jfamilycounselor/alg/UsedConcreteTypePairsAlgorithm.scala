@@ -1,8 +1,8 @@
 package ro.lrg.jfamilycounselor.alg
 
-import ro.lrg.jfamilycounselor.impl.alg.NameBasedAlgorithm
-import ro.lrg.jfamilycounselor.impl.pair.{SConcreteTypePair, SRefPair}
-import ro.lrg.jfamilycounselor.impl.ref.SRef
+import ro.lrg.jfamilycounselor.impl.alg.{AssignmentsBasedAlgorithm, NameBasedAlgorithm}
+import ro.lrg.jfamilycounselor.impl.model.pair.{SConcreteTypePair, SRefPair}
+import ro.lrg.jfamilycounselor.impl.model.ref.SRef
 
 private[jfamilycounselor] trait UsedConcreteTypePairsAlgorithm {
   private[jfamilycounselor] def compute[R <: SRef](refPair: SRefPair[R]): List[SConcreteTypePair]
@@ -10,4 +10,5 @@ private[jfamilycounselor] trait UsedConcreteTypePairsAlgorithm {
 
 object UsedConcreteTypePairsAlgorithm {
   val nameBasedAlgorithm: UsedConcreteTypePairsAlgorithm = NameBasedAlgorithm
+  val assignmentsBasedAlgorithm: UsedConcreteTypePairsAlgorithm = AssignmentsBasedAlgorithm
 }
