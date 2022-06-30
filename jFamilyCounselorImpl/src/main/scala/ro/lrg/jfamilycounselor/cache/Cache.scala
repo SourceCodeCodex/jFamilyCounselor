@@ -1,6 +1,5 @@
 package ro.lrg.jfamilycounselor.cache
 
-
 class Cache[I, O] {
   private val cache: scala.collection.mutable.Map[I, O] = scala.collection.concurrent.TrieMap()
 

@@ -14,9 +14,10 @@ public class PossibleTypePairsGroup implements IRelationBuilder<MConcreteTypePai
     public Group<MConcreteTypePair> buildGroup(MRefPair mRefPair) {
 	var group = new Group<MConcreteTypePair>();
 
-	for (ro.lrg.jfamilycounselor.MConcreteTypePair refPair : mRefPair.getUnderlyingObject()
+	for (ro.lrg.jfamilycounselor.metamodel.scala.MConcreteTypePair mConcreteTypePair : mRefPair
+		.getUnderlyingObject()
 		.possibleConcreteTypePairs()) {
-	    group.add(Factory.getInstance().createMConcreteTypePair(refPair));
+	    group.add(Factory.getInstance().createMConcreteTypePair(mConcreteTypePair));
 	}
 
 	return group;

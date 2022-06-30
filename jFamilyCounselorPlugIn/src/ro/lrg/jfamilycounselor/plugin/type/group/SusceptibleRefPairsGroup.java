@@ -14,7 +14,8 @@ public class SusceptibleRefPairsGroup implements IRelationBuilder<MRefPair, MTyp
     public Group<MRefPair> buildGroup(MType mType) {
 	var group = new Group<MRefPair>();
 
-	for (ro.lrg.jfamilycounselor.MRefPair refPair : mType.getUnderlyingObject().susceptibleRefPairs()) {
+	for (ro.lrg.jfamilycounselor.metamodel.scala.MRefPair refPair : mType.getUnderlyingObject()
+		.susceptibleRefPairs()) {
 	    group.add(Factory.getInstance().createMRefPair(refPair));
 	}
 
