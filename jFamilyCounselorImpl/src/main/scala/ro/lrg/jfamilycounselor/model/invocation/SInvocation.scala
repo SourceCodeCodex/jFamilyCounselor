@@ -1,6 +1,13 @@
 package ro.lrg.jfamilycounselor.model.invocation
 
-import org.eclipse.jdt.core.dom.{ASTNode, ClassInstanceCreation, Expression, MethodInvocation, Name, SuperMethodInvocation}
+import org.eclipse.jdt.core.dom.{
+  ASTNode,
+  ClassInstanceCreation,
+  Expression,
+  MethodInvocation,
+  SimpleName,
+  SuperMethodInvocation
+}
 
 import scala.jdk.CollectionConverters.ListHasAsScala
 
@@ -24,16 +31,20 @@ final case class SClassInstanceCreation(node: ClassInstanceCreation)
 final case class SMethodInvocation(node: MethodInvocation) extends SInvocation {
   override type N = MethodInvocation
 
-  def callExpression: Expression = node.getExpression
+  def callExpression: Option[Expression] =
+    Some(node.getExpression).filter(_ != null)
 
   //TODO: Consult with Pepi about this
-  def mightBeCalledOnSameObjectOf(m2: SMethodInvocation): Boolean =
-    if(callExpression.getNodeType != callExpression.getNodeType)
-      false
-    else (callExpression, m2.callExpression) match {
-      case (n1: Name, n2: Name)  => n1.resolveBinding().getJavaElement == n2.resolveBinding().getJavaElement
+  def mightBeCalledOnSameObjectOf(m2: SMethodInvocation): Boolean = {
+    (callExpression, m2.callExpression) match {
+      case (None, None) => true
+      case (Some(se1: SimpleName), Some(se2: SimpleName)) =>
+        se1.resolveBinding().getJavaElement == se2
+          .resolveBinding()
+          .getJavaElement
       case _ => false
     }
+  }
 
   override def argAtIndex(index: Int): Expression =
     node.arguments().asScala.toList.asInstanceOf[List[Expression]](index)

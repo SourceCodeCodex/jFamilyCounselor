@@ -8,7 +8,7 @@ import ro.lrg.jfamilycounselor.util.parse.visitor.MethodDeclarationVisitor
 object Parser {
   import ro.lrg.jfamilycounselor.cache.implicits._
 
-  def parse(compilationUnit: ICompilationUnit): CompilationUnit = {
+  def parse(compilationUnit: ICompilationUnit): Option[CompilationUnit] = {
     def parseCompilationUnit(
         compilationUnit: ICompilationUnit
     ): CompilationUnit = {
@@ -20,10 +20,10 @@ object Parser {
       parser.createAST(new NullProgressMonitor()).asInstanceOf[CompilationUnit]
     }
 
-    parseCompilationUnit(compilationUnit).cachedBy(compilationUnit)
+    Some(parseCompilationUnit(compilationUnit)).filter(_ != null).cachedBy(compilationUnit)
   }
 
-  def parse(method: IMethod): MethodDeclaration = {
+  def parse(method: IMethod): Option[MethodDeclaration] = {
     val visitor = new MethodDeclarationVisitor(method)
     parseMember(method, visitor)
   }
@@ -31,14 +31,17 @@ object Parser {
   private def parseMember[N <: ASTNode](
       member: IMember,
       visitor: MemberResolvingVisitor[N]
-  ): N = {
-    def parseMember(member: IMember): ASTNode = {
-      val cuAST = parse(member.getCompilationUnit)
-      cuAST.accept(visitor)
-      visitor.result
-    }
+  ): Option[N] = {
+    def parseMember(member: IMember): Option[ASTNode] =
+      parse(member.getCompilationUnit).map(cuAST => {
+        cuAST.accept(visitor)
+        visitor.result
+      })
 
-    parseMember(member).cachedBy(member).asInstanceOf[N]
+
+    parseMember(member).cachedBy(member)
+      .filter(_ != null)
+      .asInstanceOf[Option[N]]
   }
 
 }

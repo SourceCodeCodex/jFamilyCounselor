@@ -37,8 +37,8 @@ sealed abstract class SRef {
     import ro.lrg.jfamilycounselor.cache.implicits._
 
     val typeName: Option[String] = Some(
-      JavaModelUtil.getResolvedTypeName(typeSignature, declaringType).replace('/', '.')
-    ).filter(_ != null)
+      JavaModelUtil.getResolvedTypeName(typeSignature, declaringType)
+    ).filter(_ != null).map(_.replace('/', '.'))
 
     def searchTypeByFQN(fqn: String) =
       jdtElement.getJavaProject.findType(fqn, new NullProgressMonitor())

@@ -13,9 +13,9 @@ object StaticInvocationsSearch extends InvocationsSearchStrategy {
 
     val parentMethodsAST = parentMethodsOfInvocation.map(Parser.parse)
 
-    parentMethodsAST.flatMap(parentAST => {
+    parentMethodsAST.filter(_.isDefined).flatMap(parentAST => {
       val visitor = new InvocationVisitor(method)
-      parentAST.accept(visitor)
+      parentAST.get.accept(visitor)
       visitor.invocations
     })
   }

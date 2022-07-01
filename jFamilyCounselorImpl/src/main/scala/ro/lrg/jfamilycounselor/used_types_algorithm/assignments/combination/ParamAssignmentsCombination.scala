@@ -48,9 +48,11 @@ object ParamAssignmentsCombination
         m1.mightBeCalledOnSameObjectOf(m2)
       case (_: SMI, _: SMI) => true
       case (s: MI, _: SMI) =>
-        s.callExpression.getNodeType == ASTNode.THIS_EXPRESSION
+        s.callExpression.isEmpty ||
+        s.callExpression.get.getNodeType == ASTNode.THIS_EXPRESSION
       case (_: SMI, s: MI) =>
-        s.callExpression.getNodeType == ASTNode.THIS_EXPRESSION
+        s.callExpression.isEmpty ||
+        s.callExpression.get.getNodeType == ASTNode.THIS_EXPRESSION
       case _ => false
     })
     (a1, a2) = (

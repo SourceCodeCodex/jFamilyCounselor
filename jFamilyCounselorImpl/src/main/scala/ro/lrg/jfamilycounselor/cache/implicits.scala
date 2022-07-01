@@ -15,9 +15,9 @@ object implicits {
     new Cache[IType, List[IType]]
   implicit val methodInvocationParentsCache: Cache[IMethod, List[IMethod]] =
     new Cache[IMethod, List[IMethod]]
-  implicit val cuParsingCache: Cache[ICompilationUnit, CompilationUnit] =
-    new Cache[ICompilationUnit, CompilationUnit]
-  implicit val memberParsingCache: Cache[IMember, ASTNode] =
-    new Cache[IMember, ASTNode]
+  implicit val cuParsingCache: Cache[ICompilationUnit, Option[CompilationUnit]] =
+    new Cache[ICompilationUnit, Option[CompilationUnit]]
+  implicit val memberParsingCache: Cache[IMember, Option[ASTNode]] =
+    new Cache[IMember, Option[ASTNode]]
 
 }
