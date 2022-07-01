@@ -17,14 +17,14 @@ trait MRefPair {
 
 object MRefPair {
   def asScala(r1: IField, r2: IField): MRefPair = {
-    val sf1 = new SField(r1)
-    val sf2 = new SField(r2)
+    val sf1 = SField(r1)
+    val sf2 = SField(r2)
     new SFieldPair(sf1, sf2)
   }
 
   def apply(r1: ILocalVariable, r2: ILocalVariable): MRefPair = {
-    val sf1 = new SParam(r1)
-    val sf2 = new SParam(r2)
+    val sf1 = SParam(r1)
+    val sf2 = SParam(r2)
     new SParamPair(sf1, sf2)
   }
 }

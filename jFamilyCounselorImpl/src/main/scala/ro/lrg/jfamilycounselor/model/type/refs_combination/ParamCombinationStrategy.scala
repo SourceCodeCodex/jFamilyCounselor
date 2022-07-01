@@ -1,6 +1,6 @@
-package ro.lrg.jfamilycounselor.strategies.refs_combination
+package ro.lrg.jfamilycounselor.model.`type`.refs_combination
 
-import org.eclipse.jdt.core.Flags
+import org.eclipse.jdt.core.{Flags, ILocalVariable}
 import ro.lrg.jfamilycounselor.model.`type`.SType
 import ro.lrg.jfamilycounselor.model.ref.{SParam, SParamPair, SRefPair}
 
@@ -8,10 +8,10 @@ object ParamCombinationStrategy extends RefCombinationStrategy[SParam] {
 
   override def combine(sType: SType): List[SRefPair[SParam]] = {
     val susParams = sType.jdtElement.getMethods
-      .filterNot(m => Flags.isStatic(m.getFlags))
       .toList
+      .filterNot(m => Flags.isStatic(m.getFlags))
       .flatMap(_.getParameters.toList)
-      .map(new SParam(_))
+      .map(SParam)
       .filter(_.isSusceptible)
 
     val validCombinations: List[(SParam, SParam)] =

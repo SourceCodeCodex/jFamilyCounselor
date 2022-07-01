@@ -13,7 +13,7 @@ object implicits {
     new Cache[String, IType]
   implicit val concreteConeOfTypeCache: Cache[IType, List[IType]] =
     new Cache[IType, List[IType]]
-  implicit val methodInvocationParentisCache: Cache[IMethod, List[IMethod]] =
+  implicit val methodInvocationParentsCache: Cache[IMethod, List[IMethod]] =
     new Cache[IMethod, List[IMethod]]
   implicit val cuParsingCache: Cache[ICompilationUnit, CompilationUnit] =
     new Cache[ICompilationUnit, CompilationUnit]

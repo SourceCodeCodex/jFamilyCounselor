@@ -9,5 +9,5 @@ trait MProject {
 }
 
 object MProject {
-  def asScala(javaProject: IJavaProject): MProject = new SProject(javaProject)
+  def asScala(javaProject: IJavaProject): MProject = SProject(javaProject)
 }

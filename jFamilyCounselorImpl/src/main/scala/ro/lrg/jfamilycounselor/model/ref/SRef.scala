@@ -37,7 +37,7 @@ sealed abstract class SRef {
     import ro.lrg.jfamilycounselor.cache.implicits._
 
     val typeName: Option[String] = Some(
-      JavaModelUtil.getResolvedTypeName(typeSignature, declaringType)
+      JavaModelUtil.getResolvedTypeName(typeSignature, declaringType).replace('/', '.')
     ).filter(_ != null)
 
     def searchTypeByFQN(fqn: String) =
@@ -59,7 +59,7 @@ final case class SParam(param: ILocalVariable) extends SRef {
   override type jdtType = ILocalVariable
   override val jdtElement: jdtType = param
 
-  def declaringMethod: SMethod = new SMethod(
+  def declaringMethod: SMethod = SMethod(
     param.getDeclaringMember.asInstanceOf[IMethod]
   )
 

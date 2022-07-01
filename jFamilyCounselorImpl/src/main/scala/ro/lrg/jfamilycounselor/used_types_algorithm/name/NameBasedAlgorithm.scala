@@ -41,7 +41,7 @@ object NameBasedAlgorithm extends UsedConcreteTypePairsAlgorithm0 {
     val autoCorrelated = for {
       t1 <- notCorrelated1
       t2 <- notCorrelated2
-    } yield new SConcreteTypePair(t1, t2)
+    } yield SConcreteTypePair(t1, t2)
 
     correlatedPairs ++ autoCorrelated
   }

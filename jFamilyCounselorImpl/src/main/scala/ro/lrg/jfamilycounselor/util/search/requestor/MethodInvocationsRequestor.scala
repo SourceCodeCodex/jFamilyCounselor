@@ -9,7 +9,7 @@ class MethodInvocationsRequestor
   override def acceptSearchMatch(`match`: SearchMatch): Unit =
     `match` match {
       case mrm: MethodReferenceMatch if mrm.getElement.isInstanceOf[IMethod] =>
-        matchesBuffer.add(mrm.getElement.asInstanceOf[IMethod])
+        matchesBuffer.addOne(mrm.getElement.asInstanceOf[IMethod])
       case _ =>
     }
 

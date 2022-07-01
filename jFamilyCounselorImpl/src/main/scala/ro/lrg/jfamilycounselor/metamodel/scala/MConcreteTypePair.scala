@@ -10,8 +10,8 @@ trait MConcreteTypePair {
 
 object MConcreteTypePair {
   def asScala(t1: IType, t2: IType): MConcreteTypePair = {
-    val st1 = new SType(t1)
-    val st2 = new SType(t2)
-    new SConcreteTypePair(st1, st2)
+    val st1 = SType(t1)
+    val st2 = SType(t2)
+    SConcreteTypePair(st1, st2)
   }
 }

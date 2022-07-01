@@ -21,6 +21,7 @@ object Cache {
       implicits.concreteConeOfTypeCache,
       implicits.resolvedTypesByQualifiedNameCache,
       implicits.cuParsingCache,
-      implicits.methodInvocationParentisCache
+      implicits.methodInvocationParentsCache,
+      implicits.memberParsingCache
     ).foreach(_.clear())
 }

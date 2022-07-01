@@ -2,8 +2,8 @@ package ro.lrg.jfamilycounselor.model.method
 
 import org.eclipse.jdt.core.IMethod
 import ro.lrg.jfamilycounselor.model.invocation.SInvocation
+import ro.lrg.jfamilycounselor.model.method.method_invocation.ztatic.StaticInvocationsSearch
 import ro.lrg.jfamilycounselor.model.ref.SParam
-import ro.lrg.jfamilycounselor.strategies.method_invocation.ztatic.StaticInvocationsSearch
 
 final case class SMethod(method: IMethod) {
 

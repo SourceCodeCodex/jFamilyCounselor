@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.model.project
 
-import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.{ICompilationUnit, IJavaProject, IPackageFragment}
 import ro.lrg.jfamilycounselor.metamodel.scala.{MProject, MType}
 import ro.lrg.jfamilycounselor.model.`type`.SType
 

@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.strategies.refs_combination
+package ro.lrg.jfamilycounselor.model.`type`.refs_combination
 
 import ro.lrg.jfamilycounselor.model.`type`.SType
 import ro.lrg.jfamilycounselor.model.ref.{SRef, SRefPair}

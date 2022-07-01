@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.strategies.method_invocation.visitor
+package ro.lrg.jfamilycounselor.model.method.method_invocation.visitor
 
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.dom._

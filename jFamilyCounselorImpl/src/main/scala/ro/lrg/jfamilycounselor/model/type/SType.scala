@@ -7,8 +7,8 @@ import ro.lrg.jfamilycounselor.metamodel.scala.{
   MType,
   UsedConcreteTypePairsAlgorithm
 }
+import ro.lrg.jfamilycounselor.model.`type`.refs_combination.ParamCombinationStrategy
 import ro.lrg.jfamilycounselor.model.ref.SRefPair
-import ro.lrg.jfamilycounselor.strategies.refs_combination.ParamCombinationStrategy
 
 import scala.jdk.CollectionConverters._
 
