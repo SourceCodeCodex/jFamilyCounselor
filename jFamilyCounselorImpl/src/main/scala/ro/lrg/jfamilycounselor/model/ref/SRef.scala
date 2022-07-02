@@ -63,7 +63,10 @@ final case class SParam(param: ILocalVariable) extends SRef {
     param.getDeclaringMember.asInstanceOf[IMethod]
   )
 
-  override lazy val isSusceptible: Boolean = super.isSusceptible
+  override lazy val isSusceptible: Boolean =
+    super.isSusceptible && !Flags.isStatic(
+      declaringMethod.jdtElement.getFlags
+    ) && Signature.getTypeSignatureKind(typeSignature) != Signature.ARRAY_TYPE_SIGNATURE
 
   override protected def typeSignature: String = param.getTypeSignature
 
