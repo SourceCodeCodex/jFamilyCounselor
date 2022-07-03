@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.{
 import ro.lrg.jfamilycounselor.metamodel.scala.UsedConcreteTypePairsAlgorithm
 import ro.lrg.jfamilycounselor.model.project.SProject
 import ro.lrg.jfamilycounselor.report.ProjectReportExporter
+import ro.lrg.jfamilycounselor.util.TimeOps
 
 import java.io.File
 import java.text.SimpleDateFormat
@@ -31,8 +32,11 @@ private[report] class ExportReportJob(
     clientsJob.setPriority(Job.LONG)
     clientsJob.setSystem(false)
     clientsJob.setUser(true)
-    clientsJob.schedule()
-    clientsJob.join()
+
+    TimeOps.time("Compute Possible Clients") {
+      clientsJob.schedule()
+      clientsJob.join()
+    }
 
     val sTypes = clientsJob.result
 
@@ -50,22 +54,25 @@ private[report] class ExportReportJob(
     val dir = new File(dirPath)
     dir.mkdirs()
 
-    val name = s"$dirPath$sProject-${algorithm.getClass.getSimpleName}-$timestamp.csv"
+    val name =
+      s"$dirPath$sProject-${algorithm.getClass.getSimpleName}-$timestamp.csv"
 
     val writer = CSVWriter.open(new File(name))
 
     writer.writeRow(List("Class", "Aperture Coverage"))
 
-    sTypes.par
-      .map(t => {
-        writer.writeRow(
-          List(t.toString, t.apertureCoverage(algorithm).toString)
-        )
-        synchronized(writer.flush())
-        subMonitor.split(1)
-      })
-      .toList
-      .foreach(_ => ())
+    TimeOps.time("Write Report " + algorithm.getClass.getSimpleName) {
+      sTypes.par
+        .map(t => {
+          writer.writeRow(
+            List(t.toString, t.apertureCoverage(algorithm).toString)
+          )
+          synchronized(writer.flush())
+          subMonitor.split(1)
+        })
+        .toList
+        .foreach(_ => ())
+    }
 
     writer.close()
 

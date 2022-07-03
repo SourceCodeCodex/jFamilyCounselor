@@ -2,26 +2,26 @@ package ro.lrg.jfamilycounselor.used_types_algorithm.assignments.derivation
 
 import ro.lrg.jfamilycounselor.model.`type`.{SConcreteTypePair, STypePair}
 import ro.lrg.jfamilycounselor.model.ref.{SRef, SRefPair}
-import ro.lrg.jfamilycounselor.used_types_algorithm.assignments.model.pair.{
-  InconclusiveTypePair,
-  NewAssignmentsPairs,
-  ResolvedConcreteTypePair,
-  SAssignmentsPair
-}
+import ro.lrg.jfamilycounselor.used_types_algorithm.assignments.model.pair.{InconclusiveTypePair, NewAssignmentsPairs, ResolvedConcreteTypePair, SAssignmentsPair}
 
 import scala.annotation.tailrec
 import scala.collection.parallel.CollectionConverters.ImmutableIterableIsParallelizable
+import scala.concurrent.duration._
 
 object BoundedWorkListStrategy extends AssignmentsDerivationStrategy {
   private val MAX_DEPTH_THRESHOLD = 3
+  private val MAX_DURATION = 30.minutes
 
   override def derive(
       sRefPair: SRefPair[_ <: SRef],
       initialAssignmentsPairs: List[SAssignmentsPair]
   ): List[SConcreteTypePair] = {
+    val startTime = System.nanoTime().nanos
+
     @tailrec
     def workListAlgorithm(state: WorkListState): WorkListState = {
-      if (state.toBeDerived.diff(state.alreadyDerived).isEmpty) {
+      val newTime = System.nanoTime().nanos
+      if (state.toBeDerived.diff(state.alreadyDerived).isEmpty || newTime - startTime >= MAX_DURATION) {
         state
       } else {
 
