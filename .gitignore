@@ -1,3 +1,4 @@
 ro.lrg.insider/
-.metadata/
+*/.metadata/
+.metadata
 *.DS_Store*
