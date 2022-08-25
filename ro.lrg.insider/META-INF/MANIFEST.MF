@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Insider
+Bundle-SymbolicName: ro.lrg.insider;singleton:=true
+Bundle-Version: 2.3.1
+Bundle-Activator: ro.lrg.insider.plugin.Activator
+Require-Bundle: org.eclipse.ui;bundle-version="3.201.0",
+ org.eclipse.core.runtime;bundle-version="3.26.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ClassPath: .,
+ lib/ro.lrg.xcore.lib_1.3.1.jar
+Export-Package: ro.lrg.insider.view,
+ ro.lrg.xcore.metametamodel
+Automatic-Module-Name: ro.lrg.insider

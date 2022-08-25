@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<?xml-model href="plugin.xsd"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            class="ro.lrg.insider.view.XCorexTableView"
+            icon="res/lrglogo.png"
+            id="ro.lrg.insider.view.XCorexTableView"
+            name="Insider"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="ro.lrg.insider.view.BrowseEntity"
+            objectClass="java.lang.Object">
+         <action
+               class="ro.lrg.insider.view.BrowseEntityAction"
+               id="ro.lrg.insider.view.BrowseEntityAction"
+               label="Browse in Insider"
+               menubarPath="addition">
+         </action>
+      </objectContribution>
+   </extension>
+</plugin>

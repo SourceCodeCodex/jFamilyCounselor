@@ -1,0 +1,2 @@
+bindings=MType,ro.lrg.jfamilycounselor.core.MType,ro.lrg.xcore.metametamodel.XEntity;MConcreteTypePair,ro.lrg.jfamilycounselor.core.MConcreteTypePair,ro.lrg.xcore.metametamodel.XEntity;MRefPair,ro.lrg.jfamilycounselor.core.MRefPair,ro.lrg.xcore.metametamodel.XEntity;MProject,ro.lrg.jfamilycounselor.core.MProject,ro.lrg.xcore.metametamodel.XEntity;
+eclipse.preferences.version=1

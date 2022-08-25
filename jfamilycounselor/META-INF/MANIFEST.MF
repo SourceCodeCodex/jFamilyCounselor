@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: jFamilyCounselor
+Bundle-SymbolicName: jfamilycounselor;singleton:=true
+Bundle-Version: 1.0.0
+Automatic-Module-Name: jfamilycounselor
+Bundle-RequiredExecutionEnvironment: JavaSE-16
+Import-Package: ro.lrg.xcore.metametamodel
+Require-Bundle: org.eclipse.jdt.core;bundle-version="3.30.0",
+ org.eclipse.core.runtime;bundle-version="3.26.0",
+ ro.lrg.insider;bundle-version="2.3.1",
+ org.eclipse.ui;bundle-version="3.201.0",
+ org.eclipse.jdt.ui;bundle-version="3.27.0",
+ org.eclipse.core.resources;bundle-version="3.18.0"
+Bundle-ClassPath: .,
+ lib/jfamilycounselor.core.jar
