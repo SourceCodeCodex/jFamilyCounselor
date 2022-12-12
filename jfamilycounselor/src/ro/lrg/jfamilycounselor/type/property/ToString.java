@@ -7,7 +7,6 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class ToString implements IPropertyComputer<String, MType> {
 
-	@Override
 	public String compute(MType mType) {
 		return mType.getUnderlyingObject().toString();
 	}

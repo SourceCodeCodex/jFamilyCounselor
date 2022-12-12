@@ -4,12 +4,12 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.ui.IStartup;
 
-import ro.lrg.insider.view.ToolRegistration;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.core.MConcreteTypePair;
-import ro.lrg.jfamilycounselor.core.MProject;
-import ro.lrg.jfamilycounselor.core.MRefPair;
-import ro.lrg.jfamilycounselor.core.MType;
+import ro.lrg.insider.view.ToolRegistration;
+import ro.lrg.jfamilycounselor.core.model.project.Project;
+import ro.lrg.jfamilycounselor.core.model.reference.pair.ReferenceVariablesPair;
+import ro.lrg.jfamilycounselor.core.model.type.Type;
+import ro.lrg.jfamilycounselor.core.model.type.pair.TypesPair;
 
 public final class Startup implements IStartup {
 
@@ -17,23 +17,23 @@ public final class Startup implements IStartup {
 	public void earlyStartup() {
 		ToolRegistration.getInstance().registerXEntityConverter(element -> {
 			if (element instanceof IJavaProject project) {
-				return Factory.getInstance().createMProject(MProject.asScala(project));
+				return Factory.getInstance().createMProject(new Project(project));
 			}
 			if (element instanceof IType type) {
-				return Factory.getInstance().createMType(MType.asScala(type));
+				return Factory.getInstance().createMType(new Type(type));
 			}
 
-			if (element instanceof MProject mProject) {
+			if (element instanceof Project mProject) {
 				return Factory.getInstance().createMProject(mProject);
 			}
-			if (element instanceof MType mType) {
+			if (element instanceof Type mType) {
 				return Factory.getInstance().createMType(mType);
 			}
-			if (element instanceof MRefPair mRefPair) {
-				return Factory.getInstance().createMRefPair(mRefPair);
+			if (element instanceof ReferenceVariablesPair mRefPair) {
+				return Factory.getInstance().createMReferenceVariablesPair(mRefPair);
 			}
-			if (element instanceof MConcreteTypePair mTypePair) {
-				return Factory.getInstance().createMConcreteTypePair(mTypePair);
+			if (element instanceof TypesPair mTypePair) {
+				return Factory.getInstance().createMTypesPair(mTypePair);
 			}
 
 			return null;

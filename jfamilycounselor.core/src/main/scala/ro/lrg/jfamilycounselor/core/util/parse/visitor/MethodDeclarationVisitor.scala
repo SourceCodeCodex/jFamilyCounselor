@@ -2,10 +2,9 @@ package ro.lrg.jfamilycounselor.core.util.parse.visitor
 
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.dom.MethodDeclaration
-import ro.lrg.jfamilycounselor.core.util.parse.MemberResolvingVisitor
 
-class MethodDeclarationVisitor(method: IMethod)
-    extends MemberResolvingVisitor[MethodDeclaration](method) {
+private[parse] class MethodDeclarationVisitor(method: IMethod)
+  extends MemberResolvingVisitor[MethodDeclaration](method) {
   var result: MethodDeclaration = _
 
   override def visit(node: MethodDeclaration): Boolean = {
