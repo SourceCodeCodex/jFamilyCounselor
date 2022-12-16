@@ -2,8 +2,8 @@ package ro.lrg.jfamilycounselor.core.esimation.name
 
 import ro.lrg.jfamilycounselor.core.esimation.UsedTypesEstimation
 import ro.lrg.jfamilycounselor.core.model.`type`.Type
-import ro.lrg.jfamilycounselor.core.model.`type`.pair.TypesPair
-import ro.lrg.jfamilycounselor.core.model.reference.pair.ReferenceVariablesPair
+import ro.lrg.jfamilycounselor.core.model.references.pair.ReferenceVariablesPair
+import ro.lrg.jfamilycounselor.core.model.types.pair.TypesPair
 
 import scala.collection.parallel.CollectionConverters.ImmutableIterableIsParallelizable
 

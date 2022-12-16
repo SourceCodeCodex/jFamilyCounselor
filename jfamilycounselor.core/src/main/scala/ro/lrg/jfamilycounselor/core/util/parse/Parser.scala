@@ -9,13 +9,6 @@ object Parser {
   def parse(method: IMethod): Option[MethodDeclaration] =
     parseMember(method, new MethodDeclarationVisitor(method))
 
-  private def parseMember[N <: ASTNode](member: IMember, visitor: MemberResolvingVisitor[N]): Option[N] =
-    parse(member.getCompilationUnit)
-      .flatMap(cuAST => {
-        cuAST.accept(visitor)
-        Option(visitor.result)
-      })
-
   def parse(compilationUnit: ICompilationUnit): Option[CompilationUnit] = {
     val parser = ASTParser.newParser(AST.getJLSLatest)
     parser.setSource(compilationUnit)
@@ -26,4 +19,11 @@ object Parser {
       parser.createAST(new NullProgressMonitor()).asInstanceOf[CompilationUnit]
     )
   }
+
+  private def parseMember[N <: ASTNode](member: IMember, visitor: MemberResolvingVisitor[N]): Option[N] =
+    parse(member.getCompilationUnit)
+      .flatMap(cuAST => {
+        cuAST.accept(visitor)
+        Option(visitor.result)
+      })
 }

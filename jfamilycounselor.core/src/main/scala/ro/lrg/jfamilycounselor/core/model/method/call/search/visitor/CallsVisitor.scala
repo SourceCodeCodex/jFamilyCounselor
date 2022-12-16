@@ -2,7 +2,7 @@ package ro.lrg.jfamilycounselor.core.model.method.call.search.visitor
 
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.dom._
-import ro.lrg.jfamilycounselor.core.model.method.call.{Call, Instantiation, MethodCall, SuperMethodCall}
+import ro.lrg.jfamilycounselor.core.model.call.{Call, Instantiation, MethodCall, SuperMethodCall}
 
 import scala.collection.mutable.ListBuffer
 

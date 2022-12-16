@@ -10,6 +10,7 @@ class WineBar {
 		Wine tmp = w;
 		wt2.setWine(tmp);
 		wt2.setGlass(g);
+		
 	}
 	
 	public void serve() {

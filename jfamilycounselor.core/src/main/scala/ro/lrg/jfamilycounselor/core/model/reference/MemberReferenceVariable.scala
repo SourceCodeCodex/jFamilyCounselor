@@ -1,10 +1,15 @@
 package ro.lrg.jfamilycounselor.core.model.reference
 
 import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil
 import ro.lrg.jfamilycounselor.core.model.`type`.Type
 
-private[reference] abstract class MemberReferenceVariable extends ReferenceVariable {
+/**
+  * This is a convenient way to modularize code to keep compilation units small while using
+  * sealed traits.
+  */
+private[reference] abstract class MemberReferenceVariable[T <: IJavaElement](underlyingJdtObject: T) {
 
   /** Tells whether a member reference variable is worth being taken into
     * consideration for the analysis.
@@ -18,7 +23,8 @@ private[reference] abstract class MemberReferenceVariable extends ReferenceVaria
           `type`.underlyingJdtObject.getTypeParameters.isEmpty &&
           `type`.concreteCone.size >= 2
       )
-  lazy val `type`: Option[Type] =
+
+  def `type`: Option[Type] =
     for {
       typeName <- Option(
         JavaModelUtil.getResolvedTypeName(
@@ -41,3 +47,4 @@ private[reference] abstract class MemberReferenceVariable extends ReferenceVaria
 
   protected def typeSignature: String
 }
+

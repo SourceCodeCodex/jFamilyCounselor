@@ -2,8 +2,8 @@ package ro.lrg.jfamilycounselor.core.esimation
 
 import ro.lrg.jfamilycounselor.core.esimation.assignment.AssignmentsBased
 import ro.lrg.jfamilycounselor.core.esimation.name.NameBased
-import ro.lrg.jfamilycounselor.core.model.`type`.pair.TypesPair
-import ro.lrg.jfamilycounselor.core.model.reference.pair.ReferenceVariablesPair
+import ro.lrg.jfamilycounselor.core.model.references.pair.ReferenceVariablesPair
+import ro.lrg.jfamilycounselor.core.model.types.pair.TypesPair
 
 trait UsedTypesEstimation {
   def compute(referenceVariablesPair: ReferenceVariablesPair): List[TypesPair]

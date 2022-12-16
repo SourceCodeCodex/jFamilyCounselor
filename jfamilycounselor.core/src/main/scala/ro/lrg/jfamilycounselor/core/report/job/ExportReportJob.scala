@@ -62,8 +62,8 @@ private[report] class ExportReportJob(project: Project, estimation: UsedTypesEst
               List(t.toString, ac.toString)
             )
             writer.flush()
+            subMonitor.split(1)
           }
-          subMonitor.split(1)
         })
     }
 
