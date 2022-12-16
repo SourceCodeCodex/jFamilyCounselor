@@ -28,7 +28,7 @@ final case class Instantiation(underlyingJdtObject: dom.ClassInstanceCreation) e
   override def argument(index: Int): Expression =
     Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
 
-  override def method: Option[Method] = Option(underlyingJdtObject.resolveConstructorBinding())
+  override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveConstructorBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])
     .map(Method.apply)
 }
@@ -41,7 +41,7 @@ final case class MethodCall(underlyingJdtObject: dom.MethodInvocation) extends C
   override def argument(index: Int): Expression =
     Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
 
-  override def method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
+  override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])
     .map(Method.apply)
 }
@@ -52,7 +52,7 @@ final case class SuperMethodCall(underlyingJdtObject: dom.SuperMethodInvocation)
   override def argument(index: Int): Expression =
     Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
 
-  override def method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
+  override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])
     .map(Method.apply)
 }

@@ -7,10 +7,10 @@ import ro.lrg.jfamilycounselor.core.model.reference.Parameter
 
 final case class Method(underlyingJdtObject: IMethod) {
 
-  def calls: List[Call] = StaticCallsSearch.findCalls(this)
+  lazy val calls: List[Call] = StaticCallsSearch.findCalls(this)
 
   def indexOf(parameter: Parameter): Int =
     underlyingJdtObject.getParameters.indexOf(parameter.underlyingJdtObject)
 
-  override def toString: String = underlyingJdtObject.getElementName
+  override lazy val toString: String = underlyingJdtObject.getElementName
 }

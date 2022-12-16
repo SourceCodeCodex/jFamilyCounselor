@@ -4,7 +4,7 @@ import ro.lrg.jfamilycounselor.core.model.expression._
 import ro.lrg.jfamilycounselor.core.model.references.pair._
 
 case class AssignmentsPair(_1: Assignment, _2: Assignment, depth: Int, combinations: Int) {
-  def swap: AssignmentsPair = copy(_1 = _2, _2 = _1)
+  lazy val swap: AssignmentsPair = copy(_1 = _2, _2 = _1)
 }
 
 object AssignmentsPair {

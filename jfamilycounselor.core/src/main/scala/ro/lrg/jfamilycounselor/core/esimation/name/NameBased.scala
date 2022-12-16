@@ -32,11 +32,11 @@ object NameBased extends UsedTypesEstimation {
       possibleTypePairs.par.filter(p => p._1.isCorrelatedByNameWith(p._2))
 
     val notCorrelated1 =
-      referenceVariablesPair._1.typeUnsafe.concreteCone.par.filterNot(t =>
+      referenceVariablesPair._1.typeUnsafe.concreteCone.filterNot(t =>
         correlatedPairs.exists(p => p._1 == t)
       )
     val notCorrelated2 =
-      referenceVariablesPair._2.typeUnsafe.concreteCone.par.filterNot(t =>
+      referenceVariablesPair._2.typeUnsafe.concreteCone.filterNot(t =>
         correlatedPairs.exists(p => p._2 == t)
       )
 
@@ -48,6 +48,6 @@ object NameBased extends UsedTypesEstimation {
     (correlatedPairs ++ autoCorrelated).toList
   }
 
-  override def toString: String = "NameBased"
+  override lazy val toString: String = "NameBased"
 
 }

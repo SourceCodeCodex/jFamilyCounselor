@@ -22,10 +22,12 @@ private[report] class RelevantClassesJob(project: Project)
     val workload = project.types.size
     val subMonitor = SubMonitor.convert(monitor, workload)
 
-    val possibleClients = project.types
-      .par
-      .filter(_.isRelevant)
-      .map { t => subMonitor.split(1); t }
+    val possibleClients = project.types.par
+      .filter(t => {
+        val r = t.isRelevant
+        subMonitor.split(1)
+        r
+      }).toList
 
     buffer.addAll(possibleClients)
 

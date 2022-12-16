@@ -9,5 +9,5 @@ case class Assignment(
     expression: Expression,
     lastRecordedType: Type
 ) {
-  def resolveConcreteType: Option[Type] = expression.`type`.filter(_.isLeafAndConcrete)
+  lazy val resolveConcreteType: Option[Type] = expression.`type`.filter(_.isLeafAndConcrete)
 }

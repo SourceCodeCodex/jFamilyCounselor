@@ -23,19 +23,19 @@ sealed abstract class ReferenceVariablesPair {
 
   def _2: ReferenceVariableType2
 
-  def aperture: Int = possibleTypes.size
+  lazy val aperture: Int = possibleTypes.size
 
   def apertureCoverage(alg: UsedTypesEstimation): Double =
     usedTypes(alg).size * 1.0 / possibleTypes.size
 
-  def possibleTypes: List[TypesPair] = for {
+  lazy val possibleTypes: List[TypesPair] = for {
     st1 <- _1.typeUnsafe.concreteCone
     st2 <- _2.typeUnsafe.concreteCone
   } yield TypesPair(st1, st2)
 
   def usedTypes(estimation: UsedTypesEstimation): List[TypesPair] = estimation.compute(this)
 
-  override def toString: String = s"${_1.toString}, ${_2.toString}"
+  override lazy val toString: String = s"${_1.toString}, ${_2.toString}"
 }
 
 case class ParameterParameterPair(_1: Parameter, _2: Parameter) extends ReferenceVariablesPair {

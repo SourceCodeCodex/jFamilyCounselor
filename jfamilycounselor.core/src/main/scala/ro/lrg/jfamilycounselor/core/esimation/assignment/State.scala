@@ -19,9 +19,7 @@ private[assignment] case class State(
                                       inconclusive: Set[TypesPair] = Set()
                                     ) {
 
-  val newAssignmentsPairs: Set[AssignmentsPair] = assignments.diff(derived)
-
-  val optimalResult: Set[TypesPair] =
+  lazy val optimalResult: Set[TypesPair] =
     if (resolved.nonEmpty && resolved.size >= inconclusive.size)
       resolved
     else if (inconclusive.isEmpty)

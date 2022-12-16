@@ -13,19 +13,21 @@ final case class Type(underlyingJdtObject: IType) {
   def apertureCoverage(alg: UsedTypesEstimation): Double =
     relevantReferenceVariablesPairs.map(_.apertureCoverage(alg)).min
 
-  def isRelevant: Boolean = {
-    !underlyingJdtObject.isAnonymous &&
-      underlyingJdtObject.getTypeParameters.isEmpty &&
-      relevantReferenceVariablesPairs.nonEmpty
+  lazy val isRelevant: Boolean = {
+      !underlyingJdtObject.isAnonymous &&
+        underlyingJdtObject.getTypeParameters.isEmpty &&
+        // Should test relevantReferenceVariablesPairs.nonEmpty for correctness
+        // This represents an optimisation. When analysing fields, please update this.
+        parameters.par.exists(_.isRelevant)
   }
 
-  def relevantReferenceVariablesPairs: List[ReferenceVariablesPair] =
+  lazy val relevantReferenceVariablesPairs: List[ReferenceVariablesPair] =
     ParametersCombination.combine(this) ++
       ThisParametersCombination.combine(this)
 
-  def isLeafAndConcrete: Boolean = concreteCone.size == 1 && concreteCone.contains(this)
+  lazy val isLeafAndConcrete: Boolean = concreteCone.size == 1 && concreteCone.contains(this)
 
-  def concreteCone: List[Type] = {
+  lazy val concreteCone: List[Type] = {
     val subtypes = underlyingJdtObject
       .newTypeHierarchy(new NullProgressMonitor())
       .getAllSubtypes(underlyingJdtObject)
@@ -40,16 +42,15 @@ final case class Type(underlyingJdtObject: IType) {
     filtered.map(Type)
   }
 
-  private[`type`] val `this`: This = This(underlyingJdtObject)
+  private[`type`] lazy val `this`: This = This(underlyingJdtObject)
 
-  private[`type`] def relevantFields: List[Field] =
-    underlyingJdtObject.getFields.toList.map(Field).par.filter(_.isRelevant).toList
+  private[`type`] lazy val fields: List[Field] = underlyingJdtObject.getFields.toList.map(Field)
 
-  private[`type`] def relevantParameters: List[Parameter] =
-    underlyingJdtObject.getMethods.toList
-      .flatMap(_.getParameters.toList)
-      .map(Parameter)
-      .filter(_.isRelevant)
+  private[`type`] lazy val relevantFields: List[Field] = fields.par.filter(_.isRelevant).toList
 
-  override def toString: String = underlyingJdtObject.getFullyQualifiedName
+  private[`type`] lazy val parameters = underlyingJdtObject.getMethods.toList.flatMap(_.getParameters.toList).map(Parameter)
+
+  private[`type`] lazy val relevantParameters: List[Parameter] = parameters.par.filter(_.isRelevant).toList
+
+  override lazy val toString: String = underlyingJdtObject.getFullyQualifiedName
 }

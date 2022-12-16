@@ -13,5 +13,5 @@ object AssignmentsBased extends UsedTypesEstimation {
     derivationResult.intersect(referenceVariablesPair.possibleTypes)
   }
 
-  override def toString: String = "AssignmentsBased"
+  override lazy val toString: String = "AssignmentsBased"
 }

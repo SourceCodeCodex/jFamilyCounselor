@@ -17,10 +17,10 @@ private[assignment] object Worklist {
     @tailrec
     def work(state: State): State = {
       state match {
-        case state if state.newAssignmentsPairs.isEmpty => state
+        case state if state.assignments.isEmpty => state
         case state =>
           val nextState = {
-            state.newAssignmentsPairs.par.foldLeft(state) {
+            state.assignments.par.foldLeft(state) {
               case (state, assignmentsPair)
                 if assignmentsPair.depth > AssignmentsEstimationConfig.MAX_DEPTH =>
                 state.copy(

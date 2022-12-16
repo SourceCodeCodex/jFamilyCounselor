@@ -24,7 +24,7 @@ private[reference] abstract class MemberReferenceVariable[T <: IJavaElement](und
           `type`.concreteCone.size >= 2
       )
 
-  def `type`: Option[Type] =
+  lazy val `type`: Option[Type] =
     for {
       typeName <- Option(
         JavaModelUtil.getResolvedTypeName(

@@ -6,5 +6,5 @@ import ro.lrg.jfamilycounselor.core.model.reference.ReferenceVariable
 trait HasReferenceVariable {
   def referenceVariable: ReferenceVariable
 
-  def `type`: Option[Type] = referenceVariable.`type`
+  lazy val `type`: Option[Type] = referenceVariable.`type`
 }
