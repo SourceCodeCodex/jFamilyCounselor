@@ -15,7 +15,9 @@ sealed trait Call {
 
   override def toString: String = underlyingJdtObject.toString
 
-  def argument(index: Int): Expression
+  def arguments: List[Expression]
+
+  def argumentAt(index: Int): Expression = arguments(index)
 
   def method: Option[Method]
 
@@ -25,8 +27,7 @@ sealed trait Call {
 final case class Instantiation(underlyingJdtObject: dom.ClassInstanceCreation) extends Call {
   override type UnderlyingJdtObjectType = dom.ClassInstanceCreation
 
-  override def argument(index: Int): Expression =
-    Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
+  override lazy val arguments: List[Expression] = underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]].map(Expression.apply)
 
   override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveConstructorBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])
@@ -38,8 +39,7 @@ final case class MethodCall(underlyingJdtObject: dom.MethodInvocation) extends C
 
   def callExpression: Option[Expression] = Option(Expression(underlyingJdtObject.getExpression))
 
-  override def argument(index: Int): Expression =
-    Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
+  override lazy val arguments: List[Expression] = underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]].map(Expression.apply)
 
   override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])
@@ -49,8 +49,7 @@ final case class MethodCall(underlyingJdtObject: dom.MethodInvocation) extends C
 final case class SuperMethodCall(underlyingJdtObject: dom.SuperMethodInvocation) extends Call {
   override type UnderlyingJdtObjectType = dom.SuperMethodInvocation
 
-  override def argument(index: Int): Expression =
-    Expression(underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]](index))
+  override lazy val arguments: List[Expression] = underlyingJdtObject.arguments().asScala.toList.asInstanceOf[List[dom.Expression]].map(Expression.apply)
 
   override lazy val method: Option[Method] = Option(underlyingJdtObject.resolveMethodBinding())
     .map(_.getJavaElement.asInstanceOf[IMethod])

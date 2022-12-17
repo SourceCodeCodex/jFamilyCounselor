@@ -11,7 +11,7 @@ private[search]  class CallsVisitor(private val method: IMethod)
 
   private val result: ListBuffer[Call] = ListBuffer()
 
-  lazy val calls: List[Call] = result.toList
+  def calls: List[Call] = result.toList
 
   override def visit(node: ClassInstanceCreation): Boolean = {
     if (node.resolveConstructorBinding().getJavaElement == method)

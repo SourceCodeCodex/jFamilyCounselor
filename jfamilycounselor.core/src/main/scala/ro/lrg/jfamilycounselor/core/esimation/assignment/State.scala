@@ -1,5 +1,6 @@
 package ro.lrg.jfamilycounselor.core.esimation.assignment
 
+import ro.lrg.jfamilycounselor.core.esimation.assignment.derive.assignments.pair.{InconclusiveTypesPair, NewAssignmentsPairs, ResolvedConcreteTypesPair}
 import ro.lrg.jfamilycounselor.core.esimation.assignment.model.AssignmentsPair
 import ro.lrg.jfamilycounselor.core.model.references.pair.ReferenceVariablesPair
 import ro.lrg.jfamilycounselor.core.model.types.pair.TypesPair
@@ -19,7 +20,51 @@ private[assignment] case class State(
                                       inconclusive: Set[TypesPair] = Set()
                                     ) {
 
-  lazy val optimalResult: Set[TypesPair] =
+  def timeout: State =
+    copy(
+      assignments = Set(),
+      derived = derived ++ assignments,
+      inconclusive = inconclusive ++ assignments.map(assignmentsPair => TypesPair(assignmentsPair._1.lastRecordedType, assignmentsPair._2.lastRecordedType))
+    )
+
+  def exceedDepth(assignmentsPair: AssignmentsPair): State =
+    copy(
+      assignments = assignments - assignmentsPair,
+      derived = derived + assignmentsPair,
+      inconclusive = inconclusive + TypesPair(assignmentsPair._1.lastRecordedType, assignmentsPair._2.lastRecordedType)
+    )
+
+  def newAssignmentsPairs(assignmentsPair: AssignmentsPair, newAssignmentsPairs: NewAssignmentsPairs): State =
+    copy(
+      assignments = assignments ++ (newAssignmentsPairs.pairs -- derived) - assignmentsPair,
+      derived = derived + assignmentsPair,
+      inconclusive = inconclusive ++ newAssignmentsPairs.inconclusive.map(p => TypesPair(p._1.lastRecordedType, p._2.lastRecordedType))
+    )
+
+  def resolvedTypesPair(assignmentsPair: AssignmentsPair, resolvedConcreteTypePair: ResolvedConcreteTypesPair): State =
+    copy(
+      assignments = assignments - assignmentsPair,
+      derived = derived + assignmentsPair,
+      resolved = resolved + resolvedConcreteTypePair.pair
+    )
+
+  def inconclusiveTypesPair(assignmentsPair: AssignmentsPair, inconclusiveTypesPair: InconclusiveTypesPair): State =
+    copy(
+      assignments = assignments - assignmentsPair,
+      derived = derived + assignmentsPair,
+      inconclusive = inconclusive + inconclusiveTypesPair.pair
+    )
+
+  def mergeWith(s: State) =
+    copy(
+      assignments = (assignments ++ s.assignments) -- (derived ++ s.derived),
+      derived = derived ++ s.derived,
+      inconclusive = inconclusive ++ s.inconclusive,
+      resolved = resolved ++ s.resolved
+    )
+
+
+  def optimalResult: Set[TypesPair] =
     if (resolved.nonEmpty && resolved.size >= inconclusive.size)
       resolved
     else if (inconclusive.isEmpty)
@@ -27,5 +72,6 @@ private[assignment] case class State(
     else
       inconclusive
         .flatMap(_.concreteCombinations)
-
 }
+
+

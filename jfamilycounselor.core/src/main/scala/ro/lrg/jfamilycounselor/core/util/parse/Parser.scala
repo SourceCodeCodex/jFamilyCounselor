@@ -7,7 +7,7 @@ import ro.lrg.jfamilycounselor.core.util.cache.Cache
 import ro.lrg.jfamilycounselor.core.util.parse.visitor.{MemberResolvingVisitor, MethodDeclarationVisitor}
 
 object Parser {
-  private val cache = Cache[ICompilationUnit, CompilationUnit](256)
+  private val cache = Cache[ICompilationUnit, CompilationUnit](1024)
 
   def parse(method: IMethod): Option[MethodDeclaration] =
     parseMember(method, new MethodDeclarationVisitor(method))

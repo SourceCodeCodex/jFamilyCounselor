@@ -1,38 +1,22 @@
-package ro.lrg.jfamilycounselor.core.report.job
+package ro.lrg.jfamilycounselor.core.report
 
 import com.github.tototoshi.csv.CSVWriter
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.{IProgressMonitor, IStatus, Status, SubMonitor}
 import ro.lrg.jfamilycounselor.core.esimation.UsedTypesEstimation
 import ro.lrg.jfamilycounselor.core.model.project.Project
-import ro.lrg.jfamilycounselor.core.report.ReportExporter
 import ro.lrg.jfamilycounselor.core.util.time.TimeUtil
 
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import scala.collection.parallel.CollectionConverters.ImmutableIterableIsParallelizable
+import scala.language.postfixOps
 
 private[report] class ExportReportJob(project: Project, estimation: UsedTypesEstimation) extends Job(s"ExportReportJob: ${project.underlyingJdtObject.getElementName} ($estimation)") {
 
-  private val jobFamily = ReportExporter.jobFamily
-
   override def run(monitor: IProgressMonitor): IStatus = {
-    val clientsJob = new RelevantClassesJob(project)
-    clientsJob.setPriority(Job.LONG)
-    clientsJob.setSystem(false)
-    clientsJob.setUser(true)
-
-    val (_, computePossibleClientsTime) = TimeUtil.time { () =>
-      clientsJob.schedule()
-      clientsJob.join()
-    }
-
-    println("Compute Possible Clients: " + computePossibleClientsTime)
-
-    val types = clientsJob.result
-
-    val workload = types.size
+    val workload = project.types.size * 2
     val subMonitor = SubMonitor.convert(monitor, workload)
 
     val formatter = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss")
@@ -53,19 +37,27 @@ private[report] class ExportReportJob(project: Project, estimation: UsedTypesEst
 
     writer.writeRow(List("Class", "Aperture Coverage"))
 
-    val (_, writeReportTime) = TimeUtil.time { () =>
-      types.par
+    val (_, writeReportTime) = TimeUtil.time {
+      project.types
+        .par
         .foreach(t => {
-          val ac = t.apertureCoverage(estimation)
-          synchronized {
-            writer.writeRow(
-              List(t.toString, ac.toString)
-            )
-            writer.flush()
+          val r = t.isRelevant
+          subMonitor.split(if (r) 1 else 2)
+
+          if (r && !subMonitor.isCanceled) {
+            val (ac, time) = TimeUtil.time {
+              t.apertureCoverage(estimation)
+            }
+            println(s"AC($t) = ${f"$ac%1.3f"}   ($time)")
+            synchronized {
+              writer.writeRow(List(t.toString, ac.toString))
+              writer.flush()
+            }
             subMonitor.split(1)
           }
         })
     }
+
 
     println("Write Report " + estimation.getClass.getSimpleName + ": " + writeReportTime)
 
@@ -75,5 +67,5 @@ private[report] class ExportReportJob(project: Project, estimation: UsedTypesEst
     Status.OK_STATUS
   }
 
-  override def belongsTo(family: Any): Boolean = this.jobFamily.equals(family)
+  override def belongsTo(family: Any): Boolean = ReportExporter.jobFamily.equals(family)
 }

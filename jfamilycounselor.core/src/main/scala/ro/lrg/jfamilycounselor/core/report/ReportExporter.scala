@@ -3,7 +3,6 @@ package ro.lrg.jfamilycounselor.core.report
 import org.eclipse.core.runtime.jobs.{ISchedulingRule, Job}
 import ro.lrg.jfamilycounselor.core.esimation.UsedTypesEstimation
 import ro.lrg.jfamilycounselor.core.model.project.Project
-import ro.lrg.jfamilycounselor.core.report.job.ExportReportJob
 
 object ReportExporter {
 

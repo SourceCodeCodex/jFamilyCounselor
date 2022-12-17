@@ -26,7 +26,7 @@ private[pair] object ThisParameterDeriver {
         },
         Assignment(
           pair._2.referenceVariable,
-          call.argument(p.referenceVariable.declaringMethod.indexOf(p.referenceVariable)),
+          call.argumentAt(p.referenceVariable.declaringMethod.indexOf(p.referenceVariable)),
           p.referenceVariable.typeUnsafe
         )
       )

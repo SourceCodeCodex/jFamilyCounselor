@@ -15,8 +15,8 @@ private[pair] object ParameterParameterDeriver {
       for {
         call <- e1.referenceVariable.declaringMethod.calls
         (a1, a2) = (
-          pair._1.copy(expression = call.argument(e1.referenceVariable.declaringMethod.indexOf(e1.referenceVariable)), lastRecordedType = e1.referenceVariable.typeUnsafe),
-          pair._2.copy(expression = call.argument(e2.referenceVariable.declaringMethod.indexOf(e2.referenceVariable)), lastRecordedType = e2.referenceVariable.typeUnsafe)
+          pair._1.copy(expression = call.argumentAt(e1.referenceVariable.declaringMethod.indexOf(e1.referenceVariable)), lastRecordedType = e1.referenceVariable.typeUnsafe),
+          pair._2.copy(expression = call.argumentAt(e2.referenceVariable.declaringMethod.indexOf(e2.referenceVariable)), lastRecordedType = e2.referenceVariable.typeUnsafe)
         )
       } yield AssignmentsPair(a1, a2, pair.depth + 1, pair.combinations)
     else if (pair.combinations < AssignmentsEstimationConfig.MAX_COMBINATIONS)
@@ -24,8 +24,8 @@ private[pair] object ParameterParameterDeriver {
         c1 <- e1.referenceVariable.declaringMethod.calls
         c2 <- e2.referenceVariable.declaringMethod.calls if calledOnSameObject(c1, c2)
         (a1, a2) = (
-          pair._1.copy(expression = c1.argument(e1.referenceVariable.declaringMethod.indexOf(e1.referenceVariable)), lastRecordedType = e1.referenceVariable.typeUnsafe),
-          pair._2.copy(expression = c2.argument(e2.referenceVariable.declaringMethod.indexOf(e2.referenceVariable)), lastRecordedType = e2.referenceVariable.typeUnsafe)
+          pair._1.copy(expression = c1.argumentAt(e1.referenceVariable.declaringMethod.indexOf(e1.referenceVariable)), lastRecordedType = e1.referenceVariable.typeUnsafe),
+          pair._2.copy(expression = c2.argumentAt(e2.referenceVariable.declaringMethod.indexOf(e2.referenceVariable)), lastRecordedType = e2.referenceVariable.typeUnsafe)
         )
       } yield AssignmentsPair(a1, a2, pair.depth + 1, pair.combinations + 1)
     else

@@ -1,7 +1,12 @@
 package ro.lrg.jfamilycounselor.core.esimation.assignment.config
 
-object AssignmentsEstimationConfig {
-  val MAX_COMBINATIONS = 1
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.language.postfixOps
 
-  val MAX_DEPTH = 3
+object AssignmentsEstimationConfig {
+  val MAX_COMBINATIONS: Int = 1
+
+  val MAX_DEPTH: Int = 3
+
+  val TIMEOUT: FiniteDuration = 5 minutes
 }

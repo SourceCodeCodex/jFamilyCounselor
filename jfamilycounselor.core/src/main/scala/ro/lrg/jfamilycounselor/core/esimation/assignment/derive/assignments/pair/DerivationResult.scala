@@ -8,8 +8,8 @@ sealed trait DerivationResult
 final case class NewAssignmentsPairs(pairs: Set[AssignmentsPair], inconclusive: Set[AssignmentsPair])
     extends DerivationResult
 
-final case class ResolvedConcreteTypePair(pair: TypesPair)
+final case class ResolvedConcreteTypesPair(pair: TypesPair)
     extends DerivationResult
 
-final case class InconclusiveTypePair(pair: TypesPair)
+final case class InconclusiveTypesPair(pair: TypesPair)
     extends DerivationResult

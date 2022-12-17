@@ -13,13 +13,13 @@ object AssignmentsPairDeriver {
     // If concrete types can be resolved for both assignments
     // the derivation is complete
     if (_1.resolveConcreteType.isDefined && _2.resolveConcreteType.isDefined)
-      ResolvedConcreteTypePair(
+      ResolvedConcreteTypesPair(
         TypesPair(_1.resolveConcreteType.get, _2.resolveConcreteType.get)
       )
     else if (!canBeDerived(pair)) {
       // If we do not know how to derive the current pair,
       // we mark the pair of last recorded types as inconclusive
-      InconclusiveTypePair(TypesPair(_1.lastRecordedType, _2.lastRecordedType))
+      InconclusiveTypesPair(TypesPair(_1.lastRecordedType, _2.lastRecordedType))
     } else {
       // Otherwise, the pair can be derived
       val (inconclusive, newAssignmentsPairs) = {

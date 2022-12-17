@@ -12,7 +12,7 @@ object ResolvedParameterDeriver {
       call <- p.referenceVariable.declaringMethod.calls
       (a1, a2) = (
         pair._1,
-        pair._2.copy(expression = call.argument(p.referenceVariable.declaringMethod.indexOf(p.referenceVariable)), lastRecordedType = p.referenceVariable.typeUnsafe)
+        pair._2.copy(expression = call.argumentAt(p.referenceVariable.declaringMethod.indexOf(p.referenceVariable)), lastRecordedType = p.referenceVariable.typeUnsafe)
       )
     } yield AssignmentsPair(a1, a2, pair.depth + 1, pair.combinations)
 
