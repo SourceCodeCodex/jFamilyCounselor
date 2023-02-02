@@ -18,7 +18,7 @@ import org.eclipse.jdt.core.Signature;
 
 import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheService;
+import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -31,17 +31,21 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * @author rosualinpetru
  *
  */
-class RelevantParametersUtil {
-    private RelevantParametersUtil() {
+public class RelevantParametersCapability {
+    private RelevantParametersCapability() {
     }
 
-    private static Cache<String, Boolean> cache = CacheService.getCache(8192);
+    private static Cache<String, Boolean> cache = CacheManager.getCache(8192);
 
     private static Logger logger = jFCLogger.getJavaLogger();
 
     public static List<IJavaElement> relevantParameters(IType iType) {
 	try {
 	    var result = new ArrayList<IJavaElement>();
+
+	    // 'this' parameter
+	    if (isRelevant(iType))
+		result.add(0, iType);
 
 	    // add the rest of the parameters
 	    var iMethods = Arrays.asList(iType.getMethods());
@@ -65,9 +69,6 @@ class RelevantParametersUtil {
 		    .toList()
 		    .forEach(p -> result.add(p));
 
-	    // 'this' parameter
-	    result.add(0, iType);
-
 	    return result;
 	} catch (JavaModelException e) {
 	    logger.warning("JavaModelException encountered: " + e.getMessage());
@@ -75,6 +76,7 @@ class RelevantParametersUtil {
 	}
     }
 
+    // parameter relevance
     private static boolean isRelevant(ILocalVariable iLocalVariable, IType declaringType) {
 	var key = KeyManager.parameter(iLocalVariable);
 
@@ -93,7 +95,7 @@ class RelevantParametersUtil {
 			(t.isClass() || t.isInterface()) &&
 			Arrays.asList(t.getTypeParameters()).isEmpty() &&
 			!t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName()) &&
-			concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2) && 
+			concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2) &&
 			Signature.getTypeSignatureKind(iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
 
 		cache.put(key, result);
@@ -104,6 +106,22 @@ class RelevantParametersUtil {
 	    }
 
 	}
+    }
+
+    // 'this' relevance
+    private static boolean isRelevant(IType t) {
+	var key = KeyManager.type(t);
+
+	try {
+	    var result = concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
+
+	    cache.put(key, result);
+	    return result;
+	} catch (Throwable e) {
+	    cache.put(key, false);
+	    return false;
+	}
+
     }
 
 }

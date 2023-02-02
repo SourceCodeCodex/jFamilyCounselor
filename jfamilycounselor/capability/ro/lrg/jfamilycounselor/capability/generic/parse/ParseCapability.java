@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheService;
+import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -20,7 +20,7 @@ public class ParseCapability {
     private ParseCapability() {
     }
 
-    private static final Cache<String, CompilationUnit> cache = CacheService.getCache(512);
+    private static final Cache<String, CompilationUnit> cache = CacheManager.getCache(512);
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 

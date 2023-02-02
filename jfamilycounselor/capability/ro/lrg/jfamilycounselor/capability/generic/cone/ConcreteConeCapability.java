@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheService;
+import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -31,7 +31,7 @@ public class ConcreteConeCapability {
     private ConcreteConeCapability() {
     }
 
-    private static final Cache<String, List<IType>> cache = CacheService.getCache(2048);
+    private static final Cache<String, List<IType>> cache = CacheManager.getCache(2048);
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 

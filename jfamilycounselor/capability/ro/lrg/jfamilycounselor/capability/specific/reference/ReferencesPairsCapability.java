@@ -43,7 +43,7 @@ public class ReferencesPairsCapability {
     }
 
     private static List<Pair<IJavaElement, IJavaElement>> filteredParametersPairs(IType iType) {
-	var parameterPairs = distrinctCombinations2(RelevantParametersUtil.relevantParameters(iType));
+	var parameterPairs = distrinctCombinations2(RelevantParametersCapability.relevantParameters(iType));
 	return parameterPairs
 		.stream()
 		.filter(p -> {

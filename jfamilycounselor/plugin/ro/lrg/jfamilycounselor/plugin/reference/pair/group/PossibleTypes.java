@@ -29,7 +29,7 @@ public class PossibleTypes implements IRelationBuilder<MTypesPair, MReferencesPa
 	    possibleTypes = PossibleTypesCapability.possibleTypesPP((Pair<ILocalVariable, ILocalVariable>) pair);
 
 	if (possibleTypes.isEmpty() || possibleTypes.get().isEmpty())
-	    throw new IllegalStateException("Possible types computation for pair: " + mReferencesPair.toString() + "resulted in an empty list. Previous checks need to ensure that this situation cannot happen.");
+	    throw new IllegalStateException("Possible types computation for pair: " + mReferencesPair.toString() + " failed or resulted in an empty list. Previous checks need to ensure that this situation cannot happen.");
 
 	possibleTypes.get()
 		.stream()
