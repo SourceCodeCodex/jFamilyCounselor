@@ -15,7 +15,7 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheService;
+import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -23,7 +23,7 @@ public class MethodSearchCapability {
     private MethodSearchCapability() {
     }
 
-    private static final Cache<String, List<IMethod>> cache = CacheService.getCache(2048);
+    private static final Cache<String, List<IMethod>> cache = CacheManager.getCache(2048);
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 

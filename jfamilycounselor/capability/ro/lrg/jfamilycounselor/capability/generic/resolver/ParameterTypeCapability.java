@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheService;
+import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -29,7 +29,7 @@ public class ParameterTypeCapability {
     private ParameterTypeCapability() {
     }
 
-    private static final Cache<String, IType> cache = CacheService.getCache(2048);
+    private static final Cache<String, IType> cache = CacheManager.getCache(2048);
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 

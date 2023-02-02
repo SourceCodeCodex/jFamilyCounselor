@@ -1,8 +1,11 @@
 package ro.lrg.jfamilycounselor.util.cache;
 
+import java.util.logging.Logger;
 import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
+
+import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
  * Service responsible for the management of all caches across the system. It
@@ -13,24 +16,24 @@ import java.util.List;
  * @author rosualinpetru
  *
  */
-public class CacheService implements Runnable {
-    
+public class CacheManager {
+
     private static final int DEFAULT_CAPACITY = 128;
 
     private static final double MAX_MEMORY_USAGE = 0.75;
     private static final Duration SLEEP_DURATION = Duration.ofSeconds(10);
 
-    private static CacheService instance;
-
-    private CacheService() {
+    private CacheManager() {
     }
 
     private static volatile boolean isMemorySupervisorRunning = false;
     private static Thread memorySupervisingThread;
+    
+    private static final Logger logger = jFCLogger.getJavaLogger();
 
     @SuppressWarnings("rawtypes")
     private static List<Cache> caches = new LinkedList<Cache>();
-    
+
     public static <K, V> Cache<K, V> getCache() {
 	var cache = new LRUCache<K, V>(DEFAULT_CAPACITY);
 	caches.add(cache);
@@ -45,36 +48,37 @@ public class CacheService implements Runnable {
 
     @SuppressWarnings("preview")
     public static void startMemorySupervisor() {
+	logger.info("Memory supervisor: Starting automatic cache cleaner...");
 	if (!isMemorySupervisorRunning) {
-	    memorySupervisingThread = Thread.startVirtualThread(instance);
+	    memorySupervisingThread = Thread.startVirtualThread(() -> {
+		isMemorySupervisorRunning = true;
+		var r = Runtime.getRuntime();
+		while (!Thread.interrupted()) {
+		    var usedMemoryPercentage = (1.0 * r.totalMemory() - r.freeMemory()) / r.freeMemory();
+		    if (usedMemoryPercentage > MAX_MEMORY_USAGE) {
+			r.gc();
+		    }
+		    try {
+			Thread.sleep(SLEEP_DURATION);
+		    } catch (InterruptedException e) {
+			isMemorySupervisorRunning = false;
+			return;
+		    }
+		}
+		isMemorySupervisorRunning = false;
+
+	    });
 	}
     }
 
     public static void stopMemorySupervisor() {
+	logger.info("Memory supervisor: Stopping automatic cache cleaner...");
 	if (isMemorySupervisorRunning) {
 	    memorySupervisingThread.interrupt();
 	}
     }
 
-    public void clearCaches() {
+    public static void clearCaches() {
 	caches.stream().forEach(c -> c.clear());
     }
-
-    public void run() {
-	isMemorySupervisorRunning = true;
-	var r = Runtime.getRuntime();
-	while (!Thread.interrupted()) {
-	    var usedMemoryPercentage = (1.0 * r.totalMemory() - r.freeMemory()) / r.freeMemory();
-	    if (usedMemoryPercentage > MAX_MEMORY_USAGE) {
-		r.gc();
-	    }
-	    try {
-		Thread.sleep(SLEEP_DURATION);
-	    } catch (InterruptedException e) {
-		isMemorySupervisorRunning = false;
-	    }
-	}
-	isMemorySupervisorRunning = false;
-    }
-
 }
