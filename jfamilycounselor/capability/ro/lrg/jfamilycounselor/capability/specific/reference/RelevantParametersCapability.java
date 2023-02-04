@@ -113,7 +113,7 @@ public class RelevantParametersCapability {
 	var key = KeyManager.type(t);
 
 	try {
-	    var result = concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
+	    var result = concreteCone(t).stream().anyMatch(cone -> !cone.isEmpty());
 
 	    cache.put(key, result);
 	    return result;
