@@ -31,16 +31,16 @@ public class ParseCapability {
 	parser.setResolveBindings(true);
     }
 
-    public Optional<MethodDeclaration> parse(IMethod iMethod) {
-	var visitor = new MethodDeclarationVisitor(iMethod);
+    public static Optional<MethodDeclaration> parse(IMethod iMethod) {
 	return parse(iMethod.getCompilationUnit())
 		.flatMap(cuAST -> {
+		    var visitor = new MethodDeclarationVisitor(iMethod);
 		    cuAST.accept(visitor);
 		    return visitor.getLastNode();
 		});
     }
 
-    public Optional<CompilationUnit> parse(ICompilationUnit iCompilationUnit) {
+    public static Optional<CompilationUnit> parse(ICompilationUnit iCompilationUnit) {
 	var key = KeyManager.compileationUnit(iCompilationUnit);
 
 	if (cache.contains(key)) {

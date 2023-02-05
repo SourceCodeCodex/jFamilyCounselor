@@ -109,8 +109,12 @@ public class ExportReportJob extends Job {
 
 				    if (estimation == EstimationType.NAME_BASED)
 					apertureCoverage = metaType.nameApertureCoverage();
-
+				    else 
+					apertureCoverage = metaType.assignmentsApertureCoverage();
+				    
 				    subMonitor.split(1);
+				    
+				    logger.info(t.getFullyQualifiedName() + ": " + apertureCoverage);
 
 				    return List.of(t.getFullyQualifiedName(), apertureCoverage.toString());
 				})

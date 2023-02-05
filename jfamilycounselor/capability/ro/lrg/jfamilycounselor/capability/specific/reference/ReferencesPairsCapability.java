@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import ro.lrg.jfamilycounselor.capability.generic.resolver.ParameterTypeCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -50,10 +51,14 @@ public class ReferencesPairsCapability {
 		    if (p._1 instanceof ILocalVariable p1 && p._2 instanceof ILocalVariable p2) {
 			var m1 = (IMethod) p1.getDeclaringMember();
 			var m2 = (IMethod) p2.getDeclaringMember();
+
+			var t1 = ParameterTypeCapability.parameterType(p1);
+			var t2 = ParameterTypeCapability.parameterType(p2);
 			try {
 			    return !(m1.isConstructor() && !m2.isConstructor() ||
 				    !m1.isConstructor() && m2.isConstructor() ||
-				    m1.isConstructor() && m2.isConstructor() && m1.getSignature().equals(m2.getSignature()));
+				    m1.isConstructor() && m2.isConstructor() && !m1.equals(m2) ||
+				    t1.equals(t2));
 			} catch (JavaModelException e) {
 			    logger.warning("JavaModelException encountered: " + e.getMessage());
 			    return false;

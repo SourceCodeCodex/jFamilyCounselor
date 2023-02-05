@@ -26,7 +26,7 @@ public class RelevantTypesJob extends Job {
     private static Logger logger = jFCLogger.getJavaLogger();
 
     public RelevantTypesJob(IJavaProject iJavaProject) {
-	super("Computing types classes of " + iJavaProject.getElementName() + "...");
+	super("Computing relevant types of " + iJavaProject.getElementName() + "...");
 	this.iJavaProject = iJavaProject;
     }
 

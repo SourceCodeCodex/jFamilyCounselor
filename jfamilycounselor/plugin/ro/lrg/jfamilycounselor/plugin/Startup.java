@@ -17,6 +17,8 @@ public final class Startup implements IStartup {
 	System.setProperty("java.util.logging.SimpleFormatter.format", jFCLogger.format());
 	CacheManager.startMemorySupervisor();
 	
+	Factory.getInstance().setCacheCapacity(0);
+	
 	ToolRegistration.getInstance().registerXEntityConverter(element -> {
 
 	    if (element instanceof IJavaProject iJavaProject) {

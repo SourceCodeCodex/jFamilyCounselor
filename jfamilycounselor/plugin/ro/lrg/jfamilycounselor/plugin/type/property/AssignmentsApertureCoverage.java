@@ -5,10 +5,10 @@ import ro.lrg.xcore.metametamodel.IPropertyComputer;
 import ro.lrg.xcore.metametamodel.PropertyComputer;
 
 @PropertyComputer
-public class NameApertureCoverage implements IPropertyComputer<Double, MType> {
+public class AssignmentsApertureCoverage implements IPropertyComputer<Double, MType> {
 
     public Double compute(MType mType) {
-	return mType.referencesPairs().getElements().parallelStream().map(p -> p.nameApertureCoverage()).toList().stream().filter(d -> d != 0).min(Double::compareTo).orElseGet(() -> 0.);
+	return mType.referencesPairs().getElements().parallelStream().map(p -> p.assignmentsApertureCoverage()).toList().stream().filter(d -> d != 0).min(Double::compareTo).orElseGet(() -> 0.);
     }
 
 }

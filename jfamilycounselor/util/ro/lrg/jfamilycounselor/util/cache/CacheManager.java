@@ -21,7 +21,7 @@ public class CacheManager {
     private static final int DEFAULT_CAPACITY = 128;
 
     private static final double MAX_MEMORY_USAGE = 0.75;
-    private static final Duration SLEEP_DURATION = Duration.ofSeconds(10);
+    private static final Duration SLEEP_DURATION = Duration.ofSeconds(30);
 
     private CacheManager() {
     }
@@ -56,6 +56,7 @@ public class CacheManager {
 		while (!Thread.interrupted()) {
 		    var usedMemoryPercentage = (1.0 * r.totalMemory() - r.freeMemory()) / r.freeMemory();
 		    if (usedMemoryPercentage > MAX_MEMORY_USAGE) {
+			logger.warning("Performing cache clearing...");
 			r.gc();
 		    }
 		    try {

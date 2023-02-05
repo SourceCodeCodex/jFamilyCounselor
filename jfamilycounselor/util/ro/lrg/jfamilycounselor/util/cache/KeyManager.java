@@ -20,7 +20,7 @@ public class KeyManager {
 
     public static String method(IMethod iMethod) {
 	try {
-	    return iMethod.getSignature();
+	    return iMethod.getDeclaringType().getFullyQualifiedName() + "/" + iMethod.getElementName() + "/" + iMethod.getSignature();
 	} catch (JavaModelException e) {
 	    return iMethod.getDeclaringType().getFullyQualifiedName() + "/" + iMethod.getElementName() + "(...)";
 	}

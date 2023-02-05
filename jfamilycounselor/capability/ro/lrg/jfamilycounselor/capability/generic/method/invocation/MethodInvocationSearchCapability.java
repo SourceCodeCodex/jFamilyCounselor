@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.generic.search.method;
+package ro.lrg.jfamilycounselor.capability.generic.method.invocation;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,8 +19,8 @@ import ro.lrg.jfamilycounselor.util.cache.CacheManager;
 import ro.lrg.jfamilycounselor.util.cache.KeyManager;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
-public class MethodSearchCapability {
-    private MethodSearchCapability() {
+class MethodInvocationSearchCapability {
+    private MethodInvocationSearchCapability() {
     }
 
     private static final Cache<String, List<IMethod>> cache = CacheManager.getCache(2048);
@@ -29,7 +29,7 @@ public class MethodSearchCapability {
 
     private static final SearchEngine engine = new SearchEngine();
 
-    public Optional<List<IMethod>> searchMethodInvocations(IMethod iMethod) {
+    public static Optional<List<IMethod>> searchMethodInvocationSites(IMethod iMethod) {
 	var key = KeyManager.method(iMethod);
 
 	if (cache.contains(key)) {
@@ -38,7 +38,7 @@ public class MethodSearchCapability {
 
 	SearchPattern pattern = SearchPattern.createPattern(iMethod, IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH);
 
-	Optional<List<IMethod>> allParentMethods = search(new MethodInvocationsRequestor(), pattern);
+	Optional<List<IMethod>> allParentMethods = search(pattern);
 	var parentMethods = allParentMethods.map(o -> o.stream().filter(m -> m.getCompilationUnit() != null).collect(Collectors.toList()));
 
 	parentMethods.ifPresent(m -> cache.put(key, m));
@@ -46,7 +46,8 @@ public class MethodSearchCapability {
 	return parentMethods;
     }
 
-    private Optional<List<IMethod>> search(MethodInvocationsRequestor requestor, SearchPattern pattern) {
+    private static Optional<List<IMethod>> search(SearchPattern pattern) {
+	var requestor = new MethodInvocationsRequestor();
 	SearchParticipant[] searchParticipant = { SearchEngine.getDefaultSearchParticipant() };
 
 	try {

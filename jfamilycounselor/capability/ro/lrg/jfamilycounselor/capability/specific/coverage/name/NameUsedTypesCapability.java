@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,6 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
 
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
-import ro.lrg.jfamilycounselor.util.list.ListOperations;
 
 /**
  * Service that computes the used types using the name-based estimation out of a
@@ -49,29 +47,14 @@ public class NameUsedTypesCapability {
 
 	var correlatedTypesPairs = new ArrayList<Pair<IType, IType>>();
 
-	var notCorrelated1 = new ArrayList<>(cone1.get());
-	var notCorrelated2 = new ArrayList<>(cone2.get());
-
 	tokensMap1.forEach((t1, tokens1) -> {
-	    var firstIsCorrelated = new AtomicBoolean(false);
 
 	    tokensMap2.forEach((t2, tokens2) -> {
-
 		if (correlationCondition(tokens1, tokens2)) {
-		    firstIsCorrelated.set(true);
 		    correlatedTypesPairs.add(new Pair<>(t1, t2));
-		    notCorrelated2.remove(t2);
 		}
-
 	    });
-
-	    if (firstIsCorrelated.get()) {
-		notCorrelated2.remove(t1);
-	    }
-
 	});
-
-	correlatedTypesPairs.addAll(ListOperations.cartesianProduct(notCorrelated1, notCorrelated2));
 
 	return Optional.of(correlatedTypesPairs);
 

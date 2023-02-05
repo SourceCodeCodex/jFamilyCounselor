@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.generic.search.method;
+package ro.lrg.jfamilycounselor.capability.generic.method.invocation;
 
 import java.util.ArrayList;
 import java.util.List;
