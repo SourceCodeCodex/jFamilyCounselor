@@ -1,8 +1,9 @@
 package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.expression;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -16,14 +17,14 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 class LocalVariableAssignemntVisitor extends ASTVisitor {
     private final ILocalVariable iLocalVariable;
 
-    private final List<Expression> assignments = new ArrayList<>();
+    private final Set<Expression> assignments = new HashSet<>();
 
     public LocalVariableAssignemntVisitor(ILocalVariable iLocalVariable) {
 	this.iLocalVariable = iLocalVariable;
     }
 
     public List<Expression> getAssignments() {
-	return assignments;
+	return List.copyOf(assignments);
     }
 
     public boolean visit(VariableDeclarationFragment node) {

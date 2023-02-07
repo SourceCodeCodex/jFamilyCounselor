@@ -10,8 +10,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
-import ro.lrg.jfamilycounselor.util.cache.KeyManager;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
@@ -29,16 +28,14 @@ public class ParameterTypeCapability {
     private ParameterTypeCapability() {
     }
 
-    private static final Cache<String, IType> cache = CacheManager.getCache(2048);
+    private static final Cache<ILocalVariable, IType> cache = MonitoredUnboundedCache.getCache();
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 
     public static Optional<IType> parameterType(ILocalVariable iLocalVariable) {
 	if (iLocalVariable.isParameter() && iLocalVariable.getDeclaringMember() instanceof IMethod iMethod) {
-	    var key = KeyManager.parameter(iLocalVariable);
-
-	    if (cache.contains(key))
-		return cache.get(key);
+	    if (cache.contains(iLocalVariable))
+		return cache.get(iLocalVariable);
 
 	    Optional<String> resolvedTypeName = Optional.empty();
 	    try {
@@ -64,7 +61,7 @@ public class ParameterTypeCapability {
 	    });
 
 	    if (iType.isPresent())
-		cache.put(key, iType.get());
+		cache.put(iLocalVariable, iType.get());
 
 	    return iType;
 	}

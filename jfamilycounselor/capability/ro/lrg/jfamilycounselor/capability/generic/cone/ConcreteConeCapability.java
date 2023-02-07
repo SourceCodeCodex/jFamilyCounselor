@@ -11,9 +11,9 @@ import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
-import ro.lrg.jfamilycounselor.util.cache.KeyManager;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
@@ -31,18 +31,16 @@ public class ConcreteConeCapability {
     private ConcreteConeCapability() {
     }
 
-    private static final Cache<String, List<IType>> cache = CacheManager.getCache(2048);
+    private static final Cache<IType, List<IType>> cache = MonitoredUnboundedCache.getCache();
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 
     public static Optional<List<IType>> concreteCone(IType iType) {
-	var key = KeyManager.type(iType);
+	if (cache.contains(iType))
+	    return cache.get(iType);
 
-	if (cache.contains(key))
-	    return cache.get(key);
-
-	if (key.equals("java.lang.Object")) {
-	    logger.info("Concrete cone computation was refused for java.lang.Object.");
+	if (iType.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
+	    logger.warning("Concrete cone computation was refused for " + Constants.OBJECT_FQN);
 	    return Optional.empty();
 	}
 
@@ -61,7 +59,7 @@ public class ConcreteConeCapability {
 		}
 	    }).toList();
 
-	    cache.put(key, concreteCone);
+	    cache.put(iType, concreteCone);
 
 	    return Optional.of(concreteCone);
 	} catch (JavaModelException e) {

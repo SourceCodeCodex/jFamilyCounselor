@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
 
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
-import ro.lrg.jfamilycounselor.util.list.ListOperations;
+import ro.lrg.jfamilycounselor.util.list.CommonOperations;
 
 /**
  * Service that computes all possible combinations of types of objects that a
@@ -35,6 +35,6 @@ public class PossibleTypesCapability {
 	var cone1 = concreteCone(iType1);
 	var cone2 = concreteCone(iType2);
 
-	return cone1.flatMap(c1 -> cone2.map(c2 -> ListOperations.cartesianProduct(c1, c2)));
+	return cone1.flatMap(c1 -> cone2.map(c2 -> CommonOperations.cartesianProduct(c1, c2)));
     }
 }

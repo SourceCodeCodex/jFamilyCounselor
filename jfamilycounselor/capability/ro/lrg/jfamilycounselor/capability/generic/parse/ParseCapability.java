@@ -12,24 +12,16 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
-import ro.lrg.jfamilycounselor.util.cache.KeyManager;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class ParseCapability {
     private ParseCapability() {
     }
 
-    private static final Cache<String, CompilationUnit> cache = CacheManager.getCache(512);
+    private static final Cache<ICompilationUnit, CompilationUnit> cache = MonitoredUnboundedCache.getCache();
 
     private static final Logger logger = jFCLogger.getJavaLogger();
-
-    private static final ASTParser parser = ASTParser.newParser(AST.getJLSLatest());
-
-    static {
-	parser.setKind(ASTParser.K_COMPILATION_UNIT);
-	parser.setResolveBindings(true);
-    }
 
     public static Optional<MethodDeclaration> parse(IMethod iMethod) {
 	return parse(iMethod.getCompilationUnit())
@@ -41,12 +33,13 @@ public class ParseCapability {
     }
 
     public static Optional<CompilationUnit> parse(ICompilationUnit iCompilationUnit) {
-	var key = KeyManager.compileationUnit(iCompilationUnit);
-
-	if (cache.contains(key)) {
-	    return cache.get(key);
+	if (cache.contains(iCompilationUnit)) {
+	    return cache.get(iCompilationUnit);
 	}
 
+	var parser = ASTParser.newParser(AST.getJLSLatest());
+	parser.setKind(ASTParser.K_COMPILATION_UNIT);
+	parser.setResolveBindings(true);
 	parser.setSource(iCompilationUnit);
 	parser.setProject(iCompilationUnit.getJavaProject());
 
@@ -56,7 +49,7 @@ public class ParseCapability {
 	    logger.warning("Compilation unit AST was null: " + iCompilationUnit.getElementName());
 	}
 
-	compUnit.ifPresent(ast -> cache.put(key, ast));
+	compUnit.ifPresent(ast -> cache.put(iCompilationUnit, ast));
 
 	return compUnit;
     }

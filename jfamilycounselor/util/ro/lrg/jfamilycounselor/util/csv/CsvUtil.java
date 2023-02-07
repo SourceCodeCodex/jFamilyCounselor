@@ -22,6 +22,7 @@ public class CsvUtil {
 
     @SuppressWarnings("preview")
     public static void writeRecords(File csvFile, Stream<CsvRecord> records) {
+
 	try (PrintWriter pw = new PrintWriter(csvFile)) {
 	    var flushThread = Thread.startVirtualThread(() -> {
 		while (!Thread.interrupted()) {

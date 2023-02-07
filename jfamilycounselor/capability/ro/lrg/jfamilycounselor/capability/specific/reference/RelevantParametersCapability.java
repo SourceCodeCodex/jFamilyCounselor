@@ -18,8 +18,7 @@ import org.eclipse.jdt.core.Signature;
 
 import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
-import ro.lrg.jfamilycounselor.util.cache.KeyManager;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
@@ -35,7 +34,7 @@ public class RelevantParametersCapability {
     private RelevantParametersCapability() {
     }
 
-    private static Cache<String, Boolean> cache = CacheManager.getCache(8192);
+    private static Cache<IJavaElement, Boolean> cache = MonitoredUnboundedCache.getCache();
 
     private static Logger logger = jFCLogger.getJavaLogger();
 
@@ -78,12 +77,13 @@ public class RelevantParametersCapability {
 
     // parameter relevance
     private static boolean isRelevant(ILocalVariable iLocalVariable, IType declaringType) {
-	var key = KeyManager.parameter(iLocalVariable);
+	if (cache.contains(iLocalVariable))
+	    return cache.get(iLocalVariable).get();
 
 	var iType = parameterType(iLocalVariable);
 
 	if (iType.isEmpty()) {
-	    cache.put(key, false);
+	    cache.put(iLocalVariable, false);
 	    return false;
 	} else {
 	    var t = iType.get();
@@ -92,16 +92,17 @@ public class RelevantParametersCapability {
 		var result = !t.getFullyQualifiedName().equals(Constants.OBJECT_FQN) &&
 			t.getCompilationUnit() != null &&
 			!t.isAnonymous() &&
+			!t.isLambda() &&
 			(t.isClass() || t.isInterface()) &&
 			Arrays.asList(t.getTypeParameters()).isEmpty() &&
 			!t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName()) &&
 			concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2) &&
 			Signature.getTypeSignatureKind(iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
 
-		cache.put(key, result);
+		cache.put(iLocalVariable, result);
 		return result;
 	    } catch (Throwable e) {
-		cache.put(key, false);
+		cache.put(iLocalVariable, false);
 		return false;
 	    }
 
@@ -110,15 +111,16 @@ public class RelevantParametersCapability {
 
     // 'this' relevance
     private static boolean isRelevant(IType t) {
-	var key = KeyManager.type(t);
+	if (cache.contains(t))
+	    return cache.get(t).get();
 
 	try {
 	    var result = concreteCone(t).stream().anyMatch(cone -> !cone.isEmpty());
 
-	    cache.put(key, result);
+	    cache.put(t, result);
 	    return result;
 	} catch (Throwable e) {
-	    cache.put(key, false);
+	    cache.put(t, false);
 	    return false;
 	}
 

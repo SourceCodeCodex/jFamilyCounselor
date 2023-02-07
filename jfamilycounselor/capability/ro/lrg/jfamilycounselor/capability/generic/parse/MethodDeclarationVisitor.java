@@ -15,8 +15,15 @@ class MethodDeclarationVisitor extends ASTVisitor {
     }
 
     public boolean visit(MethodDeclaration node) {
+	if(node.resolveBinding() == null)
+	    return true;
+	
+	if(!node.resolveBinding().getJavaElement().equals(iMethod))
+	    return true;
+	    
+	
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod))) {
-	    setLastNode(Optional.ofNullable(node));
+	    lastNode = Optional.of(node);
 	}
 
 	return true;
@@ -24,9 +31,5 @@ class MethodDeclarationVisitor extends ASTVisitor {
 
     public Optional<MethodDeclaration> getLastNode() {
 	return lastNode;
-    }
-
-    public void setLastNode(Optional<MethodDeclaration> lastNode) {
-	this.lastNode = lastNode;
     }
 }

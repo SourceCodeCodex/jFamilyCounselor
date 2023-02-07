@@ -8,29 +8,27 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
-import ro.lrg.jfamilycounselor.util.cache.KeyManager;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class SubtypeCapability {
     private SubtypeCapability() {
     }
 
-    private static final Cache<String, List<String>> cache = CacheManager.getCache(2048);
+    private static final Cache<IType, List<String>> cache = MonitoredUnboundedCache.getCache();
     
     private static final Logger logger = jFCLogger.getJavaLogger();
 
     public static boolean isSubtypeOf(IType iType1, IType iType2) {
-	var key = KeyManager.type(iType1);
-
-	if (key.equals("java.lang.Object")) {
+	if (iType1.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
 	    return true;
 	}
 
 	List<String> subtypesNames;
-	if (cache.contains(key))
-	    subtypesNames = cache.get(key).get();
+	if (cache.contains(iType1))
+	    subtypesNames = cache.get(iType1).get();
 	else
 	    try {
 		subtypesNames = Stream.of(iType1.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType1)).map(t -> t.getFullyQualifiedName()).toList();

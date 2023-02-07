@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.capability.specific.reference;
 
-import static ro.lrg.jfamilycounselor.util.list.ListOperations.distrinctCombinations2;
+import static ro.lrg.jfamilycounselor.util.list.CommonOperations.distrinctCombinations2;
 
 import java.util.List;
 import java.util.logging.Logger;

@@ -7,7 +7,7 @@ import org.eclipse.ui.IStartup;
 
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.insider.view.ToolRegistration;
-import ro.lrg.jfamilycounselor.util.cache.CacheManager;
+import ro.lrg.jfamilycounselor.util.cache.CacheSupervisor;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -15,7 +15,7 @@ public final class Startup implements IStartup {
 
     public void earlyStartup() {
 	System.setProperty("java.util.logging.SimpleFormatter.format", jFCLogger.format());
-	CacheManager.startMemorySupervisor();
+	CacheSupervisor.startMemorySupervisor();
 	
 	Factory.getInstance().setCacheCapacity(0);
 	
