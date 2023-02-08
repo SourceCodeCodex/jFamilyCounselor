@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation;
+package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java;
 
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.asSupplier;
 
@@ -11,7 +11,9 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 
 import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodArgumentsCapability;
 import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodCallCapability;
@@ -59,7 +61,15 @@ public class IPDerivationCapability {
 			    yield Optional.of(call);
 			}
 			case ASTNode.METHOD_INVOCATION: {
-			    yield Optional.ofNullable(((MethodInvocation) call).getExpression());
+			    yield Optional.ofNullable(((MethodInvocation) call).getExpression())
+				    .filter(e -> switch (e.getNodeType()) {
+				    case ASTNode.SIMPLE_NAME:
+				    case ASTNode.QUALIFIED_NAME:
+					var name = (Name) e;
+					yield Optional.ofNullable(name.resolveBinding()).stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE);
+				    default:
+					yield false;
+				    });
 			}
 			case ASTNode.SUPER_METHOD_INVOCATION: {
 			    yield Optional.empty();

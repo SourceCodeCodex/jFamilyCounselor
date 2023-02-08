@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.capability.specific.aperture;
 
 import static ro.lrg.jfamilycounselor.capability.generic.cone.ConcreteConeCapability.concreteCone;
-import static ro.lrg.jfamilycounselor.capability.generic.resolver.ParameterTypeCapability.parameterType;
+import static ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability.parameterType;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation;
+package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java;
 
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.asSupplier;
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.cartesianProduct;

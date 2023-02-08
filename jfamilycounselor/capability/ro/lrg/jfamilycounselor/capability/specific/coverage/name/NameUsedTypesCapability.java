@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.capability.specific.coverage.name;
 
 import static ro.lrg.jfamilycounselor.capability.generic.cone.ConcreteConeCapability.concreteCone;
-import static ro.lrg.jfamilycounselor.capability.generic.resolver.ParameterTypeCapability.parameterType;
+import static ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability.parameterType;
 
 import java.util.ArrayList;
 import java.util.Arrays;

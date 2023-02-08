@@ -16,8 +16,9 @@ public final class MonitoredUnboundedCache<K, V> implements Cache<K, V> {
 	return cache;
     }
 
-    public V put(K key, V value) {
-	return map.put(key, value);
+    @SuppressWarnings("preview")
+    public void put(K key, V value) {
+	Thread.startVirtualThread(() ->map.put(key, value));
     }
 
     public Optional<V> get(K key) {

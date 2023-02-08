@@ -11,7 +11,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
-import ro.lrg.jfamilycounselor.capability.generic.resolver.ParameterTypeCapability;
+import ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 

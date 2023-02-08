@@ -10,9 +10,9 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.IPDerivationCapability;
-import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.PPDerivationCapability;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.expression.ExpressionDerivationCapability;
+import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java.IPDerivationCapability;
+import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java.PPDerivationCapability;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.model.Assignment;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
@@ -25,17 +25,18 @@ public class AssignmentsUsedTypesCapability {
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 
-    private static final int MAX_DEPTH = 3;
+    private static final int MAX_DEPTH = 4;
 
     public static Optional<List<Pair<IType, IType>>> usedTypes(Pair<IJavaElement, IJavaElement> referencesPair, Pair<IType, IType> referencesTypes) {
 	var state = State.empty();
 
 	var initialPair = AssignemntsPair.initialAssignmentsPair(referencesPair, referencesTypes);
-
+	
 	state.assignmentsPairs().push(initialPair);
 
 	while (!state.assignmentsPairs().isEmpty()) {
 	    var assignemntsPair = state.assignmentsPairs().pop();
+	    
 	    if (assignemntsPair.depth() > MAX_DEPTH) {
 		markInvalid(assignemntsPair, state);
 		continue;

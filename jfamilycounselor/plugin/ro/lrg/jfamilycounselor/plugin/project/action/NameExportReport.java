@@ -11,7 +11,6 @@ import ro.lrg.xcore.metametamodel.IActionPerformer;
 @ActionPerformer
 public class NameExportReport implements IActionPerformer<Void, MProject, HListEmpty> {
 
-    @Override
     public Void performAction(MProject mProject, HListEmpty args) {
 	var exportJob = new ExportReportJob(EstimationType.NAME_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);

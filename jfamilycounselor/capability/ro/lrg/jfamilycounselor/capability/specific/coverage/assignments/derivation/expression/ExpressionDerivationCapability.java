@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ArrayAccess;
+import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -60,7 +61,7 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * 
  * 	Annotation                    - IRRELEVANT
  *      ArrayAccess                   - HALT                  - t: IType => (None, Some(t))
- *      ArrayCreation                 - IRRELEVANT
+ *      ArrayCreation                 - HALT
  *      ArrayInitializer              - IRRELEVANT
  *      Assignment                    - CONTINUE
  *      BooleanLiteral                - IRRELEVANT
@@ -70,14 +71,14 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *      ConditionalExpression         - CONTINUE
  *      CreationReference             - IRRELEVANT
  *      ExpressionMethodReference     - IRRELEVANT
- *      FieldAccess                   - SUCCESS               - f: IField, t: IType => (Some(f), Some(t))
+ *      FieldAccess                   - HALT                  - f: IField, t: IType => (Some(f), Some(t))
  *      InfixExpression               - IRRELEVANT
  *      InstanceofExpression          - IRRELEVANT
  *      LambdaExpression              - SUCCESS
  *      MethodInvocation              - HALT                  - m: IMethod, t: IType => (Some(m), Some(t))
  *      MethodReference               - SUCCESS
  *      SimpleName                    - CONTINUE / SUCCESS => - param: ILocalVariable, t: IType => (Some(param), Some(t))
- *      QualifiedName                 - IRRELEVANT
+ *      QualifiedName                 - HALT
  *      NullLiteral                   - HALT                  - dead end
  *      NumberLiteral                 - IRRELEVANT
  *      ParenthesizedExpression       - CONTINUE
@@ -129,6 +130,13 @@ public class ExpressionDerivationCapability {
 	    case ASTNode.ARRAY_ACCESS: {
 		var arrayAccess = (ArrayAccess) currentExpression;
 		var newRecordedType = Optional.ofNullable(arrayAccess.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
+		succeddedOrHaltedDerivations.add(new Pair<>(Optional.empty(), updateRecordedType(lastRecordedType, newRecordedType)));
+		break;
+	    }
+	    
+	    case ASTNode.ARRAY_CREATION: {
+		var arrayCreation = (ArrayCreation) currentExpression;
+		var newRecordedType = Optional.ofNullable(arrayCreation.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new Pair<>(Optional.empty(), updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
@@ -214,7 +222,7 @@ public class ExpressionDerivationCapability {
 		    logger.warning("Simple name expression skipped: " + simpleName);
 		    break;
 		}
-		logger.warning("Simple name was not a variable: " + simpleName + "Type: " + bindingOpt.map(b -> b.getKind()));
+		logger.warning("Simple name was not a variable: " + simpleName  + ".Type: " + bindingOpt.map(b -> b.getKind()));
 		break;
 	    }
 
@@ -233,9 +241,11 @@ public class ExpressionDerivationCapability {
 		    }
 
 		    logger.warning("Qualified name expression skipped: " + qualifiedName);
+		    succeddedOrHaltedDerivations.add(new Pair<>(Optional.empty(), lastRecordedType));
 		    break;
 		}
 		logger.warning("Qualified name was not a variable: " + qualifiedName);
+		succeddedOrHaltedDerivations.add(new Pair<>(Optional.empty(), lastRecordedType));
 		break;
 	    }
 
