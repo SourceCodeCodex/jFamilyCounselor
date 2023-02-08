@@ -61,7 +61,7 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * 
  * 	Annotation                    - IRRELEVANT
  *      ArrayAccess                   - HALT                  - t: IType => (None, Some(t))
- *      ArrayCreation                 - HALT
+ *      ArrayCreation                 - HALT                  - t: IType => (None, Some(t))
  *      ArrayInitializer              - IRRELEVANT
  *      Assignment                    - CONTINUE
  *      BooleanLiteral                - IRRELEVANT
