@@ -12,8 +12,12 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
+import org.eclipse.jdt.core.dom.ThisExpression;
 
 import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodArgumentsCapability;
 import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodCallCapability;
@@ -104,7 +108,6 @@ public class PPDerivationCapability {
 		    .map(p -> asSupplier(p))
 		    .toList();
 
-
 	}
 
     }
@@ -135,8 +138,25 @@ public class PPDerivationCapability {
 
 		return ce1Opt.flatMap(ce1 -> ce2Opt.map(ce2 -> {
 		    try {
-			// CAN BE FURTHER IMPROVED
-			return ce1.getNodeType() == ce2.getNodeType() && ce1.resolveTypeBinding().isEqualTo(ce2.resolveTypeBinding());
+			if (ce1 instanceof ThisExpression t1 && ce2 instanceof ThisExpression t2)
+			    return Optional.ofNullable(t1.resolveTypeBinding()).stream().anyMatch(b -> b.isEqualTo(t2.resolveTypeBinding()));
+
+			if (ce1 instanceof Name n1 && ce2 instanceof Name n2)
+			    return Optional.ofNullable(n1.resolveBinding()).stream()
+				    .filter(b -> b.getKind() == IBinding.VARIABLE)
+				    .anyMatch(b -> b.isEqualTo(n2.resolveBinding()));
+
+			if (ce1 instanceof Name n && ce2 instanceof FieldAccess f)
+			    return Optional.ofNullable(n.resolveBinding()).stream()
+				    .filter(b -> b.getKind() == IBinding.VARIABLE)
+				    .anyMatch(b -> b.isEqualTo(f.resolveFieldBinding()));
+
+			if (ce1 instanceof FieldAccess f && ce2 instanceof Name n)
+			    return Optional.ofNullable(f.resolveFieldBinding()).stream()
+				    .filter(b -> b.getKind() == IBinding.VARIABLE)
+				    .anyMatch(b -> b.isEqualTo(n.resolveBinding()));
+
+			return false;
 		    } catch (Exception e) {
 			return false;
 		    }

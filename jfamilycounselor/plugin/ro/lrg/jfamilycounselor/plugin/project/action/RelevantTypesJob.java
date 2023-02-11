@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.IType;
 
 import ro.lrg.jfamilycounselor.capability.generic.project.AllTypesCapability;
 import ro.lrg.jfamilycounselor.capability.specific.project.RelevantTypesCapability;
+import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class RelevantTypesJob extends Job {
@@ -49,7 +50,7 @@ public class RelevantTypesJob extends Job {
 	
 	var end = Instant.now();
 	
-	logger.info("Relevant types job for " + iJavaProject.getElementName() + " took: " + Duration.between(start, end).getSeconds() + " seconds. Number of relevant types: " + relevantTypes.size());
+	logger.info("Relevant types job for " + iJavaProject.getElementName() + " took: " + DurationFormatter.format(Duration.between(start, end)) + ". Number of relevant types: " + relevantTypes.size());
 
 	return Status.OK_STATUS;
 

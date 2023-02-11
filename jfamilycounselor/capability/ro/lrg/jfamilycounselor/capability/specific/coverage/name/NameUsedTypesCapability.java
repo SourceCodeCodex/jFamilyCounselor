@@ -25,6 +25,8 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
 public class NameUsedTypesCapability {
     private NameUsedTypesCapability() {
     }
+    
+    private static final double CORRELATION_TRESHOLD = 0.5;
 
     public static Optional<List<Pair<IType, IType>>> usedTypesTP(Pair<IType, ILocalVariable> tpReferencesPair) {
 	return parameterType(tpReferencesPair._2).flatMap(iType2 -> usedTypes(tpReferencesPair._1, iType2));
@@ -71,7 +73,7 @@ public class NameUsedTypesCapability {
 
 	var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
 
-	return (commonTokensCount / avgTokenLength) >= 0.5;
+	return (commonTokensCount / avgTokenLength) >= CORRELATION_TRESHOLD;
     }
 
 }
