@@ -166,8 +166,6 @@ public class ExportReportJob extends Job {
 
 			logger.info(t.getFullyQualifiedName() + ": " + ac + " in: " + DurationFormatter.format(duration));
 
-			// here handle CSV
-
 			var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration, referencesPairHTML.stream().toList());
 
 			try {

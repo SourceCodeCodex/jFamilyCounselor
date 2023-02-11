@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java;
+package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.element;
 
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.asSupplier;
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.cartesianProduct;
@@ -24,8 +24,20 @@ import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodCallCa
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
-public class PPDerivationCapability {
-    private PPDerivationCapability() {
+/**
+ * Derivation that extracts the arguments and method calls and, if needed,
+ * executes the combination step.
+ * 
+ * The result is a list of pairs of expressions.
+ * 
+ * The Supplier is used as keeping ASTs in memory can lead to
+ * OutOfMemoryException.
+ * 
+ * @author rosualinpetru
+ *
+ */
+public class ParameterParameterDerivationCapability {
+    private ParameterParameterDerivationCapability() {
     }
 
     private static final Logger logger = jFCLogger.getJavaLogger();

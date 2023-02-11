@@ -13,8 +13,7 @@ public class ReferencesPairs implements IRelationBuilder<MReferencesPair, MType>
 
     public Group<MReferencesPair> buildGroup(MType mType) {
 	var group = new Group<MReferencesPair>();
-	ReferencesPairsCapability.relevantReferencesPairs(mType.getUnderlyingObject())
-		.stream()
+	ReferencesPairsCapability.relevantReferencesPairs(mType.getUnderlyingObject()).stream()
 		.map(p -> Factory.getInstance().createMReferencesPair(p))
 		.forEach(p -> group.add(p));
 

@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.java;
+package ro.lrg.jfamilycounselor.capability.specific.coverage.assignments.derivation.element;
 
 import static ro.lrg.jfamilycounselor.util.list.CommonOperations.asSupplier;
 
@@ -20,8 +20,21 @@ import ro.lrg.jfamilycounselor.capability.generic.method.invocation.MethodCallCa
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
-public class IPDerivationCapability {
-    private IPDerivationCapability() {
+/**
+ * Derivation that extracts the arguments and method calls and, if needed,
+ * executes the combination step.
+ * 
+ * The first element from the pair represents the invoker. It is only set if the
+ * invoker is different than 'this'.
+ * 
+ * The Supplier is used as keeping ASTs in memory can lead to
+ * OutOfMemoryException.
+ * 
+ * @author rosualinpetru
+ *
+ */
+public class InvokerParameterDerivationCapability {
+    private InvokerParameterDerivationCapability() {
     }
 
     private static final Logger logger = jFCLogger.getJavaLogger();

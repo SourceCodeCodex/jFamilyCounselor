@@ -17,7 +17,6 @@ public final class OpenInEditorSecond implements IActionPerformer<Void, MReferen
 	try {
 	    JavaUI.openInEditor((IJavaElement) mReferencesPair.getUnderlyingObject()._2, true, true);
 	} catch (PartInitException | JavaModelException e) {
-	    e.printStackTrace();
 	}
 	return null;
     }

@@ -16,7 +16,6 @@ public final class OpenInEditor implements IActionPerformer<Void, MType, HListEm
 	try {
 	    JavaUI.openInEditor(mType.getUnderlyingObject(), true, true);
 	} catch (PartInitException | JavaModelException e) {
-	    e.printStackTrace();
 	}
 	return null;
     }

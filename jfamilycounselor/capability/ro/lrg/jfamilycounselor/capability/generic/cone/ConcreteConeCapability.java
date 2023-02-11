@@ -17,11 +17,11 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
- * Service that computes the concrete cone of a type (IType). The concrete cone
+ * Capability that computes the concrete cone of a type (IType). The concrete cone
  * of a type is the collection of concrete types formed with that type and its
  * subtypes.
  * 
- * NOTE: The service will never compute the concrete cone for java.lang.Object
+ * NOTE: The capability will never compute the concrete cone for java.lang.Object
  * since it is irrelevant and requires a lot of time.
  * 
  * @author rosualinpetru

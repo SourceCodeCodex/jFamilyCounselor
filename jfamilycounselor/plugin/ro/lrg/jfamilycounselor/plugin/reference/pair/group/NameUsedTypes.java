@@ -31,8 +31,7 @@ public class NameUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPa
 	if (usedTypes.isEmpty())
 	    throw new IllegalStateException("Name used types computation for pair: " + mReferencesPair.toString() + " failed. Previous checks need to ensure that this situation cannot happen.");
 
-	usedTypes.get()
-		.stream()
+	usedTypes.get().stream()
 		.map(p -> Factory.getInstance().createMTypesPair(p))
 		.forEach(p -> group.add(p));
 

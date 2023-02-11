@@ -11,6 +11,7 @@ public class AssignemntsPair extends Pair<Assignment, Assignment> {
 
     private int depth = 0;
 
+    // a.k.a. left declaring class
     private boolean passedCombination = true;
 
     public AssignemntsPair(Assignment _1, Assignment _2) {
@@ -29,6 +30,13 @@ public class AssignemntsPair extends Pair<Assignment, Assignment> {
 
     public int depth() {
 	return depth;
+    }
+    
+    public AssignemntsPair swap() {
+	var newPair = new AssignemntsPair(_2, _1);
+	newPair.depth = depth;
+	newPair.passedCombination = passedCombination;
+        return  newPair;
     }
 
     public boolean passedCombination() {

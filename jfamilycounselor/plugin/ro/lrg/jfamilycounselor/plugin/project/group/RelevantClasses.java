@@ -13,8 +13,7 @@ public class RelevantClasses implements IRelationBuilder<MType, MProject> {
 
     public Group<MType> buildGroup(MProject mProject) {
 	var group = new Group<MType>();
-	RelevantTypesCapability.relevantTypes(mProject.getUnderlyingObject())
-		.stream()
+	RelevantTypesCapability.relevantTypes(mProject.getUnderlyingObject()).stream()
 		.map(Factory.getInstance()::createMType)
 		.forEach(mType -> group.add(mType));
 	return group;

@@ -27,7 +27,7 @@ public class ToString implements IPropertyComputer<String, MReferencesPair> {
 	if (ref instanceof ILocalVariable param) {
 	    var method = (IMethod) param.getDeclaringMember();
 	    var params = Arrays.asList(method.getParameterTypes()).stream().map(s -> Signature.getSignatureSimpleName(s)).collect(Collectors.joining(","));
-	    return method.getElementName() + "(" + params + ")/" + param.getElementName();
+	    return method.getElementName() + "(" + params + ") / " + param.getElementName();
 	} else if (ref instanceof IType thys) {
 	    return thys.getFullyQualifiedName();
 	} else {

@@ -31,8 +31,7 @@ public class PossibleTypes implements IRelationBuilder<MTypesPair, MReferencesPa
 	if (possibleTypes.isEmpty() || possibleTypes.get().isEmpty())
 	    throw new IllegalStateException("Possible types computation for pair: " + mReferencesPair.toString() + " failed or resulted in an empty list. Previous checks need to ensure that this situation cannot happen.");
 
-	possibleTypes.get()
-		.stream()
+	possibleTypes.get().stream()
 		.map(p -> Factory.getInstance().createMTypesPair(p))
 		.forEach(p -> group.add(p));
 
