@@ -5,12 +5,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -135,9 +134,9 @@ public class ExportReportJob extends Job {
 
 			var referencesPairs = metaType.referencesPairs().getElements();
 
-			AtomicReference<Optional<Double>> apertureCoverage = new AtomicReference<>(Optional.empty());
+			var apertureCoverages = new ConcurrentLinkedQueue<Double>();
 
-			var referencesPairHTML = new ArrayList<HTMLReferencesPair>();
+			var referencesPairHTML = new ConcurrentLinkedQueue<HTMLReferencesPair>();
 
 			referencesPairs.parallelStream().forEach(rp -> {
 			    var startRP = Instant.now();
@@ -157,20 +156,19 @@ public class ExportReportJob extends Job {
 
 			    referencesPairHTML.add(new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList()));
 
-			    if (apertureCoverage.get().isEmpty() || apertureCoverageRP < apertureCoverage.get().get() && apertureCoverageRP > 0.)
-				apertureCoverage.set(Optional.of(apertureCoverageRP));
+			    apertureCoverages.add(apertureCoverageRP);
 
 			});
 			var end = Instant.now();
 
-			var ac = apertureCoverage.get().orElse(0.0);
+			var ac = apertureCoverages.stream().filter(d -> d != 0).min(Double::compareTo).orElseGet(() -> 0.);
 			var duration = Duration.between(start, end);
 
 			logger.info(t.getFullyQualifiedName() + ": " + ac + " in: " + DurationFormatter.format(duration));
 
 			// here handle CSV
 
-			var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration, referencesPairHTML);
+			var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration, referencesPairHTML.stream().toList());
 
 			try {
 			    csvFileWriter.write(CsvUtil.convertToCsv(List.of(t.getFullyQualifiedName(), ac.toString(), DurationFormatter.format(duration))));
