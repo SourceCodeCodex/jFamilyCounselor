@@ -41,11 +41,11 @@ public class ThisParameterHandler {
     }
 
     public static List<AssignemntsPair> handle(AssignemntsPair assignemntsPair) {
-	var p = (ILocalVariable) assignemntsPair._1.reference();
+	var writingParam = (ILocalVariable) assignemntsPair._2.writingElement().get();
 
-	var initialExpressions = InvokerParameterDerivationCapability.derive(p);
+	var initialExpressions = InvokerParameterDerivationCapability.derive(writingParam);
 
-	return initialExpressions.stream()
+	return initialExpressions.parallelStream()
 		.flatMap(pairF -> {
 		    var pair = pairF.get();
 

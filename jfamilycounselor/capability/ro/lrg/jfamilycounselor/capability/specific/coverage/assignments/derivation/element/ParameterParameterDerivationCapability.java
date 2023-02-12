@@ -70,8 +70,7 @@ public class ParameterParameterDerivationCapability {
 
 	    var calls = callsOpt.get();
 
-	    return calls
-		    .stream()
+	    return calls.parallelStream()
 		    .map(callF -> {
 			var call = callF.get();
 			var a1Opt = MethodArgumentsCapability.extractArgument(call, index1);
@@ -99,8 +98,7 @@ public class ParameterParameterDerivationCapability {
 
 	    var calls2 = calls2Opt.get();
 
-	    return cartesianProduct(calls1, calls2)
-		    .stream()
+	    return cartesianProduct(calls1, calls2).parallelStream()
 		    .map(p -> {
 			var call1 = p._1.get();
 			var call2 = p._2.get();

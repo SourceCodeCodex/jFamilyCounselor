@@ -16,7 +16,7 @@ import org.eclipse.jdt.core.IType;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 /**
- * Service that computes the used types using the name-based estimation out of a
+ * Capability that computes the used types using the name-based estimation out of a
  * list of all possible types.
  * 
  * @author rosualinpetru

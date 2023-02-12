@@ -126,10 +126,8 @@ public class ExportReportJob extends Job {
 
 	    // start computation
 
-	    relevantTypes
-		    .parallelStream()
+	    relevantTypes.parallelStream()
 		    .forEach(t -> {
-			var start = Instant.now();
 			var metaType = Factory.getInstance().createMType(t);
 
 			var referencesPairs = metaType.referencesPairs().getElements();
@@ -138,27 +136,29 @@ public class ExportReportJob extends Job {
 
 			var referencesPairHTML = new ConcurrentLinkedQueue<HTMLReferencesPair>();
 
-			referencesPairs.parallelStream().forEach(rp -> {
-			    var startRP = Instant.now();
+			var start = Instant.now();
+			referencesPairs.parallelStream()
+				.forEach(rp -> {
+				    var startRP = Instant.now();
 
-			    var possibleTypes = rp.possibleTypes().getElements();
-			    List<MTypesPair> usedTypes;
-			    if (estimation == EstimationType.NAME_BASED)
-				usedTypes = rp.nameUsedTypes().getElements();
-			    else
-				usedTypes = rp.assignemntsUsedTypes().getElements();
+				    var possibleTypes = rp.possibleTypes().getElements();
+				    List<MTypesPair> usedTypes;
+				    if (estimation == EstimationType.NAME_BASED)
+					usedTypes = rp.nameUsedTypes().getElements();
+				    else
+					usedTypes = rp.assignemntsUsedTypes().getElements();
 
-			    var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
+				    var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
-			    var endRP = Instant.now();
+				    var endRP = Instant.now();
 
-			    var durationRP = Duration.between(startRP, endRP);
+				    var durationRP = Duration.between(startRP, endRP);
 
-			    referencesPairHTML.add(new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList()));
+				    referencesPairHTML.add(new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList()));
 
-			    apertureCoverages.add(apertureCoverageRP);
+				    apertureCoverages.add(apertureCoverageRP);
+				});
 
-			});
 			var end = Instant.now();
 
 			var ac = apertureCoverages.stream().filter(d -> d != 0).min(Double::compareTo).orElseGet(() -> 0.);
@@ -176,11 +176,10 @@ public class ExportReportJob extends Job {
 			}
 
 			subMonitor.split(1);
+
 		    });
 
 	    flushThread.interrupt();
-	    while (flushThread.isAlive())
-		;
 
 	    csvFileWriter.close();
 

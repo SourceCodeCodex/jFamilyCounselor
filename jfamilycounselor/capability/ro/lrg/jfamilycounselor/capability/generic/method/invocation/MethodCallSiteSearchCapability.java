@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
@@ -35,9 +36,10 @@ class MethodCallSiteSearchCapability {
 	    return cache.get(iMethod);
 	}
 
-	SearchPattern pattern = SearchPattern.createPattern(iMethod, IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH);
+	if (iMethod.isLambdaMethod())
+	    return Optional.empty();
 
-	Optional<List<IMethod>> allParentMethods = search(pattern);
+	Optional<List<IMethod>> allParentMethods = search(iMethod);
 	var parentMethods = allParentMethods.map(o -> o.stream().filter(m -> m.getCompilationUnit() != null).collect(Collectors.toList()));
 
 	parentMethods.ifPresent(m -> cache.put(iMethod, m));
@@ -45,13 +47,15 @@ class MethodCallSiteSearchCapability {
 	return parentMethods;
     }
 
-    private static Optional<List<IMethod>> search(SearchPattern pattern) {
+    private static Optional<List<IMethod>> search(IMethod iMethod) {
+	SearchPattern pattern = SearchPattern.createPattern(iMethod, IJavaSearchConstants.REFERENCES, SearchPattern.R_EXACT_MATCH);
+
 	var requestor = new MethodCallSiteRequestor();
 	SearchParticipant[] searchParticipant = { SearchEngine.getDefaultSearchParticipant() };
 
 	try {
 	    var projects = JavaProjectsCapability.getJavaProjects();
-	    var scope = SearchEngine.createJavaSearchScope(projects.toArray(new IJavaProject[projects.size()]));
+	    var scope = SearchEngine.createJavaSearchScope(projects.toArray(new IJavaProject[projects.size()]), IJavaSearchScope.SOURCES);
 	    engine.search(pattern, searchParticipant, scope, requestor, new NullProgressMonitor());
 	} catch (JavaModelException e) {
 	    logger.warning("JavaModelException encountered: " + e.getMessage());

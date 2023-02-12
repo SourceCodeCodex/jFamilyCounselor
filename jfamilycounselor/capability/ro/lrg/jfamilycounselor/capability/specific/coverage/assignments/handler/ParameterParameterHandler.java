@@ -27,12 +27,12 @@ public class ParameterParameterHandler {
     }
 
     public static List<AssignemntsPair> handle(AssignemntsPair assignemntsPair) {
-	var param1 = (ILocalVariable) assignemntsPair._1.reference();
-	var param2 = (ILocalVariable) assignemntsPair._2.reference();
+	var writingParam1 = (ILocalVariable) assignemntsPair._1.writingElement().get();
+	var writingParam2 = (ILocalVariable) assignemntsPair._2.writingElement().get();
 
-	var initialExpressions = ParameterParameterDerivationCapability.derive(param1, param2, assignemntsPair.passedCombination());
+	var initialExpressions = ParameterParameterDerivationCapability.derive(writingParam1, writingParam2, assignemntsPair.passedCombination());
 
-	return initialExpressions.stream()
+	return initialExpressions.parallelStream()
 		.flatMap(pairF -> {
 		    var pair = pairF.get();
 

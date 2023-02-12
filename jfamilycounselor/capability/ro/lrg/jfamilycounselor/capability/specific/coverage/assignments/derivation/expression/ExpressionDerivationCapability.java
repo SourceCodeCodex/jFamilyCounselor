@@ -297,9 +297,9 @@ public class ExpressionDerivationCapability {
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(newRecordedType, updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
-
+	    
 	    default:
-		logger.warning("Irrelevant expression was in fact encountered: " + currentExpression + ". Type: " + currentExpression.getNodeType());
+		logger.info("Irrelevant expression was encountered: " + currentExpression + ". Type: " + currentExpression.getNodeType());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), lastRecordedType));
 	    }
 

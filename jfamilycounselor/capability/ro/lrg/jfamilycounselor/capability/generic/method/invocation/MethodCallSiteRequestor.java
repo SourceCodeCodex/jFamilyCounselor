@@ -18,7 +18,7 @@ class MethodCallSiteRequestor extends SearchRequestor {
     }
 
     public void acceptSearchMatch(SearchMatch match) throws CoreException {
-	if (match.getElement() instanceof IMethod) {
+	if (match.getElement() != null && match.getElement() instanceof IMethod m && !m.isBinary()) {
 	    matches.add((IMethod) match.getElement());
 	}
     }

@@ -63,7 +63,7 @@ public class InvokerParameterDerivationCapability {
 
 	var calls = callsOpt.get();
 
-	return calls.stream()
+	return calls.parallelStream()
 		.map(callF -> {
 		    var call = callF.get();
 		    var argOpt = MethodArgumentsCapability.extractArgument(call, index);

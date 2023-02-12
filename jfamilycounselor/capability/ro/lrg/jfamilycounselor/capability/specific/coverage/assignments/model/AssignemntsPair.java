@@ -11,7 +11,6 @@ public class AssignemntsPair extends Pair<Assignment, Assignment> {
 
     private int depth = 0;
 
-    // a.k.a. left declaring class
     private boolean passedCombination = true;
 
     public AssignemntsPair(Assignment _1, Assignment _2) {
