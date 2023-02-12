@@ -56,7 +56,7 @@ public class ExportReportJob extends Job {
     private final EstimationType estimation;
 
     public ExportReportJob(EstimationType estimation, IJavaProject iJavaProject) {
-	super(estimation + " exporting report...");
+	super(estimation + "(" + iJavaProject.getElementName() + ") exporting report...");
 	this.iJavaProject = iJavaProject;
 	this.estimation = estimation;
     }
