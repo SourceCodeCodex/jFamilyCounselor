@@ -56,24 +56,12 @@ public class CastUsedTypesCapability {
 
 		if (enclosingMethodsT2.stream().anyMatch(ms -> ms.stream().anyMatch(m -> t1.equals(m.getDeclaringType()))))
 		    correlated.add(Pair.of(t1, t2));
-
-		enclosingMethodsT1.ifPresent(ems1 -> enclosingMethodsT2.ifPresent(ems2 -> {
-		    ems1.forEach(m1 -> ems2.forEach(m2 -> {
-			if (m1.equals(m2))
-			    correlated.add(Pair.of(t1, t2));
-
-//			TO BE DISCUSSED
-//			if (m1.getDeclaringType().equals(m2.getDeclaringType())) {
-//			    correlated.add(Pair.of(t1, t2));
-//			}
-		    }));
-		}));
 	    }
 	}
 
 	var distinctConcreteConeProduct = DistinctConcreteConeProductCapability.product(iType1, iType2);
 
-	return Optional.of(correlated.stream().filter(pair -> distinctConcreteConeProduct.map(p -> p.contains(pair)).orElse(true)).toList());
+	return Optional.of(correlated.stream().distinct().filter(pair -> distinctConcreteConeProduct.map(p -> p.contains(pair)).orElse(true)).toList());
 
     }
 
