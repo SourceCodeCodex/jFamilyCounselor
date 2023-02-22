@@ -3,9 +3,9 @@ package ro.lrg.jfamilycounselor.capability.specific.coverage.name;
 import static ro.lrg.jfamilycounselor.capability.generic.cone.ConcreteConeCapability.concreteCone;
 import static ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability.parameterType;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,11 +13,12 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
 
+import ro.lrg.jfamilycounselor.capability.generic.cone.DistinctConcreteConeProductCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 /**
- * Capability that computes the used types using the name-based estimation out of a
- * list of all possible types.
+ * Capability that computes the used types using the name-based estimation out
+ * of a list of all possible types.
  * 
  * @author rosualinpetru
  *
@@ -25,8 +26,6 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
 public class NameUsedTypesCapability {
     private NameUsedTypesCapability() {
     }
-    
-    private static final double CORRELATION_TRESHOLD = 0.5;
 
     public static Optional<List<Pair<IType, IType>>> usedTypesTP(Pair<IType, ILocalVariable> tpReferencesPair) {
 	return parameterType(tpReferencesPair._2).flatMap(iType2 -> usedTypes(tpReferencesPair._1, iType2));
@@ -47,18 +46,20 @@ public class NameUsedTypesCapability {
 	var tokensMap1 = cone1.get().stream().collect(Collectors.toMap(Function.identity(), NameUsedTypesCapability::splitNameInTokens));
 	var tokensMap2 = cone2.get().stream().collect(Collectors.toMap(Function.identity(), NameUsedTypesCapability::splitNameInTokens));
 
-	var correlatedTypesPairs = new ArrayList<Pair<IType, IType>>();
+	var correlationFactorsMap = tokensMap1.entrySet().stream()
+		.flatMap(e1 -> tokensMap2.entrySet().stream()
+			.map(e2 -> Map.entry(Pair.of(e1.getKey(), e2.getKey()), correlationFactor(e1.getValue(), e2.getValue()))))
+		.toList();
 
-	tokensMap1.forEach((t1, tokens1) -> {
+	var maxFactor = correlationFactorsMap.stream().min((e1, e2) -> (int) (e1.getValue() - e2.getValue())).map(e -> e.getValue());
+	
+	var distinctConcreteConeProduct = DistinctConcreteConeProductCapability.product(iType1, iType2);
 
-	    tokensMap2.forEach((t2, tokens2) -> {
-		if (correlationCondition(tokens1, tokens2)) {
-		    correlatedTypesPairs.add(new Pair<>(t1, t2));
-		}
-	    });
-	});
-
-	return Optional.of(correlatedTypesPairs);
+	return maxFactor.map(factor -> correlationFactorsMap.stream()
+		.filter(e -> e.getValue() == factor)
+		.map(e -> e.getKey())
+		.filter(pair -> distinctConcreteConeProduct.map(p -> p.contains(pair)).orElse(true))
+		.toList());
 
     }
 
@@ -68,12 +69,12 @@ public class NameUsedTypesCapability {
 	return Arrays.asList(iType.getElementName().split(tokensR));
     }
 
-    private static boolean correlationCondition(List<String> tokens1, List<String> tokens2) {
+    private static double correlationFactor(List<String> tokens1, List<String> tokens2) {
 	var avgTokenLength = (tokens1.size() + tokens2.size()) / 2.0;
 
 	var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
 
-	return (commonTokensCount / avgTokenLength) >= CORRELATION_TRESHOLD;
+	return (commonTokensCount / avgTokenLength);
     }
 
 }

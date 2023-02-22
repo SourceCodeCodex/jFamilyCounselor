@@ -22,10 +22,10 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
- * Service responsible for computing the list of all parameters, regardless of
- * the method/constructor they are declared in. This service also considers the
- * 'this' reference as a parameter. 'this' is represented by its correspondent
- * IType object.
+ * Service responsible for computing the list of all relevant parameters,
+ * regardless of the method/constructor they are declared in. This service also
+ * considers the 'this' reference as a parameter. 'this' is represented by its
+ * correspondent IType object.
  * 
  * @author rosualinpetru
  *
@@ -44,7 +44,7 @@ public class RelevantParametersCapability {
 
 	    // 'this' parameter
 	    if (isRelevant(iType))
-		result.add(0, iType);
+		result.add(iType);
 
 	    // add the rest of the parameters
 	    var iMethods = Arrays.asList(iType.getMethods());
@@ -115,7 +115,12 @@ public class RelevantParametersCapability {
 	    return cache.get(t).get();
 
 	try {
-	    var result = concreteCone(t).stream().anyMatch(cone -> !cone.isEmpty());
+	    var result = t.getCompilationUnit() != null &&
+		    !t.isAnonymous() &&
+		    !t.isLambda() &&
+		    (t.isClass() || t.isInterface()) &&
+		    Arrays.asList(t.getTypeParameters()).isEmpty() &&
+		    concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
 
 	    cache.put(t, result);
 	    return result;

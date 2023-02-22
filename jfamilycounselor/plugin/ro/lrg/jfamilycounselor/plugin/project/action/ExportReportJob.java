@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ import ro.lrg.jfamilycounselor.plugin.project.action.util.html.HTMLReferencesPai
 import ro.lrg.jfamilycounselor.plugin.project.action.util.html.HTMLType;
 import ro.lrg.jfamilycounselor.plugin.project.action.util.html.IndexHTML;
 import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
+import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -134,19 +137,36 @@ public class ExportReportJob extends Job {
 
 			var apertureCoverages = new ConcurrentLinkedQueue<Double>();
 
-			var referencesPairHTML = new ConcurrentLinkedQueue<HTMLReferencesPair>();
+			var referencesPairHTML = new ConcurrentLinkedQueue<Pair<Integer, HTMLReferencesPair>>();
+
+			var conter = new AtomicInteger(0);
 
 			var start = Instant.now();
-			referencesPairs.parallelStream()
-				.forEach(rp -> {
+			referencesPairs
+				.stream()
+				.map(rp -> Pair.of(conter.getAndIncrement(), rp))
+				.toList()
+				.parallelStream()
+				.forEach(zippedWithIndex -> {
+				    var index = zippedWithIndex._1;
+				    var rp = zippedWithIndex._2;
+
 				    var startRP = Instant.now();
 
 				    var possibleTypes = rp.possibleTypes().getElements();
-				    List<MTypesPair> usedTypes;
-				    if (estimation == EstimationType.NAME_BASED)
-					usedTypes = rp.nameUsedTypes().getElements();
-				    else
-					usedTypes = rp.assignemntsUsedTypes().getElements();
+				    List<MTypesPair> usedTypes = switch (estimation) {
+				    case NAME_BASED: {
+					yield rp.nameUsedTypes().getElements();
+				    }
+				    case ASSIGNMENT_BASED: {
+					yield rp.assignemntUsedTypes().getElements();
+				    }
+				    case CAST_BASED: {
+					yield rp.castUsedTypes().getElements();
+				    }
+				    default:
+					throw new IllegalArgumentException("Unknown estimation: " + estimation);
+				    };
 
 				    var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
@@ -154,7 +174,9 @@ public class ExportReportJob extends Job {
 
 				    var durationRP = Duration.between(startRP, endRP);
 
-				    referencesPairHTML.add(new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList()));
+				    var html = new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList());
+
+				    referencesPairHTML.add(Pair.of(index, html));
 
 				    apertureCoverages.add(apertureCoverageRP);
 				});
@@ -166,7 +188,9 @@ public class ExportReportJob extends Job {
 
 			logger.info(t.getFullyQualifiedName() + ": " + ac + " in: " + DurationFormatter.format(duration));
 
-			var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration, referencesPairHTML.stream().toList());
+			var sortedHtmlRefPairs = referencesPairHTML.stream().sorted(Comparator.<Pair<Integer, HTMLReferencesPair>, Integer>comparing(p -> p._1)).map(p -> p._2).toList();
+
+			var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration, sortedHtmlRefPairs);
 
 			try {
 			    csvFileWriter.write(CsvUtil.convertToCsv(List.of(t.getFullyQualifiedName(), ac.toString(), DurationFormatter.format(duration))));

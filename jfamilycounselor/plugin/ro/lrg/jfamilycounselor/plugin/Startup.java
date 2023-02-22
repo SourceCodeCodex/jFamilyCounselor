@@ -41,10 +41,10 @@ public final class Startup implements IStartup {
 
 	    if (element instanceof Pair<?, ?> pair) {
 		if (pair._1 instanceof IType t1 && pair._2 instanceof IType t2)
-		    return Factory.getInstance().createMTypesPair(new Pair<>(t1, t2));
+		    return Factory.getInstance().createMTypesPair(Pair.of(t1, t2));
 
 		if (pair._1 instanceof IJavaElement r1 && pair._2 instanceof IJavaElement r2)
-		    return Factory.getInstance().createMReferencesPair(new Pair<>(r1, r2));
+		    return Factory.getInstance().createMReferencesPair(Pair.of(r1, r2));
 	    }
 
 	    return null;

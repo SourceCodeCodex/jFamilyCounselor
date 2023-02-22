@@ -7,7 +7,7 @@ public class Constants {
     public static final String OBJECT_FQN = "java.lang.Object";
 
     public enum EstimationType {
-	NAME_BASED, ASSIGNMENTS_BASED
+	NAME_BASED, ASSIGNMENT_BASED, CAST_BASED
     }
 
 }

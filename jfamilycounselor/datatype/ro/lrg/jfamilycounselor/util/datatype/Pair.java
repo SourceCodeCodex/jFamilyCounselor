@@ -5,13 +5,16 @@ import java.util.Objects;
 public class Pair<K, V> {
     public final K _1;
     public final V _2;
-    
-    
+
     public Pair(K _1, V _2) {
 	this._1 = _1;
 	this._2 = _2;
     }
-    
+
+    public static <K, V> Pair<K, V> of(K _1, V _2) {
+	return new Pair<K, V>(_1, _2);
+    }
+
     public Pair<V, K> swap() {
 	return new Pair<>(_2, _1);
     }
@@ -35,7 +38,5 @@ public class Pair<K, V> {
     public String toString() {
 	return "(" + _1 + ", " + _2 + ")";
     }
-    
-    
 
 }

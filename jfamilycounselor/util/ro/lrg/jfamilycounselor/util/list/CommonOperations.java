@@ -17,11 +17,11 @@ public class CommonOperations {
     }
     
     public static <K, V> Stream<Pair<K, V>> cartesianProduct(Stream<K> l1, Stream<V> l2) {
-	return l1.flatMap(e1 -> l2.map(e2 -> new Pair<>(e1, e2)));
+	return l1.flatMap(e1 -> l2.map(e2 -> Pair.of(e1, e2)));
     }
 
     public static <K, V> List<Pair<K, V>> cartesianProduct(List<K> l1, List<V> l2) {
-	return l1.stream().flatMap(e1 -> l2.stream().map(e2 -> new Pair<>(e1, e2))).toList();
+	return l1.stream().flatMap(e1 -> l2.stream().map(e2 -> Pair.of(e1, e2))).toList();
     }
 
     public static <K> List<Pair<K, K>> distrinctCombinations2(List<K> l) {

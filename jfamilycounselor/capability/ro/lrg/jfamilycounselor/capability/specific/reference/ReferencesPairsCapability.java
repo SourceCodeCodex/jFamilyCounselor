@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import ro.lrg.jfamilycounselor.capability.generic.cone.DistinctConcreteConeProductCapability;
 import ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
@@ -52,13 +53,14 @@ public class ReferencesPairsCapability {
 			var m1 = (IMethod) p1.getDeclaringMember();
 			var m2 = (IMethod) p2.getDeclaringMember();
 
-			var t1 = ParameterTypeCapability.parameterType(p1);
-			var t2 = ParameterTypeCapability.parameterType(p2);
+			var t1Opt = ParameterTypeCapability.parameterType(p1);
+			var t2Opt = ParameterTypeCapability.parameterType(p2);
 			try {
 			    return !(m1.isConstructor() && !m2.isConstructor() ||
 				    !m1.isConstructor() && m2.isConstructor() ||
 				    m1.isConstructor() && m2.isConstructor() && !m1.equals(m2) ||
-				    t1.equals(t2));
+				    t1Opt.equals(t2Opt) ||
+				    t1Opt.flatMap(t1 -> t2Opt.map(t2 -> DistinctConcreteConeProductCapability.product(t1, t2))).map(cp -> cp.isEmpty()).orElse(true));
 			} catch (JavaModelException e) {
 			    logger.warning("JavaModelException encountered: " + e.getMessage());
 			    return false;
