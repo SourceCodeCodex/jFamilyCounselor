@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.capability.generic.cone.DistinctConcreteConeProductCapability;
+import ro.lrg.jfamilycounselor.capability.generic.type.DistinctConcreteConeProductCapability;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignment.handler.ParameterParameterHandler;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignment.handler.ThisParameterHandler;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignment.model.AssignemntsPair;

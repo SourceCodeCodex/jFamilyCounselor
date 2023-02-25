@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.capability.specific.coverage.assignment.derivation.expression;
 
-import static ro.lrg.jfamilycounselor.capability.generic.cone.SubtypeCapability.isSubtypeOf;
+import static ro.lrg.jfamilycounselor.capability.generic.type.SubtypeCapability.isSubtypeOf;
 
 import java.util.List;
 import java.util.Optional;
@@ -316,7 +316,7 @@ public class ExpressionDerivationCapability {
 	if (current.isEmpty())
 	    return previous;
 
-	if (previous.stream().anyMatch(t1 -> current.stream().anyMatch(t2 -> isSubtypeOf(t1, t2))))
+	if (previous.stream().anyMatch(t0 -> current.stream().anyMatch(t1 -> isSubtypeOf(t1, t0))))
 	    return current;
 
 	return previous;

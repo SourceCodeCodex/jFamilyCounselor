@@ -16,16 +16,9 @@ public class MethodCallCapability {
     private MethodCallCapability() {
     }
 
-    public static Optional<List<Supplier<Expression>>> methodCalls(IMethod iMethod) {
-	var callSitesOpt = MethodCallSearchCapability.searchMethodCalls(iMethod);
-
-	if (callSitesOpt.isEmpty())
-	    return Optional.empty();
-
-	var callSites = callSitesOpt.get();
-
+    public static Optional<List<Supplier<Expression>>> methodCalls(IMethod iMethod, List<IMethod> enclosingMethods) {
 	return Optional.of(
-		callSites.stream()
+		enclosingMethods.stream()
 			.map(ParseCapability::parse)
 			.filter(o -> o.isPresent())
 			.map(o -> o.get())
@@ -34,6 +27,15 @@ public class MethodCallCapability {
 			    ast.accept(visitor);
 			    return visitor.getInvocations().stream().map(p -> asSupplier(p));
 			}).toList());
+    }
+
+    public static Optional<List<Supplier<Expression>>> methodCalls(IMethod iMethod) {
+	var methodCallsEnclosingMethodsOpt = MethodCallSearchCapability.searchMethodCalls(iMethod);
+
+	if (methodCallsEnclosingMethodsOpt.isEmpty())
+	    return Optional.empty();
+
+	return methodCalls(iMethod, methodCallsEnclosingMethodsOpt.get());
     }
 
 }

@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.generic.cone;
+package ro.lrg.jfamilycounselor.capability.generic.type;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -22,22 +22,22 @@ public class SubtypeCapability {
     private static final Logger logger = jFCLogger.getJavaLogger();
 
     public static boolean isSubtypeOf(IType iType1, IType iType2) {
-	if (iType1.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
+	if (iType2.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
 	    return true;
 	}
 
 	List<String> subtypesNames;
-	if (cache.contains(iType1))
-	    subtypesNames = cache.get(iType1).get();
+	if (cache.contains(iType2))
+	    subtypesNames = cache.get(iType2).get();
 	else
 	    try {
-		subtypesNames = Stream.of(iType1.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType1)).map(t -> t.getFullyQualifiedName()).toList();
+		subtypesNames = Stream.of(iType2.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType2)).map(t -> t.getFullyQualifiedName()).toList();
 	    } catch (JavaModelException e) {
 		logger.warning("JavaModelException encountered: " + e.getMessage());
 		return false;
 	    }
 
-	return subtypesNames.contains(iType2.getFullyQualifiedName());
+	return subtypesNames.contains(iType1.getFullyQualifiedName());
 
     }
 }

@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.capability.specific.coverage.name;
 
-import static ro.lrg.jfamilycounselor.capability.generic.cone.ConcreteConeCapability.concreteCone;
-import static ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability.parameterType;
+import static ro.lrg.jfamilycounselor.capability.generic.parameter.ParameterTypeCapability.parameterType;
+import static ro.lrg.jfamilycounselor.capability.generic.type.ConcreteConeCapability.concreteCone;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +13,9 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.capability.generic.cone.DistinctConcreteConeProductCapability;
+import ro.lrg.jfamilycounselor.capability.generic.type.DistinctConcreteConeProductCapability;
+import ro.lrg.jfamilycounselor.util.cache.Cache;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 /**
@@ -27,6 +29,8 @@ public class NameUsedTypesCapability {
     private NameUsedTypesCapability() {
     }
 
+    private static final Cache<Pair<IType, IType>, List<Pair<IType, IType>>> cache = MonitoredUnboundedCache.getCache();
+    
     public static Optional<List<Pair<IType, IType>>> usedTypesTP(Pair<IType, ILocalVariable> tpReferencesPair) {
 	return parameterType(tpReferencesPair._2).flatMap(iType2 -> usedTypes(tpReferencesPair._1, iType2));
     }
@@ -36,6 +40,11 @@ public class NameUsedTypesCapability {
     }
 
     private static Optional<List<Pair<IType, IType>>> usedTypes(IType iType1, IType iType2) {
+	var typesPair = Pair.of(iType1, iType2);
+	
+	if(cache.contains(typesPair))
+	    return cache.get(typesPair);
+	
 	var cone1 = concreteCone(iType1);
 	var cone2 = concreteCone(iType2);
 
@@ -54,12 +63,16 @@ public class NameUsedTypesCapability {
 	var maxFactor = correlationFactorsMap.stream().min((e1, e2) -> (int) (e1.getValue() - e2.getValue())).map(e -> e.getValue());
 	
 	var distinctConcreteConeProduct = DistinctConcreteConeProductCapability.product(iType1, iType2);
-
-	return maxFactor.map(factor -> correlationFactorsMap.stream()
+	
+	var result =  maxFactor.map(factor -> correlationFactorsMap.stream()
 		.filter(e -> e.getValue() == factor)
 		.map(e -> e.getKey())
 		.filter(pair -> distinctConcreteConeProduct.map(p -> p.contains(pair)).orElse(true))
 		.toList());
+	
+	result.ifPresent(r -> cache.put(typesPair, r));
+
+	return result;
 
     }
 

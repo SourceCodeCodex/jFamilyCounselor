@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.IType;
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MTypesPair;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability;
+import ro.lrg.jfamilycounselor.capability.generic.parameter.ParameterTypeCapability;
 import ro.lrg.jfamilycounselor.capability.specific.coverage.assignment.AssignmentUsedTypesCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.xcore.metametamodel.Group;

@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.capability.specific.aperture;
 
-import static ro.lrg.jfamilycounselor.capability.generic.type.ParameterTypeCapability.parameterType;
+import static ro.lrg.jfamilycounselor.capability.generic.parameter.ParameterTypeCapability.parameterType;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.capability.generic.cone.DistinctConcreteConeProductCapability;
+import ro.lrg.jfamilycounselor.capability.generic.type.DistinctConcreteConeProductCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 /**

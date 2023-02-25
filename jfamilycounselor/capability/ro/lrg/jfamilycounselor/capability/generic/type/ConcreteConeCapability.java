@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.generic.cone;
+package ro.lrg.jfamilycounselor.capability.generic.type;
 
 import java.util.ArrayList;
 import java.util.Arrays;

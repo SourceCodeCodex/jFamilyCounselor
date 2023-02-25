@@ -1,6 +1,6 @@
-package ro.lrg.jfamilycounselor.capability.generic.cone;
+package ro.lrg.jfamilycounselor.capability.generic.type;
 
-import static ro.lrg.jfamilycounselor.capability.generic.cone.ConcreteConeCapability.concreteCone;
+import static ro.lrg.jfamilycounselor.capability.generic.type.ConcreteConeCapability.concreteCone;
 
 import java.util.List;
 import java.util.Optional;

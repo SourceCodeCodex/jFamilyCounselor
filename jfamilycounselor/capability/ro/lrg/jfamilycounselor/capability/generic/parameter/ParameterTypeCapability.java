@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.capability.generic.type;
+package ro.lrg.jfamilycounselor.capability.generic.parameter;
 
 import java.util.Optional;
 import java.util.logging.Logger;
