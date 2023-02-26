@@ -1,14 +1,10 @@
 package ro.lrg.jfamilycounselor.capability.specific.coverage.name;
 
 import static ro.lrg.jfamilycounselor.capability.generic.parameter.ParameterTypeCapability.parameterType;
-import static ro.lrg.jfamilycounselor.capability.generic.type.ConcreteConeCapability.concreteCone;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
@@ -29,8 +25,8 @@ public class NameUsedTypesCapability {
     private NameUsedTypesCapability() {
     }
 
-    private static final Cache<Pair<IType, IType>, List<Pair<IType, IType>>> cache = MonitoredUnboundedCache.getCache();
-    
+    private static final Cache<Pair<IType, IType>, Boolean> areCorrelatedCache = MonitoredUnboundedCache.getCache();
+
     public static Optional<List<Pair<IType, IType>>> usedTypesTP(Pair<IType, ILocalVariable> tpReferencesPair) {
 	return parameterType(tpReferencesPair._2).flatMap(iType2 -> usedTypes(tpReferencesPair._1, iType2));
     }
@@ -40,54 +36,66 @@ public class NameUsedTypesCapability {
     }
 
     private static Optional<List<Pair<IType, IType>>> usedTypes(IType iType1, IType iType2) {
-	var typesPair = Pair.of(iType1, iType2);
-	
-	if(cache.contains(typesPair))
-	    return cache.get(typesPair);
-	
-	var cone1 = concreteCone(iType1);
-	var cone2 = concreteCone(iType2);
+	var possibleTypes = DistinctConcreteConeProductCapability.product(iType1, iType2);
 
-	if (cone1.isEmpty() || cone2.isEmpty()) {
+	if (possibleTypes.isEmpty()) {
 	    return Optional.empty();
 	}
 
-	var tokensMap1 = cone1.get().stream().collect(Collectors.toMap(Function.identity(), NameUsedTypesCapability::splitNameInTokens));
-	var tokensMap2 = cone2.get().stream().collect(Collectors.toMap(Function.identity(), NameUsedTypesCapability::splitNameInTokens));
+	return Optional.of(possibleTypes.get().stream().filter(p -> {
+	    if (areCorrelatedCache.contains(p))
+		return areCorrelatedCache.get(p).get();
 
-	var correlationFactorsMap = tokensMap1.entrySet().stream()
-		.flatMap(e1 -> tokensMap2.entrySet().stream()
-			.map(e2 -> Map.entry(Pair.of(e1.getKey(), e2.getKey()), correlationFactor(e1.getValue(), e2.getValue()))))
-		.toList();
+	    var areCorrelated = areCorrelated(p._1, p._2);
 
-	var maxFactor = correlationFactorsMap.stream().min((e1, e2) -> (int) (e1.getValue() - e2.getValue())).map(e -> e.getValue());
-	
-	var distinctConcreteConeProduct = DistinctConcreteConeProductCapability.product(iType1, iType2);
-	
-	var result =  maxFactor.map(factor -> correlationFactorsMap.stream()
-		.filter(e -> e.getValue() == factor)
-		.map(e -> e.getKey())
-		.filter(pair -> distinctConcreteConeProduct.map(p -> p.contains(pair)).orElse(true))
-		.toList());
-	
-	result.ifPresent(r -> cache.put(typesPair, r));
+	    areCorrelatedCache.put(p, areCorrelated);
 
-	return result;
+	    return areCorrelated;
+
+	}).toList());
 
     }
 
-    private static final String tokensR = "(?<!(^|\\d))(?=\\d)|(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])|_";
+    private static boolean areCorrelated(IType iType1, IType iType2) {
+	var tokens1 = splitNameInTokens(iType1);
+	var tokens2 = splitNameInTokens(iType2);
+
+	return levenshteinDistanceOnToken(tokens1, tokens2) <= (Math.max(tokens1.size(), tokens2.size()) / 2.);
+    }
+
+    private static int levenshteinDistanceOnToken(List<String> tokens1, List<String> tokens2) {
+
+	var dp = new int[tokens1.size() + 1][tokens2.size() + 1];
+
+	for (int i = 0; i <= tokens1.size(); i++) {
+	    for (int j = 0; j <= tokens2.size(); j++) {
+		if (i == 0) {
+		    dp[i][j] = j;
+		} else if (j == 0) {
+		    dp[i][j] = i;
+		} else {
+		    dp[i][j] = min(dp[i - 1][j - 1]
+			    + costOfSubstitution(tokens1.get(i - 1), tokens2.get(j - 1)),
+			    dp[i - 1][j] + 1,
+			    dp[i][j - 1] + 1);
+		}
+	    }
+	}
+
+	return dp[tokens1.size()][tokens2.size()];
+    }
 
     private static List<String> splitNameInTokens(IType iType) {
+	var tokensR = "(?<!(^|\\d))(?=\\d)|(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])|_";
 	return Arrays.asList(iType.getElementName().split(tokensR));
     }
 
-    private static double correlationFactor(List<String> tokens1, List<String> tokens2) {
-	var avgTokenLength = (tokens1.size() + tokens2.size()) / 2.0;
+    public static int costOfSubstitution(String a, String b) {
+	return a.equals(b) ? 0 : 1;
+    }
 
-	var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
-
-	return (commonTokensCount / avgTokenLength);
+    public static int min(int... numbers) {
+	return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
     }
 
 }
