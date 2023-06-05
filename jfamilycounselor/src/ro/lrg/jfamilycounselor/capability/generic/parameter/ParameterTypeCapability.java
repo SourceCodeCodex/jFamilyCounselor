@@ -3,6 +3,7 @@ package ro.lrg.jfamilycounselor.capability.generic.parameter;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -52,7 +53,7 @@ public class ParameterTypeCapability {
 
 		return project.flatMap(p -> {
 		    try {
-			return Optional.ofNullable(p.findType(typeName));
+			return Optional.ofNullable(p.findType(typeName, new NullProgressMonitor()));
 		    } catch (JavaModelException e) {
 			logger.warning("JavaModelException encountered: " + e.getMessage());
 			return Optional.empty();

@@ -20,8 +20,8 @@ public record HTMLReferencesPair(String referencesPair, Double apertureCoverage,
     static {
 	try {
 	    var classLoader = HTMLPackage.class.getClassLoader();
-	    referencesPairEntryTemplate = new String(classLoader.getResourceAsStream("referencesPairEntry.html").readAllBytes(), StandardCharsets.UTF_8);
-	    typesPairEntryTemplate = new String(classLoader.getResourceAsStream("typesPairEntry.html").readAllBytes(), StandardCharsets.UTF_8);
+	    referencesPairEntryTemplate = new String(classLoader.getResourceAsStream("references-pair-entry.html").readAllBytes(), StandardCharsets.UTF_8);
+	    typesPairEntryTemplate = new String(classLoader.getResourceAsStream("types-pair-entry.html").readAllBytes(), StandardCharsets.UTF_8);
 	} catch (Exception e) {
 	    logger.severe("Could not load propper resources");
 	    System.exit(0);

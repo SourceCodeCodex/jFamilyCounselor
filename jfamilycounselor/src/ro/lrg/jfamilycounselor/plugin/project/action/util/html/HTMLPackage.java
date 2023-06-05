@@ -18,8 +18,8 @@ public record HTMLPackage(String packageName, List<String> types) implements HTM
     static {
 	try {
 	    var classLoader = HTMLPackage.class.getClassLoader();
-	    packageEntryTemplate = new String(classLoader.getResourceAsStream("packageEntry.html").readAllBytes(), StandardCharsets.UTF_8);
-	    typeEntryTemplate = new String(classLoader.getResourceAsStream("typeEntry.html").readAllBytes(), StandardCharsets.UTF_8);
+	    packageEntryTemplate = new String(classLoader.getResourceAsStream("package-entry.html").readAllBytes(), StandardCharsets.UTF_8);
+	    typeEntryTemplate = new String(classLoader.getResourceAsStream("type-entry.html").readAllBytes(), StandardCharsets.UTF_8);
 	} catch (Exception e) {
 	    logger.severe("Could not load propper resources");
 	    System.exit(0);
