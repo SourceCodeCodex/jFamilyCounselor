@@ -3,6 +3,7 @@ package ro.lrg.jfamilycounselor.capability.specific.coverage.name;
 import static ro.lrg.jfamilycounselor.capability.generic.parameter.ParameterTypeCapability.parameterType;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,8 @@ public class NameUsedTypesCapability {
     private NameUsedTypesCapability() {
     }
 
-    private static final Cache<Pair<IType, IType>, Boolean> areCorrelatedCache = MonitoredUnboundedCache.getCache();
+    private static final Cache<Pair<IType, IType>, List<Pair<IType, IType>>> cache = MonitoredUnboundedCache.getCache();
+    private static final Cache<IType, List<String>> tokenCache = MonitoredUnboundedCache.getCache();
 
     public static Optional<List<Pair<IType, IType>>> usedTypesTP(Pair<IType, ILocalVariable> tpReferencesPair) {
 	return parameterType(tpReferencesPair._2).flatMap(iType2 -> usedTypes(tpReferencesPair._1, iType2));
@@ -36,66 +38,56 @@ public class NameUsedTypesCapability {
     }
 
     private static Optional<List<Pair<IType, IType>>> usedTypes(IType iType1, IType iType2) {
-	var possibleTypes = DistinctConcreteConeProductCapability.product(iType1, iType2);
+	var typesPair = Pair.of(iType1, iType2);
 
-	if (possibleTypes.isEmpty()) {
+	if (cache.contains(typesPair))
+	    return cache.get(typesPair);
+
+	var distinctConcreteConeProduct = DistinctConcreteConeProductCapability.product(iType1, iType2);
+
+	if (distinctConcreteConeProduct.isEmpty())
 	    return Optional.empty();
+
+	var correlationFactorsMap = new HashMap<Pair<IType, IType>, Double>();
+
+	for (Pair<IType, IType> pair : distinctConcreteConeProduct.get()) {
+	    var tokens1 = splitNameInTokens(pair._1);
+	    var tokens2 = splitNameInTokens(pair._2);
+
+	    var correlationFactor = correlationFactor(tokens1, tokens2);
+	    correlationFactorsMap.put(pair, correlationFactor);
 	}
 
-	return Optional.of(possibleTypes.get().stream().filter(p -> {
-	    if (areCorrelatedCache.contains(p))
-		return areCorrelatedCache.get(p).get();
+	var maxFactor = correlationFactorsMap.entrySet().stream().max((e1, e2) -> Double.compare(e1.getValue(), e2.getValue())).map(e -> e.getValue());
 
-	    var areCorrelated = areCorrelated(p._1, p._2);
+	var result = maxFactor.map(factor -> correlationFactorsMap.entrySet()
+		.stream()
+		.filter(e -> e.getValue().equals(factor))
+		.map(e -> e.getKey())
+		.toList());
 
-	    areCorrelatedCache.put(p, areCorrelated);
+	result.ifPresent(r -> cache.put(typesPair, r));
 
-	    return areCorrelated;
-
-	}).toList());
+	return result;
 
     }
 
-    private static boolean areCorrelated(IType iType1, IType iType2) {
-	var tokens1 = splitNameInTokens(iType1);
-	var tokens2 = splitNameInTokens(iType2);
-
-	return levenshteinDistanceOnToken(tokens1, tokens2) <= (Math.max(tokens1.size(), tokens2.size()) / 2.);
-    }
-
-    private static int levenshteinDistanceOnToken(List<String> tokens1, List<String> tokens2) {
-
-	var dp = new int[tokens1.size() + 1][tokens2.size() + 1];
-
-	for (int i = 0; i <= tokens1.size(); i++) {
-	    for (int j = 0; j <= tokens2.size(); j++) {
-		if (i == 0) {
-		    dp[i][j] = j;
-		} else if (j == 0) {
-		    dp[i][j] = i;
-		} else {
-		    dp[i][j] = min(dp[i - 1][j - 1]
-			    + costOfSubstitution(tokens1.get(i - 1), tokens2.get(j - 1)),
-			    dp[i - 1][j] + 1,
-			    dp[i][j - 1] + 1);
-		}
-	    }
-	}
-
-	return dp[tokens1.size()][tokens2.size()];
-    }
+    private static final String tokensR = "(?<!(^|\\d))(?=\\d)|(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])|_";
 
     private static List<String> splitNameInTokens(IType iType) {
-	var tokensR = "(?<!(^|\\d))(?=\\d)|(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])|_";
-	return Arrays.asList(iType.getElementName().split(tokensR));
+	return tokenCache.get(iType).orElseGet(() -> {
+	    var r = Arrays.asList(iType.getElementName().split(tokensR));
+	    tokenCache.put(iType, r);
+	    return r;
+	});
     }
 
-    public static int costOfSubstitution(String a, String b) {
-	return a.equals(b) ? 0 : 1;
-    }
+    private static double correlationFactor(List<String> tokens1, List<String> tokens2) {
+	var avgTokenLength = (tokens1.size() + tokens2.size()) / 2.0;
 
-    public static int min(int... numbers) {
-	return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
+	var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
+
+	return (commonTokensCount / avgTokenLength);
     }
 
 }

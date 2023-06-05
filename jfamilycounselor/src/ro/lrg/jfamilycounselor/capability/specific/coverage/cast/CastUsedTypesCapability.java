@@ -69,12 +69,12 @@ public class CastUsedTypesCapability {
 	    }
 
 	    var castsEnclosingMethodsT1 = castsEnclosingMethodsT1Opt.get().stream()
-		    .filter(m -> !m.getElementName().contains(Constants.EQUALS))
+		    .filter(m -> !m.getElementName().contains(Constants.EQUAL))
 		    .filter(m -> MethodOverrideCapability.isOverriding(m).orElse(false))
 		    .toList();
 
 	    var castsEnclosingMethodsT2 = castsEnclosingMethodsT2Opt.get().stream()
-		    .filter(m -> !m.getElementName().contains(Constants.EQUALS))
+		    .filter(m -> !m.getElementName().contains(Constants.EQUAL))
 		    .filter(m -> MethodOverrideCapability.isOverriding(m).orElse(false))
 		    .toList();
 

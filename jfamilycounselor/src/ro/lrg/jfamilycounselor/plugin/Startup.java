@@ -2,7 +2,11 @@ package ro.lrg.jfamilycounselor.plugin;
 
 import java.util.logging.Logger;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
@@ -16,7 +20,7 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public final class Startup implements IStartup {
-
+    
     private static final Logger logger = jFCLogger.getJavaLogger();
 
     public void earlyStartup() {
@@ -47,9 +51,25 @@ public final class Startup implements IStartup {
 	});
 
 	ResourcesPlugin.getWorkspace().addResourceChangeListener(event -> {
-	    logger.info("Clearing caches and reloading sources");
-	    CacheSupervisor.clearCaches();
-	    JavaProjectsCapability.reloadProjects();
+	    if (event == null || event.getDelta() == null) {
+		return;
+	    }
+
+	    try {
+		event.getDelta().accept(new IResourceDeltaVisitor() {
+		    public boolean visit(final IResourceDelta delta) throws CoreException {
+			if ((delta.getResource().getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0 ||
+				(delta.getResource().getType() & IResource.FILE) != 0 && delta.getResource().getFileExtension().contains("java") && (delta.getFlags() & IResourceDelta.CONTENT) != 0) {
+			    logger.info("Clearing caches and reloading sources");
+			    CacheSupervisor.clearCaches();
+			    JavaProjectsCapability.reloadProjects();
+			}
+			return true;
+		    }
+		});
+	    } catch (CoreException e) {
+	    }
+
 	});
     }
 

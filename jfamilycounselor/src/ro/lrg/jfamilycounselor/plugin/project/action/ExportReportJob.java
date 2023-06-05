@@ -158,6 +158,9 @@ public class ExportReportJob extends Job {
 				    case NAME_BASED: {
 					yield rp.nameUsedTypes().getElements();
 				    }
+				    case LEVENSHTEIN_BASED: {
+					yield rp.levenshteinUsedTypes().getElements();
+				    }
 				    case ASSIGNMENT_BASED: {
 					yield rp.assignemntUsedTypes().getElements();
 				    }
