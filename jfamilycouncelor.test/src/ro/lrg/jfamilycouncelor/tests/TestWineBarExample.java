@@ -19,7 +19,7 @@ public class TestWineBarExample {
 	private MProject currentProject;
 	
 	private MType findClass(String fullyQualifiedName) {
-		for (MType aClass : currentProject.relevantClasses().getElements()) {
+		for (MType aClass : currentProject.relevantTypes().getElements()) {
 			if (aClass.getUnderlyingObject().getFullyQualifiedName().equals(fullyQualifiedName)) {
 				return aClass;
 			}

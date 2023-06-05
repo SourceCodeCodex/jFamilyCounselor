@@ -12,26 +12,21 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ArrayAccess;
-import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CastExpression;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.ExpressionMethodReference;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.LambdaExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperFieldAccess;
-import org.eclipse.jdt.core.dom.ThisExpression;
 
 import ro.lrg.jfamilycounselor.capability.generic.parse.ParseCapability;
+import ro.lrg.jfamilycounselor.capability.generic.type.ConcreteConeCapability;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -125,17 +120,20 @@ public class ExpressionDerivationCapability {
 
 	    derived.push(currentExpression);
 
+	    var newRecordedType = Optional.ofNullable(currentExpression.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
+
+	    if (newRecordedType.stream().allMatch(t -> ConcreteConeCapability.concreteCone(t).stream().allMatch(l -> l.size() == 1))) {
+		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(newRecordedType, updateRecordedType(lastRecordedType, newRecordedType)));
+		continue;
+	    }
+
 	    switch (currentExpression.getNodeType()) {
 	    case ASTNode.ARRAY_ACCESS: {
-		var arrayAccess = (ArrayAccess) currentExpression;
-		var newRecordedType = Optional.ofNullable(arrayAccess.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
-	    
+
 	    case ASTNode.ARRAY_CREATION: {
-		var arrayCreation = (ArrayCreation) currentExpression;
-		var newRecordedType = Optional.ofNullable(arrayCreation.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
@@ -148,14 +146,11 @@ public class ExpressionDerivationCapability {
 
 	    case ASTNode.CAST_EXPRESSION: {
 		var cast = (CastExpression) currentExpression;
-		var newRecordedType = Optional.ofNullable(cast.getType().resolveBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		workingStack.push(Pair.of(cast.getExpression(), updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
 
 	    case ASTNode.CLASS_INSTANCE_CREATION: {
-		var instantiation = (ClassInstanceCreation) currentExpression;
-		var newRecordedType = Optional.ofNullable(instantiation.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(newRecordedType, updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
@@ -169,7 +164,6 @@ public class ExpressionDerivationCapability {
 
 	    case ASTNode.FIELD_ACCESS: {
 		var fieldAccess = (FieldAccess) currentExpression;
-		var newRecordedType = Optional.ofNullable(fieldAccess.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		var field = Optional.ofNullable(fieldAccess.resolveFieldBinding()).map(b -> (IField) b.getJavaElement());
 
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(field, updateRecordedType(lastRecordedType, newRecordedType)));
@@ -178,7 +172,6 @@ public class ExpressionDerivationCapability {
 
 	    case ASTNode.METHOD_INVOCATION: {
 		var methodInvocation = (MethodInvocation) currentExpression;
-		var newRecordedType = Optional.ofNullable(methodInvocation.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		var method = Optional.ofNullable(methodInvocation.resolveMethodBinding()).map(b -> (IMethod) b.getJavaElement());
 
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(method, updateRecordedType(lastRecordedType, newRecordedType)));
@@ -191,7 +184,6 @@ public class ExpressionDerivationCapability {
 
 		if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
 		    var binding = (IVariableBinding) bindingOpt.get();
-		    var newRecordedType = Optional.ofNullable(simpleName.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 
 		    if (binding.isParameter()) {
 			var param = Optional.of((ILocalVariable) binding.getJavaElement());
@@ -221,7 +213,7 @@ public class ExpressionDerivationCapability {
 		    logger.warning("Simple name expression skipped: " + simpleName);
 		    break;
 		}
-		logger.warning("Simple name was not a variable: " + simpleName  + ".Type: " + bindingOpt.map(b -> b.getKind()));
+		logger.warning("Simple name was not a variable: " + simpleName + ".Type: " + bindingOpt.map(b -> b.getKind()));
 		break;
 	    }
 
@@ -231,7 +223,6 @@ public class ExpressionDerivationCapability {
 
 		if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
 		    var binding = (IVariableBinding) bindingOpt.get();
-		    var newRecordedType = Optional.ofNullable(qualifiedName.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 
 		    if (binding.isField()) {
 			var field = Optional.ofNullable(qualifiedName.resolveBinding()).map(b -> (IField) b.getJavaElement());
@@ -256,7 +247,6 @@ public class ExpressionDerivationCapability {
 
 	    case ASTNode.SUPER_FIELD_ACCESS: {
 		var superFieldAccess = (SuperFieldAccess) currentExpression;
-		var newRecordedType = Optional.ofNullable(superFieldAccess.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		var field = Optional.ofNullable(superFieldAccess.resolveFieldBinding()).map(b -> (IField) b.getJavaElement());
 
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(field, updateRecordedType(lastRecordedType, newRecordedType)));
@@ -265,7 +255,6 @@ public class ExpressionDerivationCapability {
 
 	    case ASTNode.SUPER_METHOD_INVOCATION: {
 		var superMethodInvocation = (MethodInvocation) currentExpression;
-		var newRecordedType = Optional.ofNullable(superMethodInvocation.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		var method = Optional.ofNullable(superMethodInvocation.resolveMethodBinding()).map(b -> (IMethod) b.getJavaElement());
 
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(method, updateRecordedType(lastRecordedType, newRecordedType)));
@@ -273,31 +262,25 @@ public class ExpressionDerivationCapability {
 	    }
 
 	    case ASTNode.THIS_EXPRESSION: {
-		var thisExpression = (ThisExpression) currentExpression;
-		var newRecordedType = Optional.ofNullable(thisExpression.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
-	    
+
 	    case ASTNode.NULL_LITERAL: {
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), lastRecordedType));
 		break;
 	    }
-	    
+
 	    case ASTNode.EXPRESSION_METHOD_REFERENCE: {
-		var methodReference = (ExpressionMethodReference) currentExpression;
-		var newRecordedType = Optional.ofNullable(methodReference.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(newRecordedType, updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
-	    
+
 	    case ASTNode.LAMBDA_EXPRESSION: {
-		var lambdaExpression = (LambdaExpression) currentExpression;
-		var newRecordedType = Optional.ofNullable(lambdaExpression.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(newRecordedType, updateRecordedType(lastRecordedType, newRecordedType)));
 		break;
 	    }
-	    
+
 	    default:
 		logger.info("Irrelevant expression was encountered: " + currentExpression + ". Type: " + currentExpression.getNodeType());
 		succeddedOrHaltedDerivations.add(new ExpressionDerivationResult(Optional.empty(), lastRecordedType));

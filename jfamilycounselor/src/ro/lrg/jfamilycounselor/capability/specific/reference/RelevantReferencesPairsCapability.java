@@ -34,8 +34,8 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * @author rosualinpetru
  *
  */
-public class ReferencesPairsCapability {
-    private ReferencesPairsCapability() {
+public class RelevantReferencesPairsCapability {
+    private RelevantReferencesPairsCapability() {
     }
 
     private static Logger logger = jFCLogger.getJavaLogger();
