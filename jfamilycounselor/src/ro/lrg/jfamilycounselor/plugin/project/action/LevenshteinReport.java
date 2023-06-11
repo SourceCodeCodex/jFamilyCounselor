@@ -12,7 +12,7 @@ import ro.lrg.xcore.metametamodel.IActionPerformer;
 public class LevenshteinReport implements IActionPerformer<Void, MProject, HListEmpty> {
 
     public Void performAction(MProject mProject, HListEmpty args) {
-	var exportJob = new ExportReportJob(EstimationType.NAME_BASED, mProject.getUnderlyingObject());
+	var exportJob = new ExportReportJob(EstimationType.LEVENSHTEIN_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);
 	exportJob.setRule(ExportReportJob.MUTEX);
 	exportJob.setSystem(false);

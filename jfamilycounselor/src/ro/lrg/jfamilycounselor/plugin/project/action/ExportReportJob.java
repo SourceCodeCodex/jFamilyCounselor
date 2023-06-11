@@ -106,11 +106,10 @@ public class ExportReportJob extends Job {
 	    var headers = List.of("Class", "Aperture Coverage", "Duration");
 	    csvFileWriter.write(CsvUtil.convertToCsv(headers));
 
-	    @SuppressWarnings("preview")
-	    var flushThread = Thread.startVirtualThread(() -> {
+	    var flushThread = new Thread(() -> {
 		while (!Thread.interrupted()) {
 		    try {
-			Thread.sleep(Duration.ofSeconds(5));
+			Thread.sleep(5000);
 			csvFileWriter.flush();
 		    } catch (IOException | InterruptedException e) {
 			break;
@@ -118,6 +117,8 @@ public class ExportReportJob extends Job {
 		}
 
 	    });
+	    
+	    flushThread.start();
 
 	    // create HTML report structure
 	    try {

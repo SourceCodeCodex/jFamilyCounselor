@@ -1,6 +1,5 @@
 package ro.lrg.jfamilycounselor.util.cache;
 
-import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -19,7 +18,7 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 public class CacheSupervisor {
 
     private static final double MAX_MEMORY_USAGE = 0.9;
-    private static final Duration SLEEP_DURATION = Duration.ofSeconds(5);
+    private static final long SLEEP_DURATION = 5000;
 
     private CacheSupervisor() {
     }
@@ -32,12 +31,10 @@ public class CacheSupervisor {
 
     private static final Logger logger = jFCLogger.getJavaLogger();
 
-
-    @SuppressWarnings("preview")
     public static void startMemorySupervisor() {
 	logger.info("Memory supervisor: Starting automatic cache cleaner...");
 	if (!isMemorySupervisorRunning) {
-	    memorySupervisingThread = Thread.startVirtualThread(() -> {
+	    memorySupervisingThread = new Thread(() -> {
 		isMemorySupervisorRunning = true;
 		var r = Runtime.getRuntime();
 		while (!Thread.interrupted()) {
@@ -60,6 +57,8 @@ public class CacheSupervisor {
 		isMemorySupervisorRunning = false;
 
 	    });
+	    
+	    memorySupervisingThread.start();
 	}
     }
 
