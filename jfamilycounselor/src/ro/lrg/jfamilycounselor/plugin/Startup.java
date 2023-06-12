@@ -14,21 +14,23 @@ import org.eclipse.ui.IStartup;
 
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.insider.view.ToolRegistration;
-import ro.lrg.jfamilycounselor.capability.generic.project.JavaProjectsCapability;
+import ro.lrg.jfamilycounselor.capability.common.project.JavaProjectsCapability;
 import ro.lrg.jfamilycounselor.util.cache.CacheSupervisor;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public final class Startup implements IStartup {
-    
-    private static final Logger logger = jFCLogger.getJavaLogger();
 
+    private static final Logger logger = jFCLogger.getLogger();
+
+    @Override
     public void earlyStartup() {
 	System.setProperty("java.util.logging.SimpleFormatter.format", jFCLogger.format());
 	CacheSupervisor.startMemorySupervisor();
 
 	Factory.getInstance().setCacheCapacity(0);
 
+	// helps Insider know how to convert the implementations to the entities of the metamodel
 	ToolRegistration.getInstance().registerXEntityConverter(element -> {
 
 	    if (element instanceof IJavaProject iJavaProject) {
@@ -50,6 +52,8 @@ public final class Startup implements IStartup {
 	    return null;
 	});
 
+	// register a change listener to trigger the clearing of caches upon project
+	// changes that could alter the results of analyses
 	ResourcesPlugin.getWorkspace().addResourceChangeListener(event -> {
 	    if (event == null || event.getDelta() == null) {
 		return;

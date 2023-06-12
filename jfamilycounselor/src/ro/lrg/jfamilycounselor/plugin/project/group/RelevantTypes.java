@@ -3,7 +3,7 @@ package ro.lrg.jfamilycounselor.plugin.project.group;
 import jfamilycounselor.metamodel.entity.MProject;
 import jfamilycounselor.metamodel.entity.MType;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.capability.specific.project.RelevantTypesCapability;
+import ro.lrg.jfamilycounselor.capability.project.RelevantTypesCapability;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;
@@ -11,6 +11,7 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 @RelationBuilder
 public class RelevantTypes implements IRelationBuilder<MType, MProject> {
 
+    @Override
     public Group<MType> buildGroup(MProject mProject) {
 	var group = new Group<MType>();
 	RelevantTypesCapability.relevantTypes(mProject.getUnderlyingObject()).stream()

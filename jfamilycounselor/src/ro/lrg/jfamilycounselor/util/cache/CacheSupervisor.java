@@ -7,10 +7,8 @@ import java.util.logging.Logger;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
- * Service responsible for the management of all caches across the system. It
- * has the functionality to regularly clear all caches when the memory usage
- * raises above the tolerable levels. Therefore, any other service should only
- * used caches provided by this service for proper supervision.
+ * Regularly clears all caches when the memory usage raises above the tolerable
+ * levels or when there is a change in the project's source files.
  * 
  * @author rosualinpetru
  *
@@ -22,14 +20,14 @@ public class CacheSupervisor {
 
     private CacheSupervisor() {
     }
-    
+
     @SuppressWarnings("rawtypes")
     static List<Cache> caches = new LinkedList<Cache>();
 
     private static volatile boolean isMemorySupervisorRunning = false;
     private static Thread memorySupervisingThread;
 
-    private static final Logger logger = jFCLogger.getJavaLogger();
+    private static final Logger logger = jFCLogger.getLogger();
 
     public static void startMemorySupervisor() {
 	logger.info("Memory supervisor: Starting automatic cache cleaner...");
@@ -44,7 +42,7 @@ public class CacheSupervisor {
 		    var used = total - free;
 		    var usedPercentage = used / max;
 		    if (usedPercentage > MAX_MEMORY_USAGE) {
-			logger.warning("Performing cache clearing. " + String.format("Memory report: total=%.2f, free=%.2f, max=%.2f, used=%.2f (%.2f)", total, free, max, used, usedPercentage)) ;
+			logger.warning("Performing cache clearing. " + String.format("Memory report: total=%.2f, free=%.2f, max=%.2f, used=%.2f (%.2f)", total, free, max, used, usedPercentage));
 			clearCaches();
 		    }
 		    try {
@@ -57,7 +55,7 @@ public class CacheSupervisor {
 		isMemorySupervisorRunning = false;
 
 	    });
-	    
+
 	    memorySupervisingThread.start();
 	}
     }

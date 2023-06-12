@@ -3,13 +3,25 @@ package ro.lrg.jfamilycounselor.util.cache;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Caches can make analyses lead to erroneous results if the source code
+ * changes; therefore they need to be cleared in such cases. All instances of
+ * 
+ * @see ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache are being
+ *      monitored by the
+ * @see ro.lrg.jfamilycounselor.util.cache.CacheSupervisor CacheSupervisor and
+ *      cleared whenever there is a change in the project structure or in the
+ *      source code - @see ro.lrg.jfamilycounselor.plugin.Startup
+ * 
+ * @author rosualinpetru
+ */
 public final class MonitoredUnboundedCache<K, V> implements Cache<K, V> {
 
     private ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
 
     MonitoredUnboundedCache() {
     }
-    
+
     public static <K, V> Cache<K, V> getCache() {
 	var cache = new MonitoredUnboundedCache<K, V>();
 	CacheSupervisor.caches.add(cache);

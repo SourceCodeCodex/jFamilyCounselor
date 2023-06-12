@@ -7,7 +7,7 @@ public class jFCLogger {
     private jFCLogger() {
     }
 
-    public static Logger getJavaLogger() {
+    public static Logger getLogger() {
 	var callerFQN = Thread.currentThread().getStackTrace()[2].getClassName();
 	var callerNameFragments = Arrays.asList(callerFQN.split("\\."));
 	var callerSimpleName = callerNameFragments.get(callerNameFragments.size() - 1);
@@ -15,9 +15,6 @@ public class jFCLogger {
 	return logger;
     }
 
-    /**
-     * The logging format is set in the Startup class.
-     */
     @SuppressWarnings("unused")
     public static String format() {
 	var ANSI_RESET = "\u001B[0m";

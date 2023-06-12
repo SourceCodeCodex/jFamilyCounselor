@@ -7,6 +7,7 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class AssignmentApertureCoverage implements IPropertyComputer<Double, MType> {
 
+    @Override
     public Double compute(MType mType) {
 	return mType.referencesPairs().getElements().parallelStream()
 		.map(p -> p.assignmentApertureCoverage())

@@ -3,7 +3,8 @@ package ro.lrg.jfamilycounselor.plugin.project.action;
 import org.eclipse.core.runtime.jobs.Job;
 
 import jfamilycounselor.metamodel.entity.MProject;
-import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
+import ro.lrg.jfamilycounselor.Constants.EstimationType;
+import ro.lrg.jfamilycounselor.report.ExportReportJob;
 import ro.lrg.xcore.metametamodel.ActionPerformer;
 import ro.lrg.xcore.metametamodel.HListEmpty;
 import ro.lrg.xcore.metametamodel.IActionPerformer;
@@ -11,6 +12,7 @@ import ro.lrg.xcore.metametamodel.IActionPerformer;
 @ActionPerformer
 public class NameReport implements IActionPerformer<Void, MProject, HListEmpty> {
 
+    @Override
     public Void performAction(MProject mProject, HListEmpty args) {
 	var exportJob = new ExportReportJob(EstimationType.NAME_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);

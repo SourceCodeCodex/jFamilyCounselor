@@ -3,7 +3,7 @@ package ro.lrg.jfamilycounselor.plugin.type.group;
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MType;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.capability.specific.reference.RelevantReferencesPairsCapability;
+import ro.lrg.jfamilycounselor.capability.reference.RelevantReferencesPairsCapability;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;
@@ -11,6 +11,7 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 @RelationBuilder
 public class ReferencesPairs implements IRelationBuilder<MReferencesPair, MType> {
 
+    @Override
     public Group<MReferencesPair> buildGroup(MType mType) {
 	var group = new Group<MReferencesPair>();
 	RelevantReferencesPairsCapability.relevantReferencesPairs(mType.getUnderlyingObject()).stream()
