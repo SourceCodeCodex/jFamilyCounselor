@@ -14,7 +14,7 @@ import org.eclipse.ui.IStartup;
 
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.insider.view.ToolRegistration;
-import ro.lrg.jfamilycounselor.capability.common.project.JavaProjectsCapability;
+import ro.lrg.jfamilycounselor.capability.project.JavaProjectsCapability;
 import ro.lrg.jfamilycounselor.util.cache.CacheSupervisor;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
@@ -65,7 +65,7 @@ public final class Startup implements IStartup {
 			if ((delta.getResource().getType() & IResource.PROJECT) != 0 && (delta.getFlags() & IResourceDelta.OPEN) != 0 ||
 				(delta.getResource().getType() & IResource.FILE) != 0 && delta.getResource().getFileExtension().contains("java") && (delta.getFlags() & IResourceDelta.CONTENT) != 0) {
 			    logger.info("Clearing caches and reloading sources");
-			    CacheSupervisor.clearCaches();
+			    CacheSupervisor.clearAllCaches();
 			    JavaProjectsCapability.reloadProjects();
 			}
 			return true;

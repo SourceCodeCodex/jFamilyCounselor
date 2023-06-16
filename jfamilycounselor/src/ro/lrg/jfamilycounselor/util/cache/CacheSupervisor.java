@@ -15,8 +15,9 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  */
 public class CacheSupervisor {
 
-    private static final double MAX_MEMORY_USAGE = 0.9;
-    private static final long SLEEP_DURATION = 5000;
+    private static final double MAX_HIGH_CONSUMER_MEMORY_USAGE = 0.9;
+    private static final double MAX_LOW_CONSUMER_MEMORY_USAGE = 0.7;
+    private static final long SLEEP_DURATION = 10000;
 
     private CacheSupervisor() {
     }
@@ -34,17 +35,25 @@ public class CacheSupervisor {
 	if (!isMemorySupervisorRunning) {
 	    memorySupervisingThread = new Thread(() -> {
 		isMemorySupervisorRunning = true;
-		var r = Runtime.getRuntime();
+
 		while (!Thread.interrupted()) {
-		    var total = r.totalMemory() * 1.0 / 1048576;
-		    var free = r.freeMemory() * 1.0 / 1048576;
-		    var max = r.maxMemory() * 1.0 / 1048576;
-		    var used = total - free;
-		    var usedPercentage = used / max;
-		    if (usedPercentage > MAX_MEMORY_USAGE) {
-			logger.warning("Performing cache clearing. " + String.format("Memory report: total=%.2f, free=%.2f, max=%.2f, used=%.2f (%.2f)", total, free, max, used, usedPercentage));
-			clearCaches();
+
+		    if (usedMemoryPercentage() > MAX_HIGH_CONSUMER_MEMORY_USAGE) {
+			logger.warning("Performing high memory consumer cache clearing.");
+			clearHighMemoryConsumerCaches();
+
+			try {
+			    Thread.sleep(2000);
+			    if (usedMemoryPercentage() > MAX_LOW_CONSUMER_MEMORY_USAGE) {
+				logger.warning("Performing all cache clearing. ");
+				clearAllCaches();
+			    }
+			} catch (InterruptedException e) {
+			    isMemorySupervisorRunning = false;
+			    return;
+			}
 		    }
+
 		    try {
 			Thread.sleep(SLEEP_DURATION);
 		    } catch (InterruptedException e) {
@@ -60,6 +69,15 @@ public class CacheSupervisor {
 	}
     }
 
+    private static double usedMemoryPercentage() {
+	var r = Runtime.getRuntime();
+	var total = r.totalMemory() * 1.0 / 1048576;
+	var free = r.freeMemory() * 1.0 / 1048576;
+	var max = r.maxMemory() * 1.0 / 1048576;
+	var used = total - free;
+	return used / max;
+    }
+
     public static void stopMemorySupervisor() {
 	logger.info("Memory supervisor: Stopping automatic cache cleaner...");
 	if (isMemorySupervisorRunning) {
@@ -67,7 +85,13 @@ public class CacheSupervisor {
 	}
     }
 
-    public static void clearCaches() {
+    public static void clearAllCaches() {
 	caches.stream().forEach(c -> c.clear());
+	System.gc();
+    }
+
+    public static void clearHighMemoryConsumerCaches() {
+	caches.stream().filter(c -> c.isBigMemoryConsumer()).forEach(c -> c.clear());
+	System.gc();
     }
 }

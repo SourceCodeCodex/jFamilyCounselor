@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MTypesPair;
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.jfamilycounselor.Constants.EstimationType;
@@ -39,6 +40,12 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
+/**
+ * The job is intended to export data as results are being computed.
+ * 
+ * @author rosualinpetru
+ *
+ */
 public class ExportReportJob extends Job {
 
     public static final String FAMILY = "jFamilyCounselorExportReport";
@@ -73,26 +80,31 @@ public class ExportReportJob extends Job {
 
 	var outputDirPath = outputDirPathOpt.get();
 
-	// compute relevant types
+	// ------------------------------------------------------------------------------------
+	// Compute Relevant Types
+	// ------------------------------------------------------------------------------------
 	var relevantTypesJob = new RelevantTypesJob(iJavaProject);
 	relevantTypesJob.setPriority(Job.LONG);
 	relevantTypesJob.setSystem(false);
 	relevantTypesJob.setUser(true);
 	relevantTypesJob.schedule();
+
 	try {
 	    relevantTypesJob.join();
 	} catch (InterruptedException e) {
 	    logger.warning("Thread interrupted: ExportReportJob");
 	    return Status.CANCEL_STATUS;
 	}
+
 	var relevantTypes = relevantTypesJob.relevantTypes();
 	var workload = relevantTypes.size();
 	var subMonitor = SubMonitor.convert(monitor, workload);
 
-	// pack with packages
 	var packages = relevantTypes.stream().collect(Collectors.groupingBy(t -> t.getPackageFragment()));
 
-	// csv
+	// ------------------------------------------------------------------------------------
+	// CSV - Flushing Thread
+	// ------------------------------------------------------------------------------------
 	var csvFile = outputDirPath.append(iJavaProject.getElementName() + ".csv").toFile();
 	try {
 	    csvFile.createNewFile();
@@ -106,7 +118,7 @@ public class ExportReportJob extends Job {
 	    var headers = List.of("Class", "Aperture Coverage", "Duration");
 	    csvFileWriter.write(CsvCapability.joinAsCSVRow(headers));
 
-	    var flushThread = new Thread(() -> {
+	    var csvFlushThread = new Thread(() -> {
 		while (!Thread.interrupted()) {
 		    try {
 			Thread.sleep(5000);
@@ -117,10 +129,12 @@ public class ExportReportJob extends Job {
 		}
 
 	    });
-	    
-	    flushThread.start();
 
-	    // create HTML report structure
+	    csvFlushThread.start();
+
+	    // ------------------------------------------------------------------------------------
+	    // Create Initial HTML Report Structure
+	    // ------------------------------------------------------------------------------------
 	    try {
 		createHTMLReportStructure(outputDirPath, packages);
 	    } catch (IOException e) {
@@ -128,8 +142,9 @@ public class ExportReportJob extends Job {
 		return Status.error("IOException while creating the HTML report structure");
 	    }
 
-	    // start computation
-
+	    // ------------------------------------------------------------------------------------
+	    // Compute and Export Data
+	    // ------------------------------------------------------------------------------------
 	    relevantTypes.parallelStream()
 		    .forEach(t -> {
 			var metaType = Factory.getInstance().createMType(t);
@@ -155,22 +170,8 @@ public class ExportReportJob extends Job {
 				    var startRP = Instant.now();
 
 				    var possibleTypes = rp.possibleTypes().getElements();
-				    List<MTypesPair> usedTypes = switch (estimation) {
-				    case NAME_BASED: {
-					yield rp.nameUsedTypes().getElements();
-				    }
-				    case LEVENSHTEIN_BASED: {
-					yield rp.levenshteinUsedTypes().getElements();
-				    }
-				    case ASSIGNMENT_BASED: {
-					yield rp.assignemntUsedTypes().getElements();
-				    }
-				    case CAST_BASED: {
-					yield rp.castUsedTypes().getElements();
-				    }
-				    default:
-					throw new IllegalArgumentException("Unknown estimation: " + estimation);
-				    };
+
+				    var usedTypes = usedTypes(rp);
 
 				    var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
@@ -207,7 +208,7 @@ public class ExportReportJob extends Job {
 
 		    });
 
-	    flushThread.interrupt();
+	    csvFlushThread.interrupt();
 
 	    csvFileWriter.close();
 
@@ -219,6 +220,25 @@ public class ExportReportJob extends Job {
 	    logger.warning("IOException encountered: " + e.getMessage());
 	    return Status.error("IOException during the analysis");
 	}
+    }
+
+    private List<MTypesPair> usedTypes(MReferencesPair rp) {
+	return switch (estimation) {
+	case NAME_BASED: {
+	    yield rp.nameBasedUsedTypes().getElements();
+	}
+	case NAME_BASED_LEVENSHTEIN: {
+	    yield rp.nameBasedLevenshteinUsedTypes().getElements();
+	}
+	case ASSIGNMENTS_BASED: {
+	    yield rp.assignemntsBasedUsedTypes().getElements();
+	}
+	case CASTS_BASED: {
+	    yield rp.castsBasedUsedTypes().getElements();
+	}
+	default:
+	    throw new IllegalArgumentException("Unknown estimation: " + estimation);
+	};
     }
 
     private Optional<IPath> createOutputDirectory() {

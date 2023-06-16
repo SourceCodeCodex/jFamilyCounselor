@@ -6,12 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Caches can make analyses lead to erroneous results if the source code
  * changes; therefore they need to be cleared in such cases. All instances of
- * 
- * @see ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache are being
- *      monitored by the
- * @see ro.lrg.jfamilycounselor.util.cache.CacheSupervisor CacheSupervisor and
- *      cleared whenever there is a change in the project structure or in the
- *      source code - @see ro.lrg.jfamilycounselor.plugin.Startup
+ * are being monitored by a supervisor and cleared whenever there is a change in
+ * the project structure or in the source code - @see
+ * ro.lrg.jfamilycounselor.plugin.Startup
  * 
  * @author rosualinpetru
  */
@@ -19,13 +16,23 @@ public final class MonitoredUnboundedCache<K, V> implements Cache<K, V> {
 
     private ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
 
-    MonitoredUnboundedCache() {
+    /**
+     * Caches that use a lot of memory would be cleared more frequently then those
+     * which consume lesser amount of memory.
+     */
+    private boolean isHighMemoryConsumer;
+
+    private MonitoredUnboundedCache(boolean isHighMemoryConsumer) {
+	this.isHighMemoryConsumer = isHighMemoryConsumer;
+	CacheSupervisor.caches.add(this);
     }
 
-    public static <K, V> Cache<K, V> getCache() {
-	var cache = new MonitoredUnboundedCache<K, V>();
-	CacheSupervisor.caches.add(cache);
-	return cache;
+    public static <K, V> Cache<K, V> getLowConsumingCache() {
+	return new MonitoredUnboundedCache<K, V>(false);
+    }
+    
+    public static <K, V> Cache<K, V> getHighConsumingCache() {
+	return new MonitoredUnboundedCache<K, V>(true);
     }
 
     public void put(K key, V value) {
@@ -54,6 +61,10 @@ public final class MonitoredUnboundedCache<K, V> implements Cache<K, V> {
 
     public void clear() {
 	map.clear();
+    }
+
+    public boolean isBigMemoryConsumer() {
+	return isHighMemoryConsumer;
     }
 
 }

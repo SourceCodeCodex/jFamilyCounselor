@@ -15,5 +15,7 @@ public interface Cache<K, V> {
     boolean isEmpty();
 
     void clear();
+    
+    boolean isBigMemoryConsumer();
 
 }
