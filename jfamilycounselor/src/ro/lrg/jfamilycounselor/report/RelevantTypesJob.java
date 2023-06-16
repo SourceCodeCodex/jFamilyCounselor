@@ -15,8 +15,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.capability.common.project.AllTypesCapability;
-import ro.lrg.jfamilycounselor.capability.project.RelevantTypesCapability;
+import ro.lrg.jfamilycounselor.approach.relevance.RelevantTypesCapability;
+import ro.lrg.jfamilycounselor.capability.project.AllTypesCapability;
 import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
