@@ -17,7 +17,7 @@ public class CacheSupervisor {
 
     private static final double MAX_HIGH_CONSUMER_MEMORY_USAGE = 0.9;
     private static final double MAX_LOW_CONSUMER_MEMORY_USAGE = 0.7;
-    private static final long SLEEP_DURATION = 10000;
+    private static final long SLEEP_DURATION = 5000;
 
     private CacheSupervisor() {
     }
@@ -43,7 +43,7 @@ public class CacheSupervisor {
 			clearHighMemoryConsumerCaches();
 
 			try {
-			    Thread.sleep(2000);
+			    Thread.sleep(1200);
 			    if (usedMemoryPercentage() > MAX_LOW_CONSUMER_MEMORY_USAGE) {
 				logger.warning("Performing all cache clearing. ");
 				clearAllCaches();
