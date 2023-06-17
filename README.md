@@ -31,161 +31,72 @@
   <h1 align="center">jFamilyCounselor</h1>
 
   <p align="center">
-    Eclipse plugin that detects hidden familial type correlations in Java code.
+    Eclipse plugin that bundles metric-based static code analyses that reveal fragments containing hidden type correlations
     <br />
-    <a href="docs/paper.pdf"><strong>Paper »</strong></a>
+    <a href="docs/approach.pdf"><strong>« Approach</strong></a> |
+    <a href="docs/tool.pdf"><strong>Tool Demo »</strong></a>
     <br />
-    <br />
-    <a href="https://github.com/SourceCodeCodex/jFamilyCounselor/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/SourceCodeCodex/jFamilyCounselor/issues">Propose Improvements</a>
+    <hr />
   </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#requirements">Requirements</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#development-environment">Development environment</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#license">License</a></li>
-  </ol>
-</details>
-
-
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-![eclipse-img-url]
-
-[eclipse-img-url]: docs/images/Eclipse.png
-
-**jFamilyCounselor** is an Eclipse plugin that runs a metric-based static code analysis, capable of identifying fragments containing hidden familial type correlations in Java source code. Hidden familial type correlations have been introduced in: Alin-Petru Roșu, Petru-Florin Mihancea, _Towards the Detection of Hidden Familial Type Correlations in Java Code_, 22nd IEEE International Working Conference on Source Code Analysis and Manipulation, 2022.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- USING THE PLUGIN -->
-## Using the plugin
-
-_Note: It is very important that you at least skimmed through the <a href="./docs/paper.pdf">article</a> before reading this section._
+<!-- ENVIRONMENT SETUP -->
+## Environment Setup
 
 ### Requirements
 
-* *Eclipse IDE* ([2023-03 R](https://www.eclipse.org/downloads/packages/release/2023-03/r) recommended)
-* *JRE* = 16
+* *Eclipse IDE for RCP and RAP Developers* [2023-03 R](https://www.eclipse.org/downloads/packages/release/2023-03/r/eclipse-ide-rcp-and-rap-developers) 
+* *Java version* 16
 
-_Note: For using any Java version newer than 16, please use any Eclipse IDE version newer than 2023-06. This is due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/pull/965)._
+Notes:
+- using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962).
+- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the ``/lib`` directory need to be manually specified.
 
-### Installing the binaries 
+### Setup
 
-_Note: The steps are described relative to the Zenodo artifact._
+jFamilyCounselor is developed using the [XCore](https://github.com/SourceCodeCodex/XCore) framework. In order to install XCore copy the [binaries](https://github.com/SourceCodeCodex/XCore/tree/master/latest) in the **dropins** folder of Eclipse. 
 
+Before working with jFamilyCounselor, it is recommended to experiment with XCore. Skimming through the [paper](https://doi.org/10.1109/SANER.2017.7884654) that introduces XCore and following the tutorial specified in its documentation would be recommended. Also, refer to the dev notes below whenever stumbling upon a bug/problem.
 
-1. Download `jFamilyCounselor.zip` from the `bin` directory
-2. Open Eclipse and go to `Help` > `Install New Software...`
-3. Click on `Add` to add a new repository
-4. Click on `Archive` and open the downloaded zip, then click `Add`
-5. `jFamilyCounselor` should have appeared on the list; select it
-6. Click `Next`
-7. Accept the license terms
-8. Trust the unsigned content of the unknown origin
-9. Restart Eclipse
+Tutorial summary:
+- have Eclipse RCP Plug-in Developer Resources installed
+- stop automatic builds
+- create a new plugin project and add and Imported Packaged: ``ro.lrg.xcore.metametamodel``
+- the names of the projects that use XCore should not contain dots in it, otherwise there might be bugs
+- enable the XCore annotation processor (which should be visible only if XCore's jar was placed in dropins)
+- import the ``ro.lrg.insider`` plugin project and make the former project depend on it 
+- implement metrics
+- in order to properly see the XCore property page, go to the Java's projects properties through the Package Explorer View
 
-### Check installation
+In order to setup the development environment for jFamilyCounselor, create a new workspace and configure in the same way as the one from the tutorial, and import the following projects:
+- ``jfamilycounselor``
+- ``jfamilycounselor.test``
+- ``jfamilycounselor.feature``
+- ``ro.lrg.insider`` (found [here](https://github.com/SourceCodeCodex/XCore))
 
-So as to validate whether the plugin was properly installed, follow the listed steps:
+For further explanations on how to use jFamilyCounselor, please refer to the [Tool Demo](docs/tool.pdf).
 
-- Download the dummy workspace from the `src/jfamilycounselor.example` directory and open it with Eclipse
-- Import `WineBar` in Eclipse as a Java project
-- Right-click on the `WineBar` project in the `Package Explorer` view and select `Browse in Insider`. _Note: Make sure that the project is imported as a Java project, not as a plain one._
-- Alternatively, right-click on the `WaiterTray` class (NOT on the compilation unit `WaiterTray.java`) in the `Package Explorer` view and select `Browse in Insider`. _Note: A class is represented in `Package Explorer` as a 'C' encircled in a green circle icon. Browsing in Insider a compilation unit will result in no entries in the `Insider` view._
-- In either scenarios, you should see an entry in the `Insider` view.
+### Developer Notes
 
+#### Execution
 
-### XCore summary
+- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the process that run jFamilyCounselor.
+- the cast-based approach records a slower progress at the beginning and better afterwards due to caching
 
-Working with/Extending  **jFamilyCounselor** requires the understading of some [XCore](https://github.com/SourceCodeCodex/XCore) concepts. XCore is a tool that dynamically generates the metamodel of static analyses. It works based on the following abstractions: `properties`, `groups` and `actions`. 
+#### Source code and vocabulary
 
-* A `property` represents a computation applied on an analysed element. For a class, the number of its fields, the number of its descendants, a boolean representing whether the class contains static methods or not, all represent properties of that class.
-* A `group` models a one-to-many relationship between elements. Some possible groups of a class are: the group of fields or methods the class contains, the group of interfaces it implements, etc.
-* An `action` triggers some behaviour that is related to that element. For instance, we can trigger a job that exports the results of a Java project analysis as a CSV file.
+- the ``ro.lrg.jfamilycounselor.plugin`` contains all classes that use XCore which generates the metamodel 
+- a ``capability`` is nothing but a glorified singleton that wraps some logic which can be tested in isolation
 
-More on XCore, including how to setup the environment, can be found at https://github.com/SourceCodeCodex/XCore.
+<!-- TESTING & DEPLOYMENT -->
+## Testing and deployment
 
-### Experimenting with the WineBar
+jFamilyCounselor's test are located in the ``jfamilycounselor.test`` project.
 
-The user interface of *jFamilyCounselor* is provided by the `Insider` plugin. To open an element in Insider you generally need to use the `Package Explorer` view. Upon right-clicking on a item from the Insider view, a menu appears, which contains all defined properties, groups and actions for that item.
-
-![insider-img-url]
-
-[insider-img-url]: docs/images/Insider.png
-
-
-Elements that are relevant to be browsed in Insider for jFamilyCounselor are:
-- Java projects
-- classes
-
-The main characteristic of a Java project is its `MightHideFamilialCorrelationsClasses` group. This group identifies those classes that are susceptible to hide familial type correlations behind some references they declare. In order to export the results of the analysis aplied at a project's level, there are two actions of `ExportReport_<algorithm>`, each representing one of the two estimation methods presented in the <a href="./docs/paper.pdf">paper</a>. The CSV file will be placed in the output directory, in the `jFamilyCounselor-reports` folder.
-
-![exports-url]
-
-[exports-url]: docs/images/Exports.png
-
-
-
-For the analysis of a particular class, we make use of the defined properties and groups. We can calculate its `aperture coverage` using both discussed algorithms based on properties. For more details on how the values are obtained, we can examine its group of references pair - `MightHideFamilialCorrelationsRefPairs`. For each reference pair we can again compute its aperture coverage and look at its `possible/used types` groups.
-
-
-![refs-url]
-
-[refs-url]: docs/images/Refs.png
-
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-## Development environment
-TO BE UPDATED
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-Contributions are what can make jFamilyCounselor more effective in detecting hidden familial type correlations. Any contributions you make are greatly appreciated.
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-
-* [XCore](https://github.com/SourceCodeCodex/XCore)
-* [Eclipse JDT](https://www.eclipse.org/jdt/)
-
-<!-- CONTACT -->
-## Contact
-
-Alin-Petru Roșu - [rosualinpetru@gmail.com](mailto:rosualinpetru@gmail.com)
+The deployment of the plugin can be made using the ``jfamilycounselor.feature``.
 
 <!-- LICENSE -->
 ## License
 
-All code is available to you under [MIT license](http://opensource.org/licenses/mit-license.php).
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+All code is available to you under the MIT license, available at http://opensource.org/licenses/mit-license.php and also in the [LICENSE.md](LICENSE.md) file
 

@@ -19,7 +19,6 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 public class AssignemntsBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPair> {
 
     @Override
-    @SuppressWarnings("unchecked")
     public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
 	var group = new Group<MTypesPair>();
 	Optional<List<Pair<IType, IType>>> usedTypes = usedTypes(mReferencesPair.getUnderlyingObject());

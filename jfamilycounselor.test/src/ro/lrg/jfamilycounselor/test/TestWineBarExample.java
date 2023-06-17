@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycouncelor.tests;
+package ro.lrg.jfamilycounselor.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import jfamilycounselor.metamodel.entity.MProject;
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MType;
-import ro.lrg.jfamilycouncelor.tests.utils.TestUtil;
+import ro.lrg.jfamilycounselor.test.util.TestUtil;
 import ro.lrg.jfamilycounselor.capability.project.JavaProjectsCapability;
 import ro.lrg.xcore.metametamodel.Group;
 
@@ -29,14 +29,14 @@ public class TestWineBarExample {
 
     @BeforeEach
     public void loadProject() {
-	TestUtil.importProject("WineBar1", "WineBar1.zip");
-	currentProject = jfamilycounselor.metamodel.factory.Factory.getInstance().createMProject(TestUtil.getProject("WineBar1").get());
+	TestUtil.importProject("WineBar", "WineBar.zip");
+	currentProject = jfamilycounselor.metamodel.factory.Factory.getInstance().createMProject(TestUtil.getProject("WineBar").get());
 	JavaProjectsCapability.reloadProjects();
     }
 
     @AfterEach
     public void deleteProject() {
-	TestUtil.deleteProject("WineBar1");
+	TestUtil.deleteProject("WineBar");
     }
 
     @Test

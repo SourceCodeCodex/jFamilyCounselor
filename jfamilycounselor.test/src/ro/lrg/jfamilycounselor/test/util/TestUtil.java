@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycouncelor.tests.utils;
+package ro.lrg.jfamilycounselor.test.util;
 
 import java.io.File;
 import java.net.URL;
