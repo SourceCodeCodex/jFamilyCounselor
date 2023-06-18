@@ -50,7 +50,7 @@
 
 Notes:
 - using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962).
-- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the ``/lib`` directory need to be manually specified.
+- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the `/lib` directory need to be manually specified.
 
 ## Setup
 
@@ -61,18 +61,18 @@ Before working with jFamilyCounselor, it is recommended to experiment with XCore
 Tutorial summary:
 - have Eclipse RCP Plug-in Developer Resources installed
 - stop automatic builds
-- create a new plugin project and add and Imported Packaged: ``ro.lrg.xcore.metametamodel``
+- create a new plugin project and add and Imported Packaged: `ro.lrg.xcore.metametamodel`
 - the names of the projects that use XCore should not contain dots in it, otherwise there might be bugs
 - enable the XCore annotation processor (which should be visible only if XCore's jar was placed in dropins)
-- import the ``ro.lrg.insider`` plugin project and make the former project depend on it 
+- import the `ro.lrg.insider` plugin project and make the former project depend on it 
 - implement metrics
 - in order to properly see the XCore property page, go to the Java's projects properties through the Package Explorer View
 
 In order to setup the development environment of jFamilyCounselor, create a new workspace and configure in the same way as the one from the tutorial, and import the following projects:
-- ``jfamilycounselor``
-- ``jfamilycounselor.test``
-- ``jfamilycounselor.feature``
-- ``ro.lrg.insider`` (found [here](https://github.com/SourceCodeCodex/XCore))
+- `jfamilycounselor`
+- `jfamilycounselor.test`
+- `jfamilycounselor.feature`
+- `ro.lrg.insider` (found [here](https://github.com/SourceCodeCodex/XCore))
 
 So as to validate that the setup was successful, follow the listed steps:
 
@@ -95,18 +95,31 @@ Working with/Extending  **jFamilyCounselor** requires the understanding of some 
 
 ## Execution
 
-- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that run jFamilyCounselor.
+- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor.
 - the cast-based approach records a slower progress at the beginning and better afterwards due to caching
 
 ## Source code. Vocabulary
 
-- the ``ro.lrg.jfamilycounselor.plugin`` contains all classes which are responsible for the metamodel's generation through XCore
-- a ``capability`` is nothing but a glorified singleton that wraps some logic which can be tested in isolation and composed with other capabilities
+- the `ro.lrg.jfamilycounselor.plugin` contains all classes which are responsible for the metamodel's generation through XCore
+- a `capability` is nothing but a glorified singleton that wraps some logic which can be tested in isolation and composed with other capabilities
+
+# Deployment
+
+The deployment of the plugin can be made using the `jfamilycounselor.feature`. 
+For now, the deployable feature is exported as a zip and installed in Eclipse:
+- open Eclipse and go to `Help` > `Install New Software...`
+- add a new repository
+- select `Archive` and open the exported zip
+- select `jFamilyCounselor`
+- accept the license terms
+- trust the unsigned content of the unknown origin
+- restart Eclipse
+
 
 <!-- RESULTS & CORPUS -->
 # Results. Corpus
 
-So far, the project that was intensively analyzed is ``kettle-engine``. In order to reproduce jFamilyCounselor's results, follow these steps:
+So far, the project that was intensively analyzed is `kettle-engine`. In order to reproduce jFamilyCounselor's results, follow these steps:
 
 - download the source code of [Pentaho Kettle-Engine](https://github.com/pentaho/pentaho-kettle/tree/1984dc13e773e7f12eb82e771a5ac8cdf86905e6)
 - import the sources as `Existing Maven projects`

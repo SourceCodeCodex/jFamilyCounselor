@@ -8,7 +8,7 @@
       jFamilyCounselor proposes a metric-based static code analysis,
 capable of identifying fragments containing hidden familial type
 correlations in Java source code. What are hidden familial type
-correlations and how jFamilyCounselor detects them are widely
+correlations and how jFamilyCounselor detects them are 
 presented in: Alin-Petru Roșu, Petru-Florin Mihancea, Towards
 the Detection of Hidden Familial Type Correlations in Java Code,
 LOOSE Research Group, 2022.
