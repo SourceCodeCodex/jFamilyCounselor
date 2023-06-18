@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor;
+package ro.lrg.jfamilycounselor.util;
 
 public class Constants {
     private Constants() {

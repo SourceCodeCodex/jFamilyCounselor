@@ -22,8 +22,8 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperFieldAccess;
 
-import ro.lrg.jfamilycounselor.Constants;
 import ro.lrg.jfamilycounselor.approach.usedtypes.CorrelationEstimationUsedTypesApproach;
+import ro.lrg.jfamilycounselor.util.Constants;
 
 public class CastsBasedApproach extends CorrelationEstimationUsedTypesApproach {
     private static CastsBasedApproach instance = new CastsBasedApproach();

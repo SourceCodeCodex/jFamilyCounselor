@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import jfamilycounselor.metamodel.entity.MProject;
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MType;
-import ro.lrg.jfamilycounselor.test.util.TestUtil;
 import ro.lrg.jfamilycounselor.capability.project.JavaProjectsCapability;
+import ro.lrg.jfamilycounselor.test.util.TestUtil;
 import ro.lrg.xcore.metametamodel.Group;
 
 public class TestWineBarExample {

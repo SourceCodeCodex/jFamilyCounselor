@@ -16,7 +16,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 
-import ro.lrg.jfamilycounselor.Constants;
+import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
 import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;

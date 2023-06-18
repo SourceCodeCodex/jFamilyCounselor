@@ -1,13 +1,3 @@
-<a name="readme-top"></a>
-
-[![Java][java-shield]][java-url]
-[![Eclipse][eclipse-shield]][eclipse-url]
-[![Release][release-shield]][release-url]
-[![MIT License][license-shield]][license-url]
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7027355.svg)](https://doi.org/10.5281/zenodo.7027355)
-
-
 [java-shield]: https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white
 [java-url]: https://www.java.com/en/
 
@@ -19,6 +9,13 @@
 
 [license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
 [license-url]: https://github.com/SourceCodeCodex/jFamilyCounselor/blob/main/LICENSE.md
+
+[![Java][java-shield]][java-url]
+[![Eclipse][eclipse-shield]][eclipse-url]
+[![Release][release-shield]][release-url]
+[![MIT License][license-shield]][license-url]
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7027355.svg)](https://doi.org/10.5281/zenodo.7027355)
+
 
 
 <!-- PROJECT LOGO -->
@@ -49,8 +46,8 @@
 * *Java version* 16
 
 Notes:
-- using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962).
-- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the `/lib` directory need to be manually specified.
+- using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962)
+- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the `/lib` directory need to be manually specified
 
 ## Setup
 
@@ -78,27 +75,31 @@ So as to validate that the setup was successful, follow the listed steps:
 
 - start an Eclipse application and import the `jfamilycounselor.example/WineBar` project
 - right-click on the `WineBar` project in the `Package Explorer` view and select `Browse in Insider`. _Note: Make sure that the project is imported as a Java project_
-- alternatively, right-click on the `WaiterTray` class (NOT on the compilation unit `WaiterTray.java`) in the `Package Explorer` view and select `Browse in Insider`. _Note: A class is represented in `Package Explorer` as a 'C' encircled in a green circle icon. Browsing in Insider a compilation unit will result in no entries in the `Insider` view._
-- in either scenarios, you should see an entry in the `Insider` view.
+- alternatively, right-click on the `WaiterTray` class (NOT on the compilation unit `WaiterTray.java`) in the `Package Explorer` view and select `Browse in Insider`. _Note: A class is represented in `Package Explorer` as a 'C' encircled in a green circle icon. Browsing in Insider a compilation unit will result in no entries in the `Insider` view_
+- in either scenarios, you should see an entry in the `Insider` view
 
 For further explanations on how to use jFamilyCounselor, please refer to the [Tool Demo](docs/tool.pdf).
 
+# Notes: Using jFamilyCounselor
+
+- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor
+- the cast-based approach records a slower progress at the beginning and better afterwards due to caching
+- XCore 1.3.1 does not run any computation on a separate threads and long operations can block the UI. It is best to analyze projects following these steps:
+  - export a report using one of the XCore actions. The export is located in the project's output folder, e.g. `/target/classes/jFamilyCounselor`
+  - use the results to determine the types that might be interesting to be analyzed manually
+  - browse those types in Insider individually and navigate through its defined groups to see, for instance, its relevant references pairs, or possible/used types of a particular pair
+
 # Developer Notes
 
-## XCore summary
+## XCore Summary
 
 Working with/Extending  **jFamilyCounselor** requires the understanding of some XCore concepts. XCore is a tool that dynamically generates the meta-model of static analyses. It works based on the following abstractions: `properties`, `groups` and `actions`. 
 
-- a `property` represents a computation applied on an analysed element. For a class, the number of its fields, the number of its descendants, a boolean indicating whether the class contains static methods or not, all represent properties of that class.
+- a `property` represents a computation applied on an analysed element. For a class, the number of its fields, the number of its descendants, a boolean indicating whether the class contains static methods or not, all represent properties of that class
 - a `group` models a one-to-many relationship between elements. Some possible groups of a class are: the group of fields or methods the class declares, the group of interfaces it implements, etc.
-- an `action` triggers some behavior that is related to that element. For instance, we can trigger a job that exports the results of a Java project analysis as a CSV file.
+- an `action` triggers some behavior that is related to that element. For instance, we can trigger a job that exports the results of a Java project analysis as a CSV file
 
-## Execution
-
-- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor.
-- the cast-based approach records a slower progress at the beginning and better afterwards due to caching
-
-## Source code. Vocabulary
+## Source Code. Vocabulary
 
 - the `ro.lrg.jfamilycounselor.plugin` contains all classes which are responsible for the metamodel's generation through XCore
 - a `capability` is nothing but a glorified singleton that wraps some logic which can be tested in isolation and composed with other capabilities
