@@ -9,11 +9,11 @@ public class NameBasedApertureCoverage implements IPropertyComputer<Double, MTyp
 
     @Override
     public Double compute(MType mType) {
-	return mType.referencesPairs().getElements().parallelStream()
+	return mType.relevantReferencesPairs().getElements().parallelStream()
 		.map(p -> p.nameBasedApertureCoverage())
 		.toList().stream()
 		.min(Double::compareTo)
-		.orElse(1.);
+		.orElse(0.);
     }
 
 }

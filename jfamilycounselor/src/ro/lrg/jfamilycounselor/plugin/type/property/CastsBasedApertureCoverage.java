@@ -9,11 +9,11 @@ public class CastsBasedApertureCoverage implements IPropertyComputer<Double, MTy
 
     @Override
     public Double compute(MType mType) {
-	return mType.referencesPairs().getElements().parallelStream()
+	return mType.relevantReferencesPairs().getElements().parallelStream()
 		.map(p -> p.castsBasedApertureCoverage())
 		.toList().stream()
 		.min(Double::compareTo)
-		.orElse(1.);
+		.orElse(0.);
     }
 
 }

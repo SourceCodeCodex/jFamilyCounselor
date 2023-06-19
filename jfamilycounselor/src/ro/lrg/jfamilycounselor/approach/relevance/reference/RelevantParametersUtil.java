@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.approach.relevance;
+package ro.lrg.jfamilycounselor.approach.relevance.reference;
 
 import static ro.lrg.jfamilycounselor.capability.parameter.ParameterTypeCapability.parameterType;
 import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.concreteCone;

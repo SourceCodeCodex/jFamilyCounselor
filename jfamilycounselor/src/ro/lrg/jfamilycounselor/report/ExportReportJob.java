@@ -140,7 +140,7 @@ public class ExportReportJob extends Job {
 		    .forEach(t -> {
 			var metaType = Factory.getInstance().createMType(t);
 
-			var referencesPairs = metaType.referencesPairs().getElements();
+			var referencesPairs = metaType.relevantReferencesPairs().getElements();
 
 			var apertureCoverages = new ConcurrentLinkedQueue<Double>();
 

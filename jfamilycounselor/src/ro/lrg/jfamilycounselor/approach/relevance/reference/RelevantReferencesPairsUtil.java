@@ -1,6 +1,6 @@
-package ro.lrg.jfamilycounselor.approach.relevance;
+package ro.lrg.jfamilycounselor.approach.relevance.reference;
 
-import static ro.lrg.jfamilycounselor.approach.relevance.RelevantParametersUtil.relevantParameters;
+import static ro.lrg.jfamilycounselor.approach.relevance.reference.RelevantParametersUtil.relevantParameters;
 import static ro.lrg.jfamilycounselor.capability.parameter.ParameterTypeCapability.parameterType;
 import static ro.lrg.jfamilycounselor.capability.type.DistinctConcreteConeProductCapability.distinctConcreteConeProduct;
 import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.distrinctCombinations2;
