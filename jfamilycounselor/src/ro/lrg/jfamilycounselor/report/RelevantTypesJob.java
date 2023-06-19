@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 
-import ro.lrg.jfamilycounselor.approach.relevance.RelevantTypesUtil;
+import ro.lrg.jfamilycounselor.approach.relevance.reference.RelevantTypesByReferencesUtil;
 import ro.lrg.jfamilycounselor.capability.project.AllTypesCapability;
 import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
@@ -44,7 +44,7 @@ public class RelevantTypesJob extends Job {
 
 	types.parallelStream().forEach(t -> {
 	    subMonitor.split(1);
-	    if (RelevantTypesUtil.isRelevant(t))
+	    if (RelevantTypesByReferencesUtil.isRelevant(t))
 		relevantTypes.add(t);
 	});
 	

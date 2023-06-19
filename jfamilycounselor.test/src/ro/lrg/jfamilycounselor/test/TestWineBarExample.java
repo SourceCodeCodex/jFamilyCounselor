@@ -19,7 +19,7 @@ public class TestWineBarExample {
     private MProject currentProject;
 
     private MType findClass(String fullyQualifiedName) {
-	for (MType aClass : currentProject.relevantTypes().getElements()) {
+	for (MType aClass : currentProject.relevantTypesByReferences().getElements()) {
 	    if (aClass.getUnderlyingObject().getFullyQualifiedName().equals(fullyQualifiedName)) {
 		return aClass;
 	    }
@@ -44,7 +44,7 @@ public class TestWineBarExample {
 	String className = "ro.lrg.testdata.winebar1.WaiterTray";
 	MType theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	Group<MReferencesPair> refPairs = theClass.referencesPairs();
+	Group<MReferencesPair> refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -53,7 +53,7 @@ public class TestWineBarExample {
 	className = "ro.lrg.testdata.winebar1.WineBar";
 	theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	refPairs = theClass.referencesPairs();
+	refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -66,7 +66,7 @@ public class TestWineBarExample {
 	String className = "ro.lrg.testdata.winebar2.WaiterTray";
 	MType theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	Group<MReferencesPair> refPairs = theClass.referencesPairs();
+	Group<MReferencesPair> refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -75,7 +75,7 @@ public class TestWineBarExample {
 	className = "ro.lrg.testdata.winebar2.WineBar";
 	theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	refPairs = theClass.referencesPairs();
+	refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -88,7 +88,7 @@ public class TestWineBarExample {
 	String className = "ro.lrg.testdata.winebar3.WaiterTray";
 	MType theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	Group<MReferencesPair> refPairs = theClass.referencesPairs();
+	Group<MReferencesPair> refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -97,7 +97,7 @@ public class TestWineBarExample {
 	className = "ro.lrg.testdata.winebar3.WineBar";
 	theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	refPairs = theClass.referencesPairs();
+	refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -110,7 +110,7 @@ public class TestWineBarExample {
 	String className = "ro.lrg.testdata.winebar4.WaiterTray";
 	MType theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	Group<MReferencesPair> refPairs = theClass.referencesPairs();
+	Group<MReferencesPair> refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,
@@ -119,7 +119,7 @@ public class TestWineBarExample {
 	className = "ro.lrg.testdata.winebar4.WineBar";
 	theClass = findClass(className);
 	assertNotNull("Class " + className + " not found in project " + currentProject.toString(), theClass);
-	refPairs = theClass.referencesPairs();
+	refPairs = theClass.relevantReferencesPairs();
 	assertEquals("Incorrect number of reference pairs for class " + className, 1, refPairs.getElements().size());
 	assertEquals("Incorrect aperture value for " + refPairs.getElements().get(0), 4, refPairs.getElements().get(0).aperture().intValue());
 	assertEquals("Incorrect assignmend-based aperture coverage computation for " + className,

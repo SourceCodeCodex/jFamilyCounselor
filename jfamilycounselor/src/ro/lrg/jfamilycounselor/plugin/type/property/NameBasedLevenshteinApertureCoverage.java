@@ -9,11 +9,11 @@ public class NameBasedLevenshteinApertureCoverage implements IPropertyComputer<D
 
     @Override
     public Double compute(MType mType) {
-	return mType.referencesPairs().getElements().parallelStream()
+	return mType.relevantReferencesPairs().getElements().parallelStream()
 		.map(p -> p.nameBasedLevenshteinApertureCoverage())
 		.toList().stream()
 		.min(Double::compareTo)
-		.orElse(1.);
+		.orElse(0.);
     }
 
 }
