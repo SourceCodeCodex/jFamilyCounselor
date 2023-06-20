@@ -84,7 +84,7 @@ For further explanations on how to use jFamilyCounselor, please refer to the [To
 
 - the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor
 - the cast-based approach records a slower progress at the beginning and better afterwards due to caching
-- XCore 1.3.1 does not run any computation on a separate threads and long operations can block the UI. It is best to analyze projects following these steps:
+- XCore currently does not run any computation on separate threads and long operations can block the UI. It is best to analyze projects following these steps:
   - export a report using one of the XCore actions. The export is located in the project's output folder, e.g. `/target/classes/jFamilyCounselor`
   - use the results to determine the types that might be interesting to be analyzed manually
   - browse those types in Insider individually and navigate through its defined groups to see, for instance, its relevant references pairs, or possible/used types of a particular pair
