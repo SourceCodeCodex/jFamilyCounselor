@@ -1,5 +1,8 @@
 package ro.lrg.jfamilycounselor.approach.relevance.typeparameter;
 
+import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.concreteCone;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -21,9 +24,19 @@ public class RelevantTypeParametersUtil {
 
     private static Logger logger = jFCLogger.getLogger();
 
-    public static List<ITypeParameter> relevantTypeParameters(IType iType) {
+    public static List<IJavaElement> relevantTypeParameters(IType iType) {
 	try {
-	    return Stream.of(iType.getTypeParameters()).filter(RelevantTypeParametersUtil::isRelevant).toList();
+	    var result = new ArrayList<IJavaElement>();
+
+	    // 'this' parameter
+	    if (isRelevant(iType))
+		result.add(iType);
+
+	    Stream.of(iType.getTypeParameters())
+		    .filter(RelevantTypeParametersUtil::isRelevant)
+		    .forEach(t -> result.add(t));
+
+	    return result;
 	} catch (JavaModelException e) {
 	    logger.warning("JavaModelException encountered: " + e.getMessage());
 	    return List.of();
@@ -35,11 +48,34 @@ public class RelevantTypeParametersUtil {
 	    return cache.get(iTypeParameter).get();
 
 	try {
-	    var isRelevant = List.of(iTypeParameter.getBounds()).isEmpty();
+	    var bounds = List.of(iTypeParameter.getBounds());
+	    var isRelevant = bounds.size() == 1 && !bounds.get(0).contains("<");
+
 	    cache.put(iTypeParameter, isRelevant);
 	    return isRelevant;
 	} catch (JavaModelException e) {
 	    logger.warning("JavaModelException encountered: " + e.getMessage());
+	    return false;
+	}
+
+    }
+
+    // 'this' relevance
+    private static boolean isRelevant(IType t) {
+	if (cache.contains(t))
+	    return cache.get(t).get();
+
+	try {
+	    var result = t.getCompilationUnit() != null &&
+		    !t.isAnonymous() &&
+		    !t.isLambda() &&
+		    (t.isClass() || t.isInterface()) &&
+		    concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
+
+	    cache.put(t, result);
+	    return result;
+	} catch (Throwable e) {
+	    cache.put(t, false);
 	    return false;
 	}
 

@@ -1,8 +1,8 @@
 package ro.lrg.jfamilycounselor.approach.usedtypes.assignment.derivation;
 
-import static ro.lrg.jfamilycounselor.capability.expression.method.invocation.MethodArgumentsCapability.extractArgument;
-import static ro.lrg.jfamilycounselor.capability.expression.method.invocation.MethodArgumentsCapability.indexOfParameter;
-import static ro.lrg.jfamilycounselor.capability.expression.method.invocation.MethodCallCapability.extractMethodCalls;
+import static ro.lrg.jfamilycounselor.capability.expression.methodcall.MethodArgumentsCapability.extractArgument;
+import static ro.lrg.jfamilycounselor.capability.expression.methodcall.MethodArgumentsCapability.indexOfParameter;
+import static ro.lrg.jfamilycounselor.capability.expression.methodcall.MethodCallCapability.extractMethodCalls;
 import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.cartesianProduct;
 import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.lazy;
 

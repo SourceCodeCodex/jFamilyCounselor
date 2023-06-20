@@ -1,10 +1,10 @@
 package ro.lrg.jfamilycounselor.approach.usedtypes.cast;
 
-import static ro.lrg.jfamilycounselor.capability.expression.type.cast.TypeCastCapability.extractTypeCastsFromScope;
-import static ro.lrg.jfamilycounselor.capability.expression.type.cast.TypeCastCapability.isDowncast;
-import static ro.lrg.jfamilycounselor.capability.expression.type.cast.TypeCastCapability.isGuarded;
+import static ro.lrg.jfamilycounselor.capability.expression.cast.TypeCastCapability.extractTypeCastsFromScope;
+import static ro.lrg.jfamilycounselor.capability.expression.cast.TypeCastCapability.isDowncast;
+import static ro.lrg.jfamilycounselor.capability.expression.cast.TypeCastCapability.isGuarded;
 import static ro.lrg.jfamilycounselor.capability.method.MethodOverrideCapability.isMethodOverriding;
-import static ro.lrg.jfamilycounselor.capability.search.type.cast.TypeCastSearchCapability.searchTypeCasts;
+import static ro.lrg.jfamilycounselor.capability.search.cast.TypeCastSearchCapability.searchTypeCasts;
 
 import java.util.List;
 import java.util.Optional;
