@@ -3,7 +3,7 @@ package ro.lrg.jfamilycounselor.plugin.project.group;
 import jfamilycounselor.metamodel.entity.MProject;
 import jfamilycounselor.metamodel.entity.MType;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.approach.relevance.typeparameter.RelevantTypesByTypeParametersUtil;
+import ro.lrg.jfamilycounselor.approach.typeparameter.relevance.RelevantTypesByTypeParametersUtil;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;

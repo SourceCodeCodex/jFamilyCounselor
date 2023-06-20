@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.plugin.referencespair.group;
 
-import static ro.lrg.jfamilycounselor.approach.usedtypes.assignment.AssignmentsBasedApproach.usedTypes;
+import static ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.AssignmentsBasedApproach.usedTypes;
 
 import java.util.List;
 import java.util.Optional;

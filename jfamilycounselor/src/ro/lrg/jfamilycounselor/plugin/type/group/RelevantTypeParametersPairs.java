@@ -5,7 +5,7 @@ import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.distrinct
 import jfamilycounselor.metamodel.entity.MType;
 import jfamilycounselor.metamodel.entity.MTypeParametersPair;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.approach.relevance.typeparameter.RelevantTypeParametersUtil;
+import ro.lrg.jfamilycounselor.approach.typeparameter.relevance.RelevantTypeParametersUtil;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;
