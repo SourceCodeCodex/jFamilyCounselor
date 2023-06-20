@@ -14,9 +14,11 @@ public class NameBasedLevenshteinReport implements IActionPerformer<Void, MProje
 
     @Override
     public Void performAction(MProject mProject, HListEmpty args) {
+	var iProject = mProject.getUnderlyingObject().getProject();
+	
 	var exportJob = new ExportReportJob(EstimationType.NAME_BASED_LEVENSHTEIN, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);
-	exportJob.setRule(ExportReportJob.MUTEX);
+	exportJob.setRule(iProject.getWorkspace().getRuleFactory().createRule(iProject));
 	exportJob.setSystem(false);
 	exportJob.setUser(true);
 	exportJob.schedule();

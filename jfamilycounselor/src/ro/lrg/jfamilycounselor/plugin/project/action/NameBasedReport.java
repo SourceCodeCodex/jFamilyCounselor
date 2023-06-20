@@ -14,9 +14,11 @@ public class NameBasedReport implements IActionPerformer<Void, MProject, HListEm
 
     @Override
     public Void performAction(MProject mProject, HListEmpty args) {
+	var iProject = mProject.getUnderlyingObject().getProject();
+	
 	var exportJob = new ExportReportJob(EstimationType.NAME_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);
-	exportJob.setRule(ExportReportJob.MUTEX);
+	exportJob.setRule(iProject.getWorkspace().getRuleFactory().createRule(iProject));
 	exportJob.setSystem(false);
 	exportJob.setUser(true);
 	exportJob.schedule();

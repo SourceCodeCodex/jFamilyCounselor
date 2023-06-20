@@ -15,17 +15,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MTypesPair;
@@ -49,16 +50,6 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 public class ExportReportJob extends Job {
 
     public static final String FAMILY = "jFamilyCounselorExportReport";
-
-    public static final ISchedulingRule MUTEX = new ISchedulingRule() {
-	public boolean contains(ISchedulingRule rule) {
-	    return rule == this;
-	}
-
-	public boolean isConflicting(ISchedulingRule rule) {
-	    return rule == this;
-	}
-    };
 
     private static Logger logger = jFCLogger.getLogger();
 
@@ -212,6 +203,12 @@ public class ExportReportJob extends Job {
 
 	    csvFileWriter.close();
 
+	    try {
+		iJavaProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+	    } catch (CoreException e) {
+		logger.warning("CoreException encountered: " + e.getMessage());
+	    }
+
 	    var exportEndTime = Instant.now();
 	    logger.info(estimation + " export report job for " + iJavaProject.getElementName() + " took: " + DurationFormatter.format(Duration.between(exportStartTime, exportEndTime)));
 
@@ -247,15 +244,7 @@ public class ExportReportJob extends Job {
 
 	var wsRoot = iJavaProject.getProject().getWorkspace().getRoot();
 
-	IPath projectTargetFolder;
-	try {
-	    projectTargetFolder = wsRoot.getFolder(iJavaProject.getOutputLocation()).getLocation();
-	} catch (JavaModelException e) {
-	    logger.warning("JavaModelException encountered: " + e.getMessage());
-	    return Optional.empty();
-	}
-
-	var reportsFolder = projectTargetFolder.append("jFamilyCounselor");
+	var reportsFolder = wsRoot.getFolder(iJavaProject.getPath().append("jFamilyCounselor")).getLocation();
 
 	var outputDirName = String.format("%s-%s-%s", iJavaProject.getElementName(), estimation.toString(), timestamp.toString());
 

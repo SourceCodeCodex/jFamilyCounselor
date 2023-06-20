@@ -14,9 +14,11 @@ public class AssignmentsBasedReport implements IActionPerformer<Void, MProject, 
 
     @Override
     public Void performAction(MProject mProject, HListEmpty args) {
+	var iProject = mProject.getUnderlyingObject().getProject();
+	
 	var exportJob = new ExportReportJob(EstimationType.ASSIGNMENTS_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);
-	exportJob.setRule(ExportReportJob.MUTEX);
+	exportJob.setRule(iProject.getWorkspace().getRuleFactory().createRule(iProject));
 	exportJob.setSystem(false);
 	exportJob.setUser(true);
 	exportJob.schedule();
