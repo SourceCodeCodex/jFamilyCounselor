@@ -26,6 +26,7 @@ public class RelevantTypesByTypeParametersUtil {
 		    !iType.isRecord() &&
 		    !iType.isBinary() &&
 		    (iType.isClass() || iType.isInterface()) &&
+		    iType.getTypeParameters().length != 0 &&
 		    !distrinctCombinations2(relevantTypeParameters(iType)).isEmpty();
 	} catch (JavaModelException e) {
 	    return false;

@@ -7,9 +7,10 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.ui.IStartup;
 
 import jfamilycounselor.metamodel.factory.Factory;
@@ -44,8 +45,17 @@ public final class Startup implements IStartup {
 	    if (element instanceof Pair<?, ?> pair) {
 		if (pair._1 instanceof IType t1 && pair._2 instanceof IType t2)
 		    return Factory.getInstance().createMTypesPair(Pair.of(t1, t2));
+		
+		if (pair._1 instanceof IType r1 && pair._2 instanceof ITypeParameter r2)
+		    return Factory.getInstance().createMTypeParametersPair(Pair.of(r1, r2));
+		
+		if (pair._1 instanceof ITypeParameter r1 && pair._2 instanceof ITypeParameter r2)
+		    return Factory.getInstance().createMTypeParametersPair(Pair.of(r1, r2));
 
-		if (pair._1 instanceof IJavaElement r1 && pair._2 instanceof IJavaElement r2)
+		if (pair._1 instanceof IType r1 && pair._2 instanceof ILocalVariable r2)
+		    return Factory.getInstance().createMReferencesPair(Pair.of(r1, r2));
+		
+		if (pair._1 instanceof ILocalVariable r1 && pair._2 instanceof ILocalVariable r2)
 		    return Factory.getInstance().createMReferencesPair(Pair.of(r1, r2));
 	    }
 
