@@ -1,18 +1,21 @@
 package ro.lrg.winebar;
-
 class WineBar {
-	private void doServe(Wine w, Glass g) {
-		WaiterTray wt1 = new WaiterTray();
-		wt1.setBoth(new RedWine(), new RedWineGlass());
-
-		WaiterTray wt2 = new WaiterTray();
-		Wine tmp = w;
-		wt2.setWine(tmp);
-		wt2.setGlass(g);
-		
+	private RedWineArtifactsFactory f1 = new RedWineArtifactsFactory();
+	private WhiteWineArtifactsFactory f2 = new WhiteWineArtifactsFactory();
+	private WaiterTray prepare(Wine w, WineGlass g) {
+		WaiterTray tray = new WaiterTray();
+		Wine tmp1 = w;
+		WineGlass tmp2 = g; 
+		tray.setWine(tmp1);
+		tray.setGlass(tmp2);
+		return tray;
 	}
-	
 	public void serve() {
-		doServe(new WhiteWine(), new WhiteWineGlass());
+		WaiterTray tray;
+		if (Math.random() > 0.5)
+			tray = prepare(f1.createWine(), f1.createWineGlass());
+		else 
+			tray = prepare(f2.createWine(), f2.createWineGlass());
+		tray.serve();
 	}
 }
