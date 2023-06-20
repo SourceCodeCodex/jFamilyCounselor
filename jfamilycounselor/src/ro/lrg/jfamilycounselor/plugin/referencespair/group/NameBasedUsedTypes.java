@@ -11,7 +11,7 @@ import org.eclipse.jdt.core.IType;
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MTypesPair;
 import jfamilycounselor.metamodel.factory.Factory;
-import ro.lrg.jfamilycounselor.approach.usedtypes.name.NameBasedApproach;
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.name.NameBasedApproach;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.xcore.metametamodel.Group;
 import ro.lrg.xcore.metametamodel.IRelationBuilder;
@@ -30,8 +30,8 @@ public class NameBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferen
 	else if (pair._1 instanceof ILocalVariable param1 && pair._2 instanceof ILocalVariable param2)
 	    usedTypes = parameterType(param1).flatMap(t1 -> parameterType(param2).flatMap(t2 -> NameBasedApproach.instance().usedTypes(t1, t2)));
 
-	if (usedTypes.isEmpty() && usedTypes.get().isEmpty())
-	    throw new IllegalStateException("Name-nased used types computation for pair: " + mReferencesPair.toString() + " failed. The result should be a non-empty list.");
+	if (usedTypes.isEmpty() || usedTypes.get().isEmpty())
+	    throw new IllegalStateException("Name-based used types computation for pair: " + mReferencesPair.toString() + " failed. The result should be a non-empty list.");
 
 	usedTypes.get().stream()
 		.map(p -> Factory.getInstance().createMTypesPair(p))

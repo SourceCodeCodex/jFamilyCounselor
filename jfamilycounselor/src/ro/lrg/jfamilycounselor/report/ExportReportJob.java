@@ -74,7 +74,7 @@ public class ExportReportJob extends Job {
 	// ------------------------------------------------------------------------------------
 	// Compute Relevant Types
 	// ------------------------------------------------------------------------------------
-	var relevantTypesJob = new RelevantTypesJob(iJavaProject);
+	var relevantTypesJob = new RelevantTypesJob(iJavaProject, estimation);
 	relevantTypesJob.setPriority(Job.LONG);
 	relevantTypesJob.setSystem(false);
 	relevantTypesJob.setUser(true);

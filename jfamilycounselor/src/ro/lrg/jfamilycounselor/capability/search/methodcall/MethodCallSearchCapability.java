@@ -16,7 +16,7 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 
 import ro.lrg.jfamilycounselor.capability.project.JavaProjectsCapability;
-import ro.lrg.jfamilycounselor.capability.search.requestor.EncolsingMethodRequestor;
+import ro.lrg.jfamilycounselor.capability.search.requestor.EnclosingMethodRequestor;
 import ro.lrg.jfamilycounselor.util.cache.Cache;
 import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
@@ -46,7 +46,7 @@ public class MethodCallSearchCapability {
 	if (iMethod.isLambdaMethod())
 	    return Optional.empty();
 
-	var requestor = new EncolsingMethodRequestor();
+	var requestor = new EnclosingMethodRequestor();
 	try {
 	    var searchParticipant = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
 

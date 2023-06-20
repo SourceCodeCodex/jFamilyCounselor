@@ -8,7 +8,7 @@ public class Constants {
     public static final String EQUAL = "equal";
 
     public enum EstimationType {
-	NAME_BASED, NAME_BASED_LEVENSHTEIN, ASSIGNMENTS_BASED, CASTS_BASED
+	NAME_BASED, NAME_BASED_LEVENSHTEIN, ASSIGNMENTS_BASED, CASTS_BASED, TYPE_PARAMETERS_BASED
     }
 
 }
