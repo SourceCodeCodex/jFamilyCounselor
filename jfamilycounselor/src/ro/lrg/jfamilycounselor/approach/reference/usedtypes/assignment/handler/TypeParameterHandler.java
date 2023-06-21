@@ -1,11 +1,11 @@
 package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.handler;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.State;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.ParameterDerivationWithTargetObject;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.partial.PartialDerivation;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Assignment;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 
 /**
  * The derivation in this case is simple: just derive the parameter and make the

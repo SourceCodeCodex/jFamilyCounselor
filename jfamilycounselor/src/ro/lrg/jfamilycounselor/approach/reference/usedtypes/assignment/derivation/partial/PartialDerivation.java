@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.partial;
 
 import static ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.util.LowestRecordedTypeUtil.updateLowestRecordedType;
-import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.concreteCone;
+import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.isConcreteLeaf;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.ParenthesizedExpression;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SuperFieldAccess;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.capability.parse.ParseCapability;
@@ -137,7 +138,7 @@ public class PartialDerivation {
 	    var haltNoElementResult = new PartialDerivationResult(Optional.empty(), updatedLowestRecordedType);
 	    var successResult = new PartialDerivationResult(newRecordedType.map(AssignedElement.ResolvedType::new), updatedLowestRecordedType);
 
-	    if (newRecordedType.stream().allMatch(t -> concreteCone(t).stream().allMatch(l -> l.size() == 1))) {
+	    if (newRecordedType.flatMap(t -> isConcreteLeaf(t)).orElse(false)) {
 		succeddedOrHaltedResults.add(successResult);
 		continue;
 	    }
@@ -172,7 +173,7 @@ public class PartialDerivation {
 
 	    case ASTNode.CONDITIONAL_EXPRESSION: {
 		var conditionalExpression = (ConditionalExpression) currentExpression;
-		workingStack.push(Pair.of(conditionalExpression.getExpression(), updatedLowestRecordedType));
+		workingStack.push(Pair.of(conditionalExpression.getThenExpression(), updatedLowestRecordedType));
 		workingStack.push(Pair.of(conditionalExpression.getElseExpression(), updatedLowestRecordedType));
 		break;
 	    }
@@ -269,7 +270,7 @@ public class PartialDerivation {
 	    }
 
 	    case ASTNode.SUPER_METHOD_INVOCATION: {
-		var superMethodInvocation = (MethodInvocation) currentExpression;
+		var superMethodInvocation = (SuperMethodInvocation) currentExpression;
 		var method = Optional.ofNullable(superMethodInvocation.resolveMethodBinding()).map(b -> (IMethod) b.getJavaElement());
 
 		succeddedOrHaltedResults.add(new PartialDerivationResult(method.map(AssignedElement.MethodCall::new), updatedLowestRecordedType));

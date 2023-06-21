@@ -1,4 +1,4 @@
-package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model;
+package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.Stack;
 
 import org.eclipse.jdt.core.IType;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.InconclusiveTypesPair;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 /**

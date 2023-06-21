@@ -2,12 +2,12 @@ package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.handler;
 
 import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.cartesianProduct;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.State;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.ParameterParameterDerivation;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.partial.PartialDerivation;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Assignment;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
 public class ParameterParameterHandler extends ReferencesPairHandler {

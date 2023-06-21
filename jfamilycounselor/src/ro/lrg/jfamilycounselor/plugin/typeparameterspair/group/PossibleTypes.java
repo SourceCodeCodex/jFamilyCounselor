@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.plugin.typeparameterspair.group;
 
 import static ro.lrg.jfamilycounselor.capability.type.DistinctConcreteConeProductCapability.distinctConcreteConeProduct;
-import static ro.lrg.jfamilycounselor.capability.typeparameter.TypeParameterBoundsTypesCapability.typeParameterBoundsTypes;
+import static ro.lrg.jfamilycounselor.capability.typeparameter.TypeParameterCapability.typeParameterBoundsTypes;
 
 import java.util.List;
 import java.util.Optional;

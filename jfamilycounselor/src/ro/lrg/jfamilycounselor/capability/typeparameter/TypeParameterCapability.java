@@ -16,8 +16,8 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 @SuppressWarnings("restriction")
-public class TypeParameterBoundsTypesCapability {
-    private TypeParameterBoundsTypesCapability() {
+public class TypeParameterCapability {
+    private TypeParameterCapability() {
     }
 
     private static final Cache<ITypeParameter, List<IType>> cache = MonitoredUnboundedCache.getLowConsumingCache();
@@ -85,5 +85,15 @@ public class TypeParameterBoundsTypesCapability {
 	cache.put(iTypeParameter, iTypes);
 
 	return Optional.of(iTypes);
+    }
+    
+    public static Optional<Integer> indexOfTypeParameter(ITypeParameter typeParameter) {
+	var type = (IType) typeParameter.getDeclaringMember();
+
+	try {
+	    return Optional.of(List.of(type.getTypeParameters()).indexOf(typeParameter)).filter(i -> i >= 0);
+	} catch (JavaModelException e) {
+	    return Optional.empty();
+	}
     }
 }
