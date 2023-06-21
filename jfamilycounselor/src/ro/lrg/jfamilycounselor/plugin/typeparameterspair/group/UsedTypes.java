@@ -30,11 +30,8 @@ public class UsedTypes implements IRelationBuilder<MTypesPair, MTypeParametersPa
 	// if type parameters based cannot find any used types, then consider all possible types
 	if (usedTypes.get().isEmpty())
 	    usedTypes = Optional.of(mTypeParametersPair.possibleTypes().getElements().stream().map(mTypesPair -> (Pair<IType, IType>) mTypesPair.getUnderlyingObject()).toList());
-	
-	var possibleTypes = mTypeParametersPair.possibleTypes().getElements().stream().map(p -> p.getUnderlyingObject()).toList();
-	
+
 	usedTypes.get().stream()
-		.filter(pair -> possibleTypes.contains(pair))
 		.map(p -> Factory.getInstance().createMTypesPair(p))
 		.forEach(p -> group.add(p));
 

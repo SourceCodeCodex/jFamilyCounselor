@@ -25,7 +25,6 @@ public class RelevantTypesByReferencesUtil {
 		    !iType.isRecord() &&
 		    !iType.isBinary() &&
 		    (iType.isClass() || iType.isInterface()) &&
-		    iType.getTypeParameters().length == 0 &&
 		    !relevantReferencesPairs(iType).isEmpty();
 	} catch (JavaModelException e) {
 	    return false;

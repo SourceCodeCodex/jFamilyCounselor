@@ -1,6 +1,6 @@
 package ro.lrg.jfamilycounselor.approach.typeparameter.relevance;
 
-import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.concreteCone;
+import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.hasConcreteSubtypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +70,7 @@ public class RelevantTypeParametersUtil {
 		    !t.isAnonymous() &&
 		    !t.isLambda() &&
 		    (t.isClass() || t.isInterface()) &&
-		    concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
+		    hasConcreteSubtypes(t).orElse(false);
 
 	    cache.put(t, result);
 	    return result;

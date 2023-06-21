@@ -140,8 +140,6 @@ public class ExportReportJob extends Job {
 		    .forEach(t -> {
 			var metaType = Factory.getInstance().createMType(t);
 
-			var referencesPairs = metaType.relevantReferencesPairs().getElements();
-
 			var apertureCoverages = new ConcurrentLinkedQueue<Double>();
 
 			var referencesPairHTML = new ConcurrentLinkedQueue<Pair<Integer, HTMLReferencesPair>>();
@@ -149,33 +147,67 @@ public class ExportReportJob extends Job {
 			var conter = new AtomicInteger(0);
 
 			var start = Instant.now();
-			referencesPairs
-				.stream()
-				.map(rp -> Pair.of(conter.getAndIncrement(), rp))
-				.toList()
-				.parallelStream()
-				.forEach(zippedWithIndex -> {
-				    var index = zippedWithIndex._1;
-				    var rp = zippedWithIndex._2;
 
-				    var startRP = Instant.now();
+			if (estimation.equals(EstimationType.TYPE_PARAMETERS_BASED)) {
+			    var typeParametersPairs = metaType.relevantTypeParametersPairs().getElements();
+			    typeParametersPairs
+				    .stream()
+				    .map(rp -> Pair.of(conter.getAndIncrement(), rp))
+				    .toList()
+				    .parallelStream()
+				    .forEach(zippedWithIndex -> {
+					var index = zippedWithIndex._1;
+					var tp = zippedWithIndex._2;
 
-				    var possibleTypes = rp.possibleTypes().getElements();
+					var startRP = Instant.now();
 
-				    var usedTypes = usedTypes(rp);
+					var possibleTypes = tp.possibleTypes().getElements();
 
-				    var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
+					var usedTypes = tp.usedTypes().getElements();
 
-				    var endRP = Instant.now();
+					var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
-				    var durationRP = Duration.between(startRP, endRP);
+					var endRP = Instant.now();
 
-				    var html = new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList());
+					var durationRP = Duration.between(startRP, endRP);
 
-				    referencesPairHTML.add(Pair.of(index, html));
+					var html = new HTMLReferencesPair(tp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList());
 
-				    apertureCoverages.add(apertureCoverageRP);
-				});
+					referencesPairHTML.add(Pair.of(index, html));
+
+					apertureCoverages.add(apertureCoverageRP);
+				    });
+
+			} else {
+			    var referencesPairs = metaType.relevantReferencesPairs().getElements();
+			    referencesPairs
+				    .stream()
+				    .map(rp -> Pair.of(conter.getAndIncrement(), rp))
+				    .toList()
+				    .parallelStream()
+				    .forEach(zippedWithIndex -> {
+					var index = zippedWithIndex._1;
+					var rp = zippedWithIndex._2;
+
+					var startRP = Instant.now();
+
+					var possibleTypes = rp.possibleTypes().getElements();
+
+					var usedTypes = usedTypes(rp);
+
+					var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
+
+					var endRP = Instant.now();
+
+					var durationRP = Duration.between(startRP, endRP);
+
+					var html = new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP, usedTypes.stream().map(p -> p.toString()).toList());
+
+					referencesPairHTML.add(Pair.of(index, html));
+
+					apertureCoverages.add(apertureCoverageRP);
+				    });
+			}
 
 			var end = Instant.now();
 

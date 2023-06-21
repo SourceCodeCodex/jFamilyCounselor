@@ -3,7 +3,7 @@ package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment;
 import static ro.lrg.jfamilycounselor.capability.parameter.ParameterTypeCapability.parameterType;
 import static ro.lrg.jfamilycounselor.capability.type.DistinctConcreteConeProductCapability.distinctConcreteConeProduct;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -22,7 +22,6 @@ import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Ass
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Assignment;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.InconclusiveTypesPair;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -60,6 +59,8 @@ public class AssignmentsBasedApproach {
     private AssignmentsBasedApproach() {
     }
 
+    // Invalidate the assignments pairs whose depth exceeds this threshold.
+    // This also ensures that the algorithm will not loop infinitely
     private static final int MAX_DEPTH = 4;
 
     private static ReferencesPairHandler handlerChain;
@@ -118,6 +119,9 @@ public class AssignmentsBasedApproach {
 	    return Optional.empty();
 	}
 
+	var referenceType1 = initialAssignmentsPair.get()._1.lowestRecordedType();
+	var referenceType2 = initialAssignmentsPair.get()._2.lowestRecordedType();
+
 	state.assignmentsPairs().push(initialAssignmentsPair.get());
 
 	// it is recommended not to parallelize the derivations of assignments as the
@@ -133,28 +137,37 @@ public class AssignmentsBasedApproach {
 	    handlerChain.submit(assignemntsPair, state);
 	}
 
-	var result = new ArrayList<Pair<IType, IType>>();
+	var possibleTypes = distinctConcreteConeProduct(referenceType1, referenceType2);
+	if (possibleTypes.isEmpty())
+	    return Optional.empty();
+
+	var result = new HashSet<Pair<IType, IType>>();
 	result.addAll(state.resolved());
 
 	// An alternative to comparing the number of resolved and inconclusive cases
 	// could be to set a max percentage threshold of the number of inconclusive
 	// cases. If exceeded, take into consideration the inconclusive cases
-	if (state.resolved().size() < state.inconclusive().size())
-	    for (InconclusiveTypesPair inconclusive : state.inconclusive()) {
+	if (state.resolved().size() < state.inconclusive().size()) {
+	    var distinctInconclusives = state.inconclusive().stream().distinct().toList();
+
+	    if (distinctInconclusives.stream().anyMatch(i -> i.needsExpansion() && i.types().equals(Pair.of(referenceType1, referenceType2))))
+		return possibleTypes;
+
+	    for (InconclusiveTypesPair inconclusive : distinctInconclusives) {
+		if (possibleTypes.get().size() <= result.size())
+		    return possibleTypes;
+
 		if (inconclusive.needsExpansion()) {
 		    var inconclusiveDistinctConcreteConeProduct = distinctConcreteConeProduct(inconclusive.types()._1, inconclusive.types()._2);
 		    result.addAll(inconclusiveDistinctConcreteConeProduct.orElse(List.of()));
 		} else
 		    result.add(inconclusive.types());
 	    }
-
-	var referenceType1 = initialAssignmentsPair.get()._1.lowestRecordedType();
-	var referenceType2 = initialAssignmentsPair.get()._2.lowestRecordedType();
-	var possibleTypes = distinctConcreteConeProduct(referenceType1, referenceType2);
+	}
 
 	// We filter the result such that all types pairs are included in the possible
 	// types pairs set
-	return Optional.of(state.resolved().stream().distinct().filter(pair -> possibleTypes.map(p -> p.contains(pair)).orElse(false)).toList());
+	return Optional.of(result.stream().filter(pair -> possibleTypes.get().contains(pair)).toList());
     }
 
     /**

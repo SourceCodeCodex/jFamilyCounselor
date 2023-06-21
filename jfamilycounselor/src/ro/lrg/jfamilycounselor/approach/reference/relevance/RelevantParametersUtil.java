@@ -1,7 +1,7 @@
 package ro.lrg.jfamilycounselor.approach.reference.relevance;
 
 import static ro.lrg.jfamilycounselor.capability.parameter.ParameterTypeCapability.parameterType;
-import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.concreteCone;
+import static ro.lrg.jfamilycounselor.capability.type.ConcreteConeCapability.hasConcreteSubtypes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +96,7 @@ public class RelevantParametersUtil {
 			(t.isClass() || t.isInterface()) &&
 			Arrays.asList(t.getTypeParameters()).isEmpty() &&
 			!t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName()) &&
-			concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2) &&
+			hasConcreteSubtypes(t).orElse(false) &&
 			Signature.getTypeSignatureKind(iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
 
 		cache.put(iLocalVariable, result);
@@ -120,7 +120,7 @@ public class RelevantParametersUtil {
 		    !t.isLambda() &&
 		    (t.isClass() || t.isInterface()) &&
 		    Arrays.asList(t.getTypeParameters()).isEmpty() &&
-		    concreteCone(t).stream().anyMatch(cone -> cone.size() >= 2);
+		    hasConcreteSubtypes(t).orElse(false);
 
 	    cache.put(t, result);
 	    return result;

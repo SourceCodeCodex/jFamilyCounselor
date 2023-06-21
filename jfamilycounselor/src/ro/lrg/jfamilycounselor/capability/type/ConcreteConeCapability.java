@@ -17,12 +17,12 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**
- * Capability that computes the concrete cone of a type (IType). The concrete cone
- * of a type is the collection of concrete types formed with: that type and its
- * subtypes.
+ * Capability that computes the concrete cone of a type (IType). The concrete
+ * cone of a type is the collection of concrete types formed with: that type and
+ * its subtypes.
  * 
- * NOTE: The capability will never compute the concrete cone for java.lang.Object
- * since it is irrelevant and requires a lot of time.
+ * NOTE: The capability will never compute the concrete cone for
+ * java.lang.Object since it is irrelevant and requires a lot of time.
  * 
  * @author rosualinpetru
  *
@@ -68,4 +68,19 @@ public class ConcreteConeCapability {
 	}
     }
 
+    public static Optional<Boolean> isConcreteLeaf(IType iType) {
+	var cone = concreteCone(iType);
+	return cone.map(c -> c.size() == 1 && c.contains(iType));
+    }
+    
+    public static Optional<Boolean> hasConcreteSubtypes(IType iType) {
+	var cone = concreteCone(iType);
+	if(cone.isEmpty())
+	    return Optional.empty();
+	
+	if(cone.get().contains(iType))
+	    return Optional.of(cone.get().size() >= 2);
+	
+	return Optional.of(cone.get().size() >= 1);
+    }
 }

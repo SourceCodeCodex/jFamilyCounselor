@@ -10,12 +10,12 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.State;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.ParameterDerivationWithTargetObject;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.derivation.partial.PartialDerivation;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Assignment;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 
 /**
  * This handler derives the parameter, recording the target object of the call

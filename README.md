@@ -48,7 +48,7 @@
 Notes:
 - using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962)
 - using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the `/lib` directory need to be manually specified
-
+- the implemented analyses perform heavy computations and use a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor in order to obtain results in a feasible amount of time
 ## Setup
 
 jFamilyCounselor is developed using the [XCore](https://github.com/SourceCodeCodex/XCore) framework. In order to install XCore copy the [binaries](https://github.com/SourceCodeCodex/XCore/tree/master/latest) in the **dropins** folder of Eclipse. 
@@ -82,10 +82,10 @@ For further explanations on how to use jFamilyCounselor, please refer to the [To
 
 # Notes: Using jFamilyCounselor
 
-- the implemented analyses perform heavy computations and require a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor
 - the cast-based approach records a slower progress at the beginning and better afterwards due to caching
+- for better performance, it might be needed to reconfigure the CacheSupervisor depending on the available amount of RAM
 - XCore currently does not run any computation on separate threads and long operations can block the UI. It is best to analyze projects following these steps:
-  - export a report using one of the XCore actions. The export is located in the project's output folder, e.g. `/target/classes/jFamilyCounselor`
+  - export a report using one of the XCore actions. The export is located in the project's root folder
   - use the results to determine the types that might be interesting to be analyzed manually
   - browse those types in Insider individually and navigate through its defined groups to see, for instance, its relevant references pairs, or possible/used types of a particular pair
 
@@ -123,10 +123,10 @@ For now, the deployable feature is exported as a zip and installed in Eclipse:
 So far, the project that was intensively analyzed is `kettle-engine`. In order to reproduce jFamilyCounselor's results, follow these steps:
 
 - download the source code of [Pentaho Kettle-Engine](https://github.com/pentaho/pentaho-kettle/tree/1984dc13e773e7f12eb82e771a5ac8cdf86905e6)
-- import the sources as `Existing Maven projects`
+- import as `Existing Maven projects`
 - browse `kettle-engine` in Insider
 - export reports with the desired approach
-- the reports can be found in the project's output folder; in this case `engine/target/classes/jFamilyCounselor`
+- the reports can be found in the project's root folder
 
 Other projects that were identified to contain hidden type correlations and which can help improving jFamilyCounselor are present in corpus used in the study: Luis Mastrangelo, Matthias Hauswirth, and Nathaniel Nystrom. 2019. Casting about in the dark: an empirical study of cast operations in Java programs. Proc. ACM Program. Lang. 3, OOPSLA, Article 158 (October 2019), 31 pages. https://doi.org/10.1145/3360584.
 

@@ -3,9 +3,9 @@ package ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.handler;
 import java.util.Optional;
 import java.util.logging.Logger;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.State;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 /**

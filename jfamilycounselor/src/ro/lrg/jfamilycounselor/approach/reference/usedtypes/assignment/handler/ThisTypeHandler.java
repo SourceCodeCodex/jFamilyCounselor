@@ -5,10 +5,10 @@ import static ro.lrg.jfamilycounselor.util.operations.CommonOperations.cartesian
 
 import java.util.List;
 
+import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.State;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignedElement;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.AssignemntsPair;
 import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.InconclusiveTypesPair;
-import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.State;
 
 /**
  * In this point, the derivation resolves multiple types pairs, i.e. the product
