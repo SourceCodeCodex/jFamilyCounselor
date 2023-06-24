@@ -260,7 +260,7 @@ public class ExportReportJob extends Job {
 	    yield rp.nameBasedLevenshteinUsedTypes().getElements();
 	}
 	case ASSIGNMENTS_BASED: {
-	    yield rp.assignemntsBasedUsedTypes().getElements();
+	    yield rp.assignmentsBasedUsedTypes().getElements();
 	}
 	case CASTS_BASED: {
 	    yield rp.castsBasedUsedTypes().getElements();

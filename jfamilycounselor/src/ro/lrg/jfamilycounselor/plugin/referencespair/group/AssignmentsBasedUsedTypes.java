@@ -16,7 +16,7 @@ import ro.lrg.xcore.metametamodel.IRelationBuilder;
 import ro.lrg.xcore.metametamodel.RelationBuilder;
 
 @RelationBuilder
-public class AssignemntsBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPair> {
+public class AssignmentsBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPair> {
 
     @Override
     public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
