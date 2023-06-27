@@ -13,6 +13,7 @@ import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jfamilycounselor.metamodel.entity.MTypesPair;
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.jfamilycounselor.report.RelevantTypesJob;
 import ro.lrg.jfamilycounselor.util.Constants;
@@ -43,7 +45,7 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 public class ExportDiagramRelationsJob extends Job {
 
 	public static final String FAMILY = "jFamilyCounselorExportReport";
-	private static final double NAME_BASED_THRESHOLD = 0.5;
+	private static final double APERTURE_THRESHOLD = 0.5;
 
 	public static final ISchedulingRule MUTEX = new ISchedulingRule() {
 		public boolean contains(ISchedulingRule rule) {
@@ -92,8 +94,19 @@ public class ExportDiagramRelationsJob extends Job {
 		return reportsFolder;
 	}
 
+	private Pair<String, Pair<IType, IType>> mapRelevantTypeToMPair(IType relevantType, MTypesPair mPair) {
+		Pair<?, ?> pair = mPair.getUnderlyingObject();
+		var p1IType = ((IType) pair._1);
+		var p2IType = ((IType) pair._2);
+
+		if (p1IType.toString().compareTo(p2IType.toString()) > 0)
+			return new Pair<>(relevantType.getFullyQualifiedName(), new Pair<>(p2IType, p1IType));
+
+		return new Pair<>(relevantType.getFullyQualifiedName(), new Pair<>(p1IType, p2IType));
+	}
+
 	protected IStatus run(IProgressMonitor monitor) {
-		var relevantTypesJob = new RelevantTypesJob(iJavaProject, EstimationType.NAME_BASED);
+		var relevantTypesJob = new RelevantTypesJob(iJavaProject, estimation);
 		relevantTypesJob.setPriority(Job.LONG);
 		relevantTypesJob.setSystem(false);
 		relevantTypesJob.setUser(true);
@@ -109,25 +122,51 @@ public class ExportDiagramRelationsJob extends Job {
 
 		var start = Instant.now();
 
-		List<Pair<IType, IType>> typePairs = relevantTypes.parallelStream()
+		Map<Pair<IType, IType>, Set<String>> pairToClients = relevantTypes.parallelStream()
 				.flatMap(t -> Factory.getInstance().createMType(t).relevantReferencesPairs().getElements().stream()
-						.filter(r -> r.nameBasedApertureCoverage() <= NAME_BASED_THRESHOLD)
-						.flatMap(r -> r.nameBasedUsedTypes().getElements().stream().map(p -> {
-							Pair<?, ?> pair = p.getUnderlyingObject();
-							IType p1IType = ((IType) pair._1);
-							IType p2IType = ((IType) pair._2);
+						.filter(r -> switch (estimation) {
+						case NAME_BASED: {
+							yield r.nameBasedApertureCoverage();
+						}
+						case NAME_BASED_LEVENSHTEIN: {
+							yield r.nameBasedLevenshteinApertureCoverage();
+						}
+						case ASSIGNMENTS_BASED: {
+							yield r.assignmentsBasedApertureCoverage();
+						}
+						case CASTS_BASED: {
+							yield r.castsBasedApertureCoverage();
+						}
+						default:
+							throw new IllegalArgumentException("Unexpected value: " + estimation);
+						} <= APERTURE_THRESHOLD).flatMap(r -> {
+							var usedTypes = switch (estimation) {
+							case NAME_BASED: {
+								yield r.nameBasedUsedTypes();
+							}
+							case NAME_BASED_LEVENSHTEIN: {
+								yield r.nameBasedLevenshteinUsedTypes();
+							}
+							case ASSIGNMENTS_BASED: {
+								yield r.assignemntsBasedUsedTypes();
+							}
+							case CASTS_BASED: {
+								yield r.castsBasedUsedTypes();
+							}
+							default:
+								throw new IllegalArgumentException("Unexpected value: " + estimation);
+							};
+							return usedTypes.getElements().stream().map(p -> mapRelevantTypeToMPair(t, p));
+						}).distinct())
+				.collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
 
-							if (p1IType.toString().compareTo(p2IType.toString()) > 0)
-								return new Pair<>(p2IType, p1IType);
-
-							return new Pair<>(p1IType, p2IType);
-						})).distinct())
-				.collect(Collectors.toList());
+		var clientsPairs = pairToClients.entrySet().parallelStream().collect(Collectors.toMap(
+				e -> e.getKey()._1.getFullyQualifiedName() + e.getKey()._2.getFullyQualifiedName(), e -> e.getValue()));
 
 		Map<String, ITypeHierarchy> typeHierarchiesMap = new ConcurrentHashMap<>();
 		Map<String, String> leavesMap = new ConcurrentHashMap<>();
-		
-		typePairs.stream().flatMap(p -> Stream.of(p._1, p._2)).distinct().parallel().forEach(t -> {
+
+		pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).parallel().forEach(t -> {
 			try {
 				ITypeHierarchy typeHierarchy = t.newTypeHierarchy(null);
 
@@ -135,9 +174,9 @@ public class ExportDiagramRelationsJob extends Job {
 				if (typeHierarchy.getSubclasses(t).length != 0) {
 					return;
 				}
-				
+
 				leavesMap.putIfAbsent(t.getFullyQualifiedName(), t.getFullyQualifiedName());
-				
+
 				var superClasses = typeHierarchy.getAllSuperclasses(t);
 				// contains only Object
 				// TODO: can length be 0 ?
@@ -145,18 +184,20 @@ public class ExportDiagramRelationsJob extends Job {
 					typeHierarchiesMap.putIfAbsent(t.getFullyQualifiedName(), typeHierarchy);
 					return;
 				}
-				
+
 				var rootClass = superClasses[superClasses.length - 2];
-				
-				// if the root class is from a java library take the highest class from the project
-				if(rootClass.isBinary()) {
-					var  implementedClasses = Stream.of(superClasses).takeWhile(c -> !c.isBinary()).collect(Collectors.toList());
-					if(implementedClasses.size() == 0) {
+
+				// if the root class is from a java library take the highest class from the
+				// project
+				if (rootClass.isBinary()) {
+					var implementedClasses = Stream.of(superClasses).takeWhile(c -> !c.isBinary())
+							.collect(Collectors.toList());
+					if (implementedClasses.size() == 0) {
 						return;
 					}
 					rootClass = implementedClasses.get(implementedClasses.size() - 1);
 				}
-				
+
 				var rootClassFQN = rootClass.getFullyQualifiedName();
 				if (!typeHierarchiesMap.containsKey(rootClassFQN)) {
 					typeHierarchiesMap.put(rootClassFQN, rootClass.newTypeHierarchy(null));
@@ -170,11 +211,11 @@ public class ExportDiagramRelationsJob extends Job {
 		hierarchiesList.add(new ParentLink("", Constants.OBJECT_FQN));
 		typeHierarchiesMap.entrySet().parallelStream().forEach(h -> {
 			var rootClassHierarchy = h.getValue();
-			
+
 			// pair of parent and child IType
 			var q = new ArrayDeque<Pair<String, IType>>();
 			q.add(new Pair<String, IType>(Constants.OBJECT_FQN, rootClassHierarchy.getType()));
-			
+
 			while (q.size() != 0) {
 				var pair = q.remove();
 				var newParent = pair._2.getFullyQualifiedName();
@@ -204,19 +245,18 @@ public class ExportDiagramRelationsJob extends Job {
 			q.add(rootClass);
 			while (q.size() != 0) {
 				var hierarchy = q.remove();
-				System.out.println(hierarchy.getFullyQualifiedName());
 				q.addAll(List.of(rootHierachy.getSubclasses(hierarchy)));
 			}
 		});
 
-		List<List<String>> pairsFQNs = typePairs.parallelStream().flatMap(p -> {
-			var p1FQN = p._1.getFullyQualifiedName();
-			var p2FQN = p._2.getFullyQualifiedName();
+		var pairsFQNs = pairToClients.entrySet().parallelStream().flatMap(entry -> {
+			var p1FQN = entry.getKey()._1.getFullyQualifiedName();
+			var p2FQN = entry.getKey()._2.getFullyQualifiedName();
 			if (leavesMap.containsKey(p1FQN) && leavesMap.containsKey(p2FQN)) {
-				return Stream.of(List.of(p1FQN, p2FQN));
+				return Stream.of(new Pair<>(p1FQN + "|" + p2FQN, entry.getValue().size()));
 			}
 			return Stream.empty();
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toMap(p -> p._1, p -> p._2));
 
 		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
@@ -226,6 +266,7 @@ public class ExportDiagramRelationsJob extends Job {
 			var diagramOutputFile = reportsFolder.append("chord-diagram.html").toFile();
 			var pairsJsonFile = reportsFolder.append("pairs.js").toFile();
 			var hierarchiesJsonFile = reportsFolder.append("hierarchies.js").toFile();
+			var clientsPairsJsonFile = reportsFolder.append("clients.js").toFile();
 
 			var pairsJson = objectMapper.writeValueAsString(pairsFQNs);
 			var leavesDataOutput = String.format("var pairs = %s;", pairsJson);
@@ -233,8 +274,12 @@ public class ExportDiagramRelationsJob extends Job {
 			var hierarchiesJson = objectMapper.writeValueAsString(hierarchiesList.stream().collect(Collectors.toSet()));
 			var hierarchiesDataOutput = String.format("var hierarchies = %s;", hierarchiesJson);
 
+			var clientsPairsJson = objectMapper.writeValueAsString(clientsPairs);
+			var clientsPairsDataOutput = String.format("var clients = %s;", clientsPairsJson);
+
 			writeStringToFile(pairsJsonFile, leavesDataOutput);
 			writeStringToFile(hierarchiesJsonFile, hierarchiesDataOutput);
+			writeStringToFile(clientsPairsJsonFile, clientsPairsDataOutput);
 
 			try {
 				var chordDiagram = new ChordDiagram(diagramOutputFile);
