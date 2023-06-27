@@ -10,11 +10,11 @@ import ro.lrg.xcore.metametamodel.HListEmpty;
 import ro.lrg.xcore.metametamodel.IActionPerformer;
 
 @ActionPerformer
-public final class NameBasedDiagram implements IActionPerformer<Void, MProject, HListEmpty> {
+public final class AssignmentsBasedDiagram implements IActionPerformer<Void, MProject, HListEmpty> {
 
 	@Override
 	public Void performAction(MProject mProject, HListEmpty args) {
-		var exportJob = new ExportDiagramRelationsJob(EstimationType.NAME_BASED, mProject.getUnderlyingObject());
+		var exportJob = new ExportDiagramRelationsJob(EstimationType.ASSIGNMENTS_BASED, mProject.getUnderlyingObject());
 		exportJob.setPriority(Job.LONG);
 		exportJob.setRule(ExportDiagramRelationsJob.MUTEX);
 		exportJob.setSystem(false);
