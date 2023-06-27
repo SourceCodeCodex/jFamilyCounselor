@@ -81,7 +81,7 @@ public class ExportDiagramRelationsJob extends Job {
 
 		IPath outputFolder;
 
-		outputFolder = wsRoot.getFolder(iJavaProject.getOutputLocation()).getLocation();
+		outputFolder = wsRoot.getFolder(iJavaProject.getPath().append("jFamilyCounselor")).getLocation();
 
 		var formatter = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss");
 		var timestamp = formatter.format(new Date());
