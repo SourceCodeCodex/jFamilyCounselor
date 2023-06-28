@@ -161,7 +161,8 @@ public class ExportDiagramRelationsJob extends Job {
 				.collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
 
 		var clientsPairs = pairToClients.entrySet().parallelStream().collect(Collectors.toMap(
-				e -> e.getKey()._1.getFullyQualifiedName() + e.getKey()._2.getFullyQualifiedName(), e -> e.getValue()));
+				e -> e.getKey()._1.getFullyQualifiedName() + e.getKey()._2.getFullyQualifiedName(), e -> e.getValue(),
+				(set1, set2) -> Stream.concat(set1.stream(), set2.stream()).collect(Collectors.toSet())));
 
 		Map<String, ITypeHierarchy> typeHierarchiesMap = new ConcurrentHashMap<>();
 		Map<String, String> leavesMap = new ConcurrentHashMap<>();
@@ -257,7 +258,7 @@ public class ExportDiagramRelationsJob extends Job {
 				return Stream.of(new Pair<>(p1FQN + "|" + p2FQN, entry.getValue().size()));
 			}
 			return Stream.empty();
-		}).collect(Collectors.toMap(p -> p._1, p -> p._2));
+		}).collect(Collectors.toMap(p -> p._1, p -> p._2, (count1, count2) -> count1 + count2));
 
 		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
