@@ -193,6 +193,7 @@ public class ExportDiagramRelationsJob extends Job {
 					var implementedClasses = Stream.of(superClasses).takeWhile(c -> !c.isBinary())
 							.collect(Collectors.toList());
 					if (implementedClasses.size() == 0) {
+						typeHierarchiesMap.putIfAbsent(t.getFullyQualifiedName(), typeHierarchy);
 						return;
 					}
 					rootClass = implementedClasses.get(implementedClasses.size() - 1);
