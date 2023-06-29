@@ -27,11 +27,11 @@ public class ChordDiagram {
 
 	public Optional<java.nio.file.Path> getDiagramHtmlPath() {
 		var bundle = Platform.getBundle("jfamilycounselor");
-		var sourceFolderUrl = FileLocator.find(bundle, new Path("src"), null);
+		var sourceFolderUrl = FileLocator.find(bundle, new Path("resources"), null);
 
 		try {
 			var sourceFolderPath = FileLocator.toFileURL(sourceFolderUrl).getPath();
-			var htmlPath = Paths.get(sourceFolderPath, "ro", "lrg", "jfamilycounselor", "diagram", "chord-diagram.html");
+			var htmlPath = Paths.get(sourceFolderPath, "chord-diagram.html");
 			return Optional.of(htmlPath);
 		} catch (IOException e) {
 			e.printStackTrace();
