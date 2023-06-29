@@ -13,6 +13,7 @@ import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -24,6 +25,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
@@ -41,11 +43,12 @@ import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
+import ro.lrg.xcore.metametamodel.Group;
 
 public class ExportDiagramRelationsJob extends Job {
 
 	public static final String FAMILY = "jFamilyCounselorExportReport";
-	private static final double APERTURE_THRESHOLD = 0.5;
+	private static final double APERTURE_COVERAGE_THRESHOLD = 0.5;
 
 	public static final ISchedulingRule MUTEX = new ISchedulingRule() {
 		public boolean contains(ISchedulingRule rule) {
@@ -63,7 +66,7 @@ public class ExportDiagramRelationsJob extends Job {
 	private final EstimationType estimation;
 
 	public ExportDiagramRelationsJob(EstimationType estimation, IJavaProject iJavaProject) {
-		super(estimation + " exporting report...");
+		super("Exporting " + estimation + " diagram...");
 		this.iJavaProject = iJavaProject;
 		this.estimation = estimation;
 	}
@@ -98,11 +101,13 @@ public class ExportDiagramRelationsJob extends Job {
 		Pair<?, ?> pair = mPair.getUnderlyingObject();
 		var p1IType = ((IType) pair._1);
 		var p2IType = ((IType) pair._2);
+		var projectName = relevantType.getJavaProject().getElementName() + "/";
 
-		if (p1IType.toString().compareTo(p2IType.toString()) > 0)
-			return new Pair<>(relevantType.getFullyQualifiedName(), new Pair<>(p2IType, p1IType));
+		if ((p1IType.getJavaProject().getElementName() + "/" + p1IType.toString())
+				.compareTo(p2IType.getJavaProject().getElementName() + "/" + p2IType.toString()) > 0)
+			return new Pair<>(projectName + relevantType.getFullyQualifiedName(), new Pair<>(p2IType, p1IType));
 
-		return new Pair<>(relevantType.getFullyQualifiedName(), new Pair<>(p1IType, p2IType));
+		return new Pair<>(projectName + relevantType.getFullyQualifiedName(), new Pair<>(p1IType, p2IType));
 	}
 
 	protected IStatus run(IProgressMonitor monitor) {
@@ -122,67 +127,65 @@ public class ExportDiagramRelationsJob extends Job {
 
 		var start = Instant.now();
 
-		Map<Pair<IType, IType>, Set<String>> pairToClients = relevantTypes.parallelStream()
-				.flatMap(t -> Factory.getInstance().createMType(t).relevantReferencesPairs().getElements().stream()
-						.filter(r -> switch (estimation) {
-						case NAME_BASED: {
-							yield r.nameBasedApertureCoverage();
-						}
-						case NAME_BASED_LEVENSHTEIN: {
-							yield r.nameBasedLevenshteinApertureCoverage();
-						}
-						case ASSIGNMENTS_BASED: {
-							yield r.assignmentsBasedApertureCoverage();
-						}
-						case CASTS_BASED: {
-							yield r.castsBasedApertureCoverage();
-						}
-						default:
-							throw new IllegalArgumentException("Unexpected value: " + estimation);
-						} <= APERTURE_THRESHOLD).flatMap(r -> {
-							var usedTypes = switch (estimation) {
-							case NAME_BASED: {
-								yield r.nameBasedUsedTypes();
-							}
-							case NAME_BASED_LEVENSHTEIN: {
-								yield r.nameBasedLevenshteinUsedTypes();
-							}
-							case ASSIGNMENTS_BASED: {
-								yield r.assignemntsBasedUsedTypes();
-							}
-							case CASTS_BASED: {
-								yield r.castsBasedUsedTypes();
-							}
-							default:
-								throw new IllegalArgumentException("Unexpected value: " + estimation);
-							};
-							return usedTypes.getElements().stream().map(p -> mapRelevantTypeToMPair(t, p));
-						}).distinct())
+		Map<Pair<IType, IType>, Set<String>> pairToClients = relevantTypes.parallelStream().flatMap(t -> Factory
+				.getInstance().createMType(t).relevantReferencesPairs().getElements().stream().flatMap(r -> {
+					var aperture = r.aperture();
+					var usedTypes = Optional.ofNullable(switch (estimation) {
+					case NAME_BASED: {
+						yield r.nameBasedUsedTypes();
+					}
+					case NAME_BASED_LEVENSHTEIN: {
+						yield r.nameBasedLevenshteinUsedTypes();
+					}
+					case ASSIGNMENTS_BASED: {
+						yield r.assignemntsBasedUsedTypes();
+					}
+					case CASTS_BASED: {
+						yield r.castsBasedUsedTypes();
+					}
+					default:
+						yield null;
+					});
+
+					if (usedTypes.isEmpty()) {
+						return Stream.empty();
+					}
+
+					var apertureCoverage = usedTypes.get().getElements().size() / aperture;
+					if (apertureCoverage <= APERTURE_COVERAGE_THRESHOLD) {
+						return usedTypes.get().getElements().stream().map(p -> mapRelevantTypeToMPair(t, p));
+					}
+
+					return Stream.empty();
+				}).distinct())
 				.collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
 
 		var clientsPairs = pairToClients.entrySet().parallelStream().collect(Collectors.toMap(
-				e -> e.getKey()._1.getFullyQualifiedName() + e.getKey()._2.getFullyQualifiedName(), e -> e.getValue(),
-				(set1, set2) -> Stream.concat(set1.stream(), set2.stream()).collect(Collectors.toSet())));
+				e -> e.getKey()._1.getJavaProject().getElementName() + "/" + e.getKey()._1.getFullyQualifiedName()
+						+ e.getKey()._2.getJavaProject().getElementName() + "/" + e.getKey()._2.getFullyQualifiedName(),
+				e -> e.getValue()));
 
 		Map<String, ITypeHierarchy> typeHierarchiesMap = new ConcurrentHashMap<>();
 		Map<String, String> leavesMap = new ConcurrentHashMap<>();
+		var correlatedTypes = pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).distinct().toList();
 
-		pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).parallel().forEach(t -> {
+		correlatedTypes.parallelStream().forEach(t -> {
 			try {
 				ITypeHierarchy typeHierarchy = t.newTypeHierarchy(null);
+				String projectName = t.getJavaProject().getElementName() + "/";
 
 				// check that the type is at the base of the hierarchy
 				if (typeHierarchy.getSubclasses(t).length != 0) {
 					return;
 				}
 
-				leavesMap.putIfAbsent(t.getFullyQualifiedName(), t.getFullyQualifiedName());
+				leavesMap.putIfAbsent(projectName + t.getFullyQualifiedName(), projectName + t.getFullyQualifiedName());
 
 				var superClasses = typeHierarchy.getAllSuperclasses(t);
 				// contains only Object
 				// TODO: can length be 0 ?
 				if (superClasses.length == 1) {
-					typeHierarchiesMap.putIfAbsent(t.getFullyQualifiedName(), typeHierarchy);
+					typeHierarchiesMap.putIfAbsent(projectName + t.getFullyQualifiedName(), typeHierarchy);
 					return;
 				}
 
@@ -194,16 +197,17 @@ public class ExportDiagramRelationsJob extends Job {
 					var implementedClasses = Stream.of(superClasses).takeWhile(c -> !c.isBinary())
 							.collect(Collectors.toList());
 					if (implementedClasses.size() == 0) {
-						typeHierarchiesMap.putIfAbsent(t.getFullyQualifiedName(), typeHierarchy);
+						typeHierarchiesMap.putIfAbsent(projectName + t.getFullyQualifiedName(), typeHierarchy);
 						return;
 					}
 					rootClass = implementedClasses.get(implementedClasses.size() - 1);
 				}
 
-				var rootClassFQN = rootClass.getFullyQualifiedName();
+				var rootClassFQN = projectName + rootClass.getFullyQualifiedName();
 				if (!typeHierarchiesMap.containsKey(rootClassFQN)) {
 					typeHierarchiesMap.put(rootClassFQN, rootClass.newTypeHierarchy(null));
 				}
+
 			} catch (JavaModelException e) {
 				return;
 			}
@@ -220,7 +224,7 @@ public class ExportDiagramRelationsJob extends Job {
 
 			while (q.size() != 0) {
 				var pair = q.remove();
-				var newParent = pair._2.getFullyQualifiedName();
+				var newParent = pair._2.getJavaProject().getElementName() + "/" + pair._2.getFullyQualifiedName();
 				hierarchiesList.add(new ParentLink(pair._1, newParent));
 
 				q.addAll(Stream.of(rootClassHierarchy.getSubclasses(pair._2)).map(c -> new Pair<>(newParent, c))
@@ -252,13 +256,15 @@ public class ExportDiagramRelationsJob extends Job {
 		});
 
 		var pairsFQNs = pairToClients.entrySet().parallelStream().flatMap(entry -> {
-			var p1FQN = entry.getKey()._1.getFullyQualifiedName();
-			var p2FQN = entry.getKey()._2.getFullyQualifiedName();
+			var p1FQN = entry.getKey()._1.getJavaProject().getElementName() + "/"
+					+ entry.getKey()._1.getFullyQualifiedName();
+			var p2FQN = entry.getKey()._2.getJavaProject().getElementName() + "/"
+					+ entry.getKey()._2.getFullyQualifiedName();
 			if (leavesMap.containsKey(p1FQN) && leavesMap.containsKey(p2FQN)) {
 				return Stream.of(new Pair<>(p1FQN + "|" + p2FQN, entry.getValue().size()));
 			}
 			return Stream.empty();
-		}).collect(Collectors.toMap(p -> p._1, p -> p._2, (count1, count2) -> count1 + count2));
+		}).collect(Collectors.toMap(p -> p._1, p -> p._2));
 
 		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
@@ -288,7 +294,8 @@ public class ExportDiagramRelationsJob extends Job {
 				var diagramHtmlPath = chordDiagram.getDiagramHtmlPath();
 				if (diagramHtmlPath.isEmpty())
 					return Status.error("The diagram html source could not be found");
-				writeStringToFile(diagramOutputFile, Files.readString(diagramHtmlPath.get()));
+				writeStringToFile(diagramOutputFile,
+						Files.readString(diagramHtmlPath.get()).replace("|diagram-title|", estimation + " Diagram"));
 
 				chordDiagram.startBrowser();
 			} catch (MalformedURLException e) {
