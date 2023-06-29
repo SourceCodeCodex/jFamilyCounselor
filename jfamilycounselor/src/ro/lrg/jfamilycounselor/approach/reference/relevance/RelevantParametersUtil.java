@@ -93,7 +93,7 @@ public class RelevantParametersUtil {
 			t.getCompilationUnit() != null &&
 			!t.isAnonymous() &&
 			!t.isLambda() &&
-			(t.isClass() || t.isInterface()) &&
+			(t.isClass() || t.isInterface()) && !t.isBinary() &&
 			Arrays.asList(t.getTypeParameters()).isEmpty() &&
 			!t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName()) &&
 			hasConcreteSubtypes(t).orElse(false) &&
@@ -117,7 +117,7 @@ public class RelevantParametersUtil {
 	try {
 	    var result = t.getCompilationUnit() != null &&
 		    !t.isAnonymous() &&
-		    !t.isLambda() &&
+		    !t.isLambda() && !t.isBinary() &&
 		    (t.isClass() || t.isInterface()) &&
 		    Arrays.asList(t.getTypeParameters()).isEmpty() &&
 		    hasConcreteSubtypes(t).orElse(false);
