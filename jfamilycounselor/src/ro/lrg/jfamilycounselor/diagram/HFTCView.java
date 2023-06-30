@@ -1,43 +1,41 @@
 package ro.lrg.jfamilycounselor.diagram;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.logging.Logger;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
+
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
-public class ChordDiagram {
+class HFTCView {
 	private static final Logger logger = jFCLogger.getLogger();
 	private final URL diagramHtmlUrl;
 	
-	public ChordDiagram(File htmlFilePath) throws MalformedURLException {
+	public HFTCView(File htmlFilePath) throws MalformedURLException {
 		diagramHtmlUrl = Paths.get(htmlFilePath.getAbsolutePath()).toUri().toURL();
 	}
+	
+	private static String hftcTemplate;
 
-	public Optional<java.nio.file.Path> getDiagramHtmlPath() {
-		var bundle = Platform.getBundle("jfamilycounselor");
-		var sourceFolderUrl = FileLocator.find(bundle, new Path("resources"), null);
-
-		try {
-			var sourceFolderPath = FileLocator.toFileURL(sourceFolderUrl).getPath();
-			var htmlPath = Paths.get(sourceFolderPath, "chord-diagram.html");
-			return Optional.of(htmlPath);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return Optional.empty();
-		}
+    static {
+	try {
+	    var classLoader = HFTCView.class.getClassLoader();
+	    hftcTemplate = new String(classLoader.getResourceAsStream("hftc-view.html").readAllBytes(), StandardCharsets.UTF_8);
+	} catch (Exception e) {
+	    logger.severe("Could not load propper resources");
+	    System.exit(0);
 	}
+    }
+    
+    public String getHtml(String viewTitle) {
+    	return hftcTemplate.replace("|diagram-title|", viewTitle);
+    }
 
 	public void startBrowser() {
 		try {
