@@ -5,16 +5,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
@@ -43,9 +39,8 @@ import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
-import ro.lrg.xcore.metametamodel.Group;
 
-public class ExportDiagramRelationsJob extends Job {
+public class ExportHFTCRelationsJob extends Job {
 
 	public static final String FAMILY = "jFamilyCounselorExportReport";
 	private static final double APERTURE_COVERAGE_THRESHOLD = 0.5;
@@ -65,7 +60,7 @@ public class ExportDiagramRelationsJob extends Job {
 	private final IJavaProject iJavaProject;
 	private final EstimationType estimation;
 
-	public ExportDiagramRelationsJob(EstimationType estimation, IJavaProject iJavaProject) {
+	public ExportHFTCRelationsJob(EstimationType estimation, IJavaProject iJavaProject) {
 		super("Exporting " + estimation + " diagram...");
 		this.iJavaProject = iJavaProject;
 		this.estimation = estimation;
@@ -98,16 +93,16 @@ public class ExportDiagramRelationsJob extends Job {
 	}
 
 	private Pair<String, Pair<IType, IType>> mapRelevantTypeToMPair(IType relevantType, MTypesPair mPair) {
-		Pair<?, ?> pair = mPair.getUnderlyingObject();
+		var pair = mPair.getUnderlyingObject();
 		var p1IType = ((IType) pair._1);
 		var p2IType = ((IType) pair._2);
 		var projectName = relevantType.getJavaProject().getElementName() + "/";
 
 		if ((p1IType.getJavaProject().getElementName() + "/" + p1IType.toString())
 				.compareTo(p2IType.getJavaProject().getElementName() + "/" + p2IType.toString()) > 0)
-			return new Pair<>(projectName + relevantType.getFullyQualifiedName(), new Pair<>(p2IType, p1IType));
+			return Pair.of(projectName + relevantType.getFullyQualifiedName(), Pair.of(p2IType, p1IType));
 
-		return new Pair<>(projectName + relevantType.getFullyQualifiedName(), new Pair<>(p1IType, p2IType));
+		return Pair.of(projectName + relevantType.getFullyQualifiedName(), Pair.of(p1IType, p2IType));
 	}
 
 	protected IStatus run(IProgressMonitor monitor) {
@@ -124,10 +119,13 @@ public class ExportDiagramRelationsJob extends Job {
 		}
 
 		var relevantTypes = relevantTypesJob.relevantTypes();
-
+		
+		
+		
 		var start = Instant.now();
+		var subMonitor1 = SubMonitor.convert(monitor, "Computing Aperture Coverages", relevantTypes.size());
 
-		Map<Pair<IType, IType>, Set<String>> pairToClients = relevantTypes.parallelStream().flatMap(t -> Factory
+		var pairToClients = relevantTypes.parallelStream().flatMap(t -> Factory
 				.getInstance().createMType(t).relevantReferencesPairs().getElements().stream().flatMap(r -> {
 					var aperture = r.aperture();
 					var usedTypes = Optional.ofNullable(switch (estimation) {
@@ -148,34 +146,41 @@ public class ExportDiagramRelationsJob extends Job {
 					});
 
 					if (usedTypes.isEmpty()) {
+						subMonitor1.split(1);
 						return Stream.empty();
 					}
 
 					var apertureCoverage = usedTypes.get().getElements().size() / aperture;
 					if (apertureCoverage <= APERTURE_COVERAGE_THRESHOLD) {
+						subMonitor1.split(1);
 						return usedTypes.get().getElements().stream().map(p -> mapRelevantTypeToMPair(t, p));
 					}
-
+					
+					subMonitor1.split(1);
 					return Stream.empty();
 				}).distinct())
 				.collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
+		subMonitor1.done();
 
 		var clientsPairs = pairToClients.entrySet().parallelStream().collect(Collectors.toMap(
 				e -> e.getKey()._1.getJavaProject().getElementName() + "/" + e.getKey()._1.getFullyQualifiedName()
 						+ e.getKey()._2.getJavaProject().getElementName() + "/" + e.getKey()._2.getFullyQualifiedName(),
 				e -> e.getValue()));
 
-		Map<String, ITypeHierarchy> typeHierarchiesMap = new ConcurrentHashMap<>();
-		Map<String, String> leavesMap = new ConcurrentHashMap<>();
+		var typeHierarchiesMap = new ConcurrentHashMap<String, ITypeHierarchy>();
+		var leavesMap = new ConcurrentHashMap<String, String>();
 		var correlatedTypes = pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).distinct().toList();
-
+		
+		var subMonitor2 = SubMonitor.convert(monitor, "Computing Type Hierarchies", correlatedTypes.size());
+		
 		correlatedTypes.parallelStream().forEach(t -> {
 			try {
-				ITypeHierarchy typeHierarchy = t.newTypeHierarchy(null);
-				String projectName = t.getJavaProject().getElementName() + "/";
+				var typeHierarchy = t.newTypeHierarchy(null);
+				var projectName = t.getJavaProject().getElementName() + "/";
 
 				// check that the type is at the base of the hierarchy
 				if (typeHierarchy.getSubclasses(t).length != 0) {
+					subMonitor2.split(1);
 					return;
 				}
 
@@ -186,6 +191,7 @@ public class ExportDiagramRelationsJob extends Job {
 				// TODO: can length be 0 ?
 				if (superClasses.length == 1) {
 					typeHierarchiesMap.putIfAbsent(projectName + t.getFullyQualifiedName(), typeHierarchy);
+					subMonitor2.split(1);
 					return;
 				}
 
@@ -198,6 +204,7 @@ public class ExportDiagramRelationsJob extends Job {
 							.collect(Collectors.toList());
 					if (implementedClasses.size() == 0) {
 						typeHierarchiesMap.putIfAbsent(projectName + t.getFullyQualifiedName(), typeHierarchy);
+						subMonitor2.split(1);
 						return;
 					}
 					rootClass = implementedClasses.get(implementedClasses.size() - 1);
@@ -209,60 +216,51 @@ public class ExportDiagramRelationsJob extends Job {
 				}
 
 			} catch (JavaModelException e) {
+				subMonitor2.split(1);
 				return;
 			}
 		});
 
 		var hierarchiesList = new ConcurrentLinkedQueue<ParentLink>();
 		hierarchiesList.add(new ParentLink("", Constants.OBJECT_FQN));
+		
+		var subMonitor3 = SubMonitor.convert(monitor, "Computing Type Hierarchies Tree", typeHierarchiesMap.size());
+		
 		typeHierarchiesMap.entrySet().parallelStream().forEach(h -> {
 			var rootClassHierarchy = h.getValue();
 
 			// pair of parent and child IType
 			var q = new ArrayDeque<Pair<String, IType>>();
-			q.add(new Pair<String, IType>(Constants.OBJECT_FQN, rootClassHierarchy.getType()));
+			q.add(Pair.of(Constants.OBJECT_FQN, rootClassHierarchy.getType()));
 
 			while (q.size() != 0) {
 				var pair = q.remove();
 				var newParent = pair._2.getJavaProject().getElementName() + "/" + pair._2.getFullyQualifiedName();
 				hierarchiesList.add(new ParentLink(pair._1, newParent));
 
-				q.addAll(Stream.of(rootClassHierarchy.getSubclasses(pair._2)).map(c -> new Pair<>(newParent, c))
+				q.addAll(Stream.of(rootClassHierarchy.getSubclasses(pair._2)).map(c -> Pair.of(newParent, c))
 						.collect(Collectors.toList()));
+				
 			}
+			
+			subMonitor3.split(1);
 		});
-
-		typeHierarchiesMap.values().stream().forEach(h -> {
-			var superClasses = h.getAllSuperclasses(h.getType());
-			if (superClasses.length == 1) {
-				// TODO: something else
-				return;
-			}
-			var rootClass = superClasses[superClasses.length - 2];
-
-			ITypeHierarchy rootHierachy = null;
-			try {
-				rootHierachy = rootClass.newTypeHierarchy(null);
-			} catch (JavaModelException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			var q = new ArrayDeque<IType>();
-			q.add(rootClass);
-			while (q.size() != 0) {
-				var hierarchy = q.remove();
-				q.addAll(List.of(rootHierachy.getSubclasses(hierarchy)));
-			}
-		});
+		
+		
+		var subMonitor4 = SubMonitor.convert(monitor, "Computing Correlated Types JSON", typeHierarchiesMap.size());
 
 		var pairsFQNs = pairToClients.entrySet().parallelStream().flatMap(entry -> {
 			var p1FQN = entry.getKey()._1.getJavaProject().getElementName() + "/"
 					+ entry.getKey()._1.getFullyQualifiedName();
 			var p2FQN = entry.getKey()._2.getJavaProject().getElementName() + "/"
 					+ entry.getKey()._2.getFullyQualifiedName();
+			
 			if (leavesMap.containsKey(p1FQN) && leavesMap.containsKey(p2FQN)) {
-				return Stream.of(new Pair<>(p1FQN + "|" + p2FQN, entry.getValue().size()));
+				subMonitor4.split(1);
+				return Stream.of(Pair.of(p1FQN + "|" + p2FQN, entry.getValue().size()));
 			}
+			
+			subMonitor4.split(1);
 			return Stream.empty();
 		}).collect(Collectors.toMap(p -> p._1, p -> p._2));
 
@@ -290,14 +288,9 @@ public class ExportDiagramRelationsJob extends Job {
 			writeStringToFile(clientsPairsJsonFile, clientsPairsDataOutput);
 
 			try {
-				var chordDiagram = new ChordDiagram(diagramOutputFile);
-				var diagramHtmlPath = chordDiagram.getDiagramHtmlPath();
-				if (diagramHtmlPath.isEmpty())
-					return Status.error("The diagram html source could not be found");
-				writeStringToFile(diagramOutputFile,
-						Files.readString(diagramHtmlPath.get()).replace("|diagram-title|", estimation + " Diagram"));
-
-				chordDiagram.startBrowser();
+				var hftcView = new HFTCView(diagramOutputFile);
+				writeStringToFile(diagramOutputFile, hftcView.getHtml(iJavaProject.getElementName() + " - " + estimation + " - HFTC View"));
+				hftcView.startBrowser();
 			} catch (MalformedURLException e) {
 				logger.warning("MalformedURLException encountered: " + e.getMessage());
 				return Status.error("MalformedURLException during creation of diagram html URL");

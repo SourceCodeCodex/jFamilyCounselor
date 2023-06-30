@@ -10,6 +10,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 import jfamilycounselor.metamodel.entity.MReferencesPair;
+import ro.lrg.jfamilycounselor.util.stringify.Stringify;
 import ro.lrg.xcore.metametamodel.IPropertyComputer;
 import ro.lrg.xcore.metametamodel.PropertyComputer;
 
@@ -33,9 +34,9 @@ public class ToString implements IPropertyComputer<String, MReferencesPair> {
 	    } catch (JavaModelException e) {
 		params = "...";
 	    }
-	    return method.getElementName() + "(" + params + ") / " + param.getElementName();
+	    return method.getElementName() + "(" + params + ")/" + param.getElementName();
 	} else if (ref instanceof IType thiz) {
-	    return thiz.getFullyQualifiedName();
+	    return Stringify.stringify(thiz);
 	} else {
 	    return "-";
 	}

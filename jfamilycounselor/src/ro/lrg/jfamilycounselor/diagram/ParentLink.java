@@ -1,8 +1,10 @@
 package ro.lrg.jfamilycounselor.diagram;
 
 import java.util.Objects;
-
-public class ParentLink {
+/**
+ * used for serialization of type hierarchies
+ */
+class ParentLink {
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, parent);

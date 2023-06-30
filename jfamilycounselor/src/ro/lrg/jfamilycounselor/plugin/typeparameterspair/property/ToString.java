@@ -9,6 +9,7 @@ import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 
 import jfamilycounselor.metamodel.entity.MTypeParametersPair;
+import ro.lrg.jfamilycounselor.util.stringify.Stringify;
 import ro.lrg.xcore.metametamodel.IPropertyComputer;
 import ro.lrg.xcore.metametamodel.PropertyComputer;
 
@@ -30,7 +31,7 @@ public class ToString implements IPropertyComputer<String, MTypeParametersPair> 
 		return iTypeParameter.getElementName() + " <: " + "...";
 	    }
 	} else if (typeParameter instanceof IType thiz) {
-	    return thiz.getFullyQualifiedName();
+	    return Stringify.stringify(thiz);
 	} else {
 	    return "-";
 	}
