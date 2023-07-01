@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IType;
@@ -30,6 +31,7 @@ public final class Startup implements IStartup {
 	CacheSupervisor.startMemorySupervisor();
 
 	Factory.getInstance().setCacheCapacity(0);
+	
 
 	// helps Insider know how to convert the implementations to the entities of the
 	// metamodel
@@ -78,6 +80,7 @@ public final class Startup implements IStartup {
 			    logger.info("Clearing caches and reloading sources");
 			    CacheSupervisor.clearAllCaches();
 			    JavaProjectsCapability.reloadProjects();
+			    return false;
 			}
 			return true;
 		    }
@@ -86,6 +89,10 @@ public final class Startup implements IStartup {
 	    }
 
 	});
+	
+	var log = Platform.getLog(getClass());
+	log.info("jFamilyCounselor started!");
+	
     }
 
 }

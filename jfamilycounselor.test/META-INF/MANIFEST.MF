@@ -1,11 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: ro.lrg.jfamilycouncelor.tests
-Bundle-SymbolicName: jfamilycounselor.test
+Bundle-Name: jFamilyCounselor Tests
+Bundle-SymbolicName: ro.lrg.jfamilycounselor.test
 Bundle-Version: 2.0.0.qualifier
-Fragment-Host: jfamilycounselor;bundle-version="1.0.0"
+Fragment-Host: ro.lrg.jfamilycounselor;bundle-version="2.0.0.qualifier"
 Require-Bundle: org.eclipse.ui.ide,
  junit-jupiter-api,
  org.junit
-Automatic-Module-Name: jfamilycouncelor.tests
+Automatic-Module-Name: jfamilycouncelor.test
 Bundle-RequiredExecutionEnvironment: JavaSE-16

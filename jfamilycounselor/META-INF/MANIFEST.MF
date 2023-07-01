@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: jFamilyCounselor
-Bundle-SymbolicName: jfamilycounselor;singleton:=true
+Bundle-SymbolicName: ro.lrg.jfamilycounselor;singleton:=true
 Bundle-Version: 2.0.0.qualifier
+Bundle-Vendor: LOOSE Research Group
 Automatic-Module-Name: jfamilycounselor
 Bundle-RequiredExecutionEnvironment: JavaSE-16
 Import-Package: ro.lrg.xcore.metametamodel
@@ -12,6 +13,6 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.ui,
  org.eclipse.jdt.ui,
  org.eclipse.core.resources,
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.13.2",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.13.2"
+ com.fasterxml.jackson.core.jackson-core,
+ com.fasterxml.jackson.core.jackson-databind
 Bundle-ClassPath: .
