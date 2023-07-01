@@ -2,16 +2,14 @@
 <feature
       id="jfamilycounselor.feature"
       label="jFamilyCounselor"
-      version="1.0.0">
+      version="2.0.0">
 
    <description url="https://github.com/SourceCodeCodex/jFamilyCounselor/README.md">
       jFamilyCounselor proposes a metric-based static code analysis,
 capable of identifying fragments containing hidden familial type
-correlations in Java source code. What are hidden familial type
-correlations and how jFamilyCounselor detects them are 
-presented in: Alin-Petru Roșu, Petru-Florin Mihancea, Towards
+correlations (Alin-Petru Roșu, Petru-Florin Mihancea, Towards
 the Detection of Hidden Familial Type Correlations in Java Code,
-LOOSE Research Group, 2022.
+LOOSE Research Group, 2022).
    </description>
 
    <copyright url="https://github.com/SourceCodeCodex/jFamilyCounselor/blob/main/LICENSE.md">
