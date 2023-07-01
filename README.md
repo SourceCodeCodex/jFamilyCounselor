@@ -42,13 +42,13 @@
 
 ## Requirements
 
-* *Eclipse IDE for RCP and RAP Developers* [2023-03 R](https://www.eclipse.org/downloads/packages/release/2023-03/r/eclipse-ide-rcp-and-rap-developers) 
-* *Java version* 16
+* *Eclipse IDE for RCP and RAP Developers* [2023-06 R](https://www.eclipse.org/downloads/packages/release/2023-03/r/eclipse-ide-rcp-and-rap-developers) 
+* *Java version* 17
 
 Notes:
-- using a Java version > 16 with any Eclipse version <= 2023-03 R is impossible due to a bug that was addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962)
-- using 2023-06 R might have a bug as the build path appears as incomplete and XCore's binaries from the `/lib` directory need to be manually specified
-- the implemented analyses perform heavy computations and use a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor in order to obtain results in a feasible amount of time
+- regardless of the chosen version, Eclipse IDE for **RCP and RAP Developers** is required both for using and working on the plugin
+- using a Java version >= 17 with any Eclipse version <= 2023-03 R is impossible due to an Eclipse bug that was ultimately addressed [here](https://github.com/eclipse-jdt/eclipse.jdt.core/issues/962)
+
 ## Setup
 
 jFamilyCounselor is developed using the [XCore](https://github.com/SourceCodeCodex/XCore) framework. In order to install XCore copy the [binaries](https://github.com/SourceCodeCodex/XCore/tree/master/latest) in the **dropins** folder of Eclipse. 
@@ -83,6 +83,7 @@ For further explanations on how to use jFamilyCounselor, please refer to the too
 # Notes: Using jFamilyCounselor
 
 - the cast-based approach records a slower progress at the beginning and better afterwards due to caching
+- the implemented analyses perform heavy computations and use a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor in order to obtain results in a feasible amount of time
 - for better performance, it might be needed to reconfigure the CacheSupervisor depending on the available amount of RAM
 - the visualisation might not be displayed immediately after export due to some permission issues. It is best to configure Eclipse to use an external browser to fix this problem.
 - XCore currently does not run any computation on separate threads and long operations can block the UI. It is best to analyze projects following these steps:
@@ -104,11 +105,12 @@ Working with/Extending  **jFamilyCounselor** requires the understanding of some 
 
 - the `ro.lrg.jfamilycounselor.plugin` contains all classes which are responsible for the metamodel's generation through XCore
 - a `capability` is nothing but a glorified singleton that wraps some logic which can be tested in isolation and composed with other capabilities
+- always use the Java perspective, not the default Plugin Development. Some XCore features function only when using the former.
 
 # Deployment
 
 The deployment of the plugin can be made using the `jfamilycounselor.feature`. 
-For now, the deployable feature is exported as a zip and installed in Eclipse:
+For now, the deployable feature (available inside `jfamilycounselor.repository`)
 - open Eclipse and go to `Help` > `Install New Software...`
 - add a new repository
 - select `Archive` and open the exported zip
@@ -116,7 +118,6 @@ For now, the deployable feature is exported as a zip and installed in Eclipse:
 - accept the license terms
 - trust the unsigned content of the unknown origin
 - restart Eclipse
-
 
 <!-- RESULTS & CORPUS -->
 # Results. Corpus

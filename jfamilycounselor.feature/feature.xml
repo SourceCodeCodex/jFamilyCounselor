@@ -3,7 +3,8 @@
       id="ro.lrg.jfamilycounselor.feature"
       label="jFamilyCounselor"
       version="2.0.0.qualifier"
-      provider-name="LOOSE Research Group">
+      provider-name="LOOSE Research Group"
+      plugin="ro.lrg.jfamilycounselor">
 
    <description url="https://github.com/SourceCodeCodex/jFamilyCounselor/README.md">
       jFamilyCounselor proposes a metric-based static code analysis, capable of identifying fragments containing hidden familial type correlations (Alin-Petru Roșu, Petru-Florin Mihancea, Towards the Detection of Hidden Familial Type Correlations in Java Code, LOOSE Research Group, 2022).

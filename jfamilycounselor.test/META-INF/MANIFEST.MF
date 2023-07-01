@@ -8,4 +8,4 @@ Require-Bundle: org.eclipse.ui.ide,
  junit-jupiter-api,
  org.junit
 Automatic-Module-Name: jfamilycouncelor.test
-Bundle-RequiredExecutionEnvironment: JavaSE-16
+Bundle-RequiredExecutionEnvironment: JavaSE-17

@@ -27,7 +27,7 @@ public class TestUtil {
 	public static void importProject(String projectName, String fileName) {
 
 		try {
-			URL url = Platform.getBundle("jfamilycounselor.test").getEntry("/");
+			URL url = Platform.getBundle("ro.lrg.jfamilycounselor.test").getEntry("/");
 			url = FileLocator.resolve(url);
 			String path = url.getPath() + "testdata/";
 			ZipFile theFile = new ZipFile(new File(path + fileName));

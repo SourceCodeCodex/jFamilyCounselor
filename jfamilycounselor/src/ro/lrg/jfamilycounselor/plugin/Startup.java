@@ -91,7 +91,7 @@ public final class Startup implements IStartup {
 	});
 	
 	var log = Platform.getLog(getClass());
-	log.info("jFamilyCounselor started!");
+	log.info("jFamilyCounselor has started!");
 	
     }
 

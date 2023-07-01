@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <feature id="ro.lrg.jfamilycounselor.feature">
-      <category name="ro.lrg.jfamilycounselor"/>
+      <category name="LOOSE Research Group"/>
    </feature>
-   <category-def name="ro.lrg.jfamilycounselor" label="LOOSE Research Group"/>
+   <category-def name="LOOSE Research Group" label="LOOSE Research Group">
+      <description>
+         The LOOSE Research Group  is focused on the evolution and re-engineering of object-oriented software systems. All research activities of the LOOSE Research Group follow an iterative approach starting with basic research which is then concretized in two directions: on the one hand in the academic field, and on the other hand in collaborations with the industry.
+      </description>
+   </category-def>
 </site>
