@@ -86,7 +86,7 @@ public class TypeParameterCapability {
 
 	return Optional.of(iTypes);
     }
-    
+
     public static Optional<Integer> indexOfTypeParameter(ITypeParameter typeParameter) {
 	var type = (IType) typeParameter.getDeclaringMember();
 

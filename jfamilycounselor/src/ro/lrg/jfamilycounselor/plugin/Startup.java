@@ -31,7 +31,8 @@ public final class Startup implements IStartup {
 
 	Factory.getInstance().setCacheCapacity(0);
 
-	// helps Insider know how to convert the implementations to the entities of the metamodel
+	// helps Insider know how to convert the implementations to the entities of the
+	// metamodel
 	ToolRegistration.getInstance().registerXEntityConverter(element -> {
 
 	    if (element instanceof IJavaProject iJavaProject) {
@@ -45,16 +46,16 @@ public final class Startup implements IStartup {
 	    if (element instanceof Pair<?, ?> pair) {
 		if (pair._1 instanceof IType t1 && pair._2 instanceof IType t2)
 		    return Factory.getInstance().createMTypesPair(Pair.of(t1, t2));
-		
+
 		if (pair._1 instanceof IType r1 && pair._2 instanceof ITypeParameter r2)
 		    return Factory.getInstance().createMTypeParametersPair(Pair.of(r1, r2));
-		
+
 		if (pair._1 instanceof ITypeParameter r1 && pair._2 instanceof ITypeParameter r2)
 		    return Factory.getInstance().createMTypeParametersPair(Pair.of(r1, r2));
 
 		if (pair._1 instanceof IType r1 && pair._2 instanceof ILocalVariable r2)
 		    return Factory.getInstance().createMReferencesPair(Pair.of(r1, r2));
-		
+
 		if (pair._1 instanceof ILocalVariable r1 && pair._2 instanceof ILocalVariable r2)
 		    return Factory.getInstance().createMReferencesPair(Pair.of(r1, r2));
 	    }

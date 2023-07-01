@@ -27,7 +27,7 @@ class TypeReferenceVisitor extends ASTVisitor {
     public List<Type> getReferences() {
 	return List.copyOf(typeReferences);
     }
-    
+
     @Override
     public boolean visit(PrimitiveType node) {
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iType)))
@@ -43,7 +43,7 @@ class TypeReferenceVisitor extends ASTVisitor {
 
 	return true;
     }
-    
+
     @Override
     public boolean visit(SimpleType node) {
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iType)))
@@ -51,7 +51,7 @@ class TypeReferenceVisitor extends ASTVisitor {
 
 	return true;
     }
-    
+
     @Override
     public boolean visit(QualifiedType node) {
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iType)))
@@ -59,7 +59,7 @@ class TypeReferenceVisitor extends ASTVisitor {
 
 	return true;
     }
-    
+
     @Override
     public boolean visit(NameQualifiedType node) {
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iType)))
@@ -67,7 +67,7 @@ class TypeReferenceVisitor extends ASTVisitor {
 
 	return true;
     }
-    
+
     @Override
     public boolean visit(ParameterizedType node) {
 	if (Optional.ofNullable(node.getType().resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iType))) {

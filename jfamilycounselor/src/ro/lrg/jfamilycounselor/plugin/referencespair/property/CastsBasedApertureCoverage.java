@@ -9,13 +9,10 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class CastsBasedApertureCoverage implements IPropertyComputer<Double, MReferencesPair> {
     public Double compute(MReferencesPair mReferencesPair) {
-    	Group<MTypesPair> usedConcreteTypePairs 
-			= mReferencesPair.castsBasedUsedTypes();
-    	double cardinalityUsedConcreteTypePairs 
-			= usedConcreteTypePairs.getElements().size();
-    	double cardinalityPossibleConcreteTypePairs 
-			= mReferencesPair.aperture();
-    	return cardinalityUsedConcreteTypePairs 
-    			/ cardinalityPossibleConcreteTypePairs;
+	Group<MTypesPair> usedConcreteTypePairs = mReferencesPair.castsBasedUsedTypes();
+	double cardinalityUsedConcreteTypePairs = usedConcreteTypePairs.getElements().size();
+	double cardinalityPossibleConcreteTypePairs = mReferencesPair.aperture();
+	return cardinalityUsedConcreteTypePairs
+		/ cardinalityPossibleConcreteTypePairs;
     }
 }

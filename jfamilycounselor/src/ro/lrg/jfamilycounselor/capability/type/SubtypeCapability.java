@@ -18,7 +18,7 @@ public class SubtypeCapability {
     }
 
     private static final Cache<IType, List<String>> cache = MonitoredUnboundedCache.getLowConsumingCache();
-    
+
     private static final Logger logger = jFCLogger.getLogger();
 
     public static boolean isSubtypeOf(IType iType1, IType iType2) {

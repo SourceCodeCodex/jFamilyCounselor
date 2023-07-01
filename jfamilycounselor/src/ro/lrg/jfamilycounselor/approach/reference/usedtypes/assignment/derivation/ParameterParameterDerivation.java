@@ -38,8 +38,8 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * are declared in different methods (let them be m1, m2), e.g. distinct
  * setters, and is represents computing the cartesian product of the calls of m1
  * and the calls of m2, keeping only the pair of calls that are invoked on the
- * same target object. Combination need to be executed only once, for the initial
- * assignments pair.
+ * same target object. Combination need to be executed only once, for the
+ * initial assignments pair.
  * 
  * 2. param1 and param2 are parameters that were obtained through derivation
  * beforehand. In this case, if the parameters are declared in different

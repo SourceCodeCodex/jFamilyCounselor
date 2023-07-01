@@ -47,7 +47,7 @@ public class ThisParameterHandler extends ReferencesPairHandler {
 	var assignedParam = (AssignedElement.Parameter) assignemntsPair._2.assignedElement().get();
 
 	var newExpressions = ParameterDerivationWithTargetObject.derive(assignedParam.iLocalVariable());
-	
+
 	// if there are no new expressions obtained through derivation, mark the pair as
 	// invalid
 	if (newExpressions.isEmpty()) {

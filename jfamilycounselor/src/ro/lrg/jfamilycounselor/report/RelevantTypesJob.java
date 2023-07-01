@@ -30,7 +30,7 @@ public class RelevantTypesJob extends Job {
     private static Logger logger = jFCLogger.getLogger();
 
     public RelevantTypesJob(IJavaProject iJavaProject, EstimationType estimation) {
-	super("Computing relevant types of " + iJavaProject.getElementName() + " for estimation " + estimation.toString() + "...");
+	super(iJavaProject.getElementName() + " - " + estimation + " - Relevant Types");
 	this.iJavaProject = iJavaProject;
 	this.estimation = estimation;
     }

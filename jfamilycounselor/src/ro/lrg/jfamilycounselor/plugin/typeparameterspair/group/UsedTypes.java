@@ -27,7 +27,8 @@ public class UsedTypes implements IRelationBuilder<MTypesPair, MTypeParametersPa
 	if (usedTypes.isEmpty())
 	    throw new IllegalStateException("Type-parameters-based used types computation for pair: " + mTypeParametersPair.toString() + " failed. The result should be a non-empty list.");
 
-	// if type parameters based cannot find any used types, then consider all possible types
+	// if type parameters based cannot find any used types, then consider all
+	// possible types
 	if (usedTypes.get().isEmpty())
 	    usedTypes = Optional.of(mTypeParametersPair.possibleTypes().getElements().stream().map(mTypesPair -> (Pair<IType, IType>) mTypesPair.getUnderlyingObject()).toList());
 

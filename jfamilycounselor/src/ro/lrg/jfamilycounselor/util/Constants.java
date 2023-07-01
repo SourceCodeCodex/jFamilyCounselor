@@ -8,7 +8,22 @@ public class Constants {
     public static final String EQUAL = "equal";
 
     public enum EstimationType {
-	NAME_BASED, NAME_BASED_LEVENSHTEIN, ASSIGNMENTS_BASED, CASTS_BASED, TYPE_PARAMETERS_BASED
+	NAME_BASED("Name-based"),
+	NAME_BASED_LEVENSHTEIN("Name-based-levenshtein"),
+	ASSIGNMENTS_BASED("Assignments-based"),
+	CASTS_BASED("Casts-based"),
+	TYPE_PARAMETERS_BASED("TypeParameters-based");
+
+	public final String label;
+
+	private EstimationType(String label) {
+	    this.label = label;
+	}
+
+	@Override
+	public String toString() {
+	    return label;
+	}
     }
 
 }

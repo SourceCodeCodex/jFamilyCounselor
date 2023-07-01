@@ -10,12 +10,11 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
 public class CommonOperations {
     private CommonOperations() {
     }
-    
-    
+
     public static <V> Supplier<V> lazy(V v) {
 	return () -> v;
     }
-    
+
     public static <K, V> Stream<Pair<K, V>> cartesianProduct(Stream<K> l1, Stream<V> l2) {
 	return l1.flatMap(e1 -> l2.map(e2 -> Pair.of(e1, e2)));
     }

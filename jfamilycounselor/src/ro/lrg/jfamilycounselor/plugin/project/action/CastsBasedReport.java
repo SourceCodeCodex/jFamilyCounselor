@@ -15,7 +15,7 @@ public class CastsBasedReport implements IActionPerformer<Void, MProject, HListE
     @Override
     public Void performAction(MProject mProject, HListEmpty args) {
 	var iProject = mProject.getUnderlyingObject().getProject();
-	
+
 	var exportJob = new ExportReportJob(EstimationType.CASTS_BASED, mProject.getUnderlyingObject());
 	exportJob.setPriority(Job.LONG);
 	exportJob.setRule(iProject.getWorkspace().getRuleFactory().createRule(iProject));

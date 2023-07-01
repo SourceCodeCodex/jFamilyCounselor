@@ -11,7 +11,7 @@ public class AssignemntsPair extends Pair<Assignment, Assignment> {
     public AssignemntsPair(Assignment _1, Assignment _2) {
 	super(_1, _2);
     }
-    
+
     public static AssignemntsPair initial(Assignment _1, Assignment _2) {
 	var pair = new AssignemntsPair(_1, _2);
 	pair.isInitial = true;

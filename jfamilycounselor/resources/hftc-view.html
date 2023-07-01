@@ -4,7 +4,7 @@
 <head>
 
     <meta charset="utf-8">
-    <title>Chord Diagram</title>
+    <title>HFTC View</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
 
 </head>
@@ -124,20 +124,8 @@
 
         const clientsMap = new Map();
 
-        let i = 0;
-
         for (pair of Object.keys(clients)) {
-            const formattedNames = clients[pair].map(c => {
-                let [projectName, fqn] = c.split("/")
-                const nameParts = fqn.split(".");
-                const newName = projectName + "/" + nameParts
-                    .slice(0, nameParts.length - 1)
-                    .map(s => s.charAt(0))
-                    .join(".") + "." + nameParts[nameParts.length - 1]
-                return newName;
-            });
-
-            clientsMap.set(pair, "<br/>" + formattedNames.join("<br/>"));
+            clientsMap.set(pair, "<br/>" + clients[pair].join("<br/>"));
         }
 
         // import * as d3 from "d3"

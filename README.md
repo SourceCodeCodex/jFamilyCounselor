@@ -30,8 +30,8 @@
   <p align="center">
     Eclipse plugin that bundles metric-based static code analyses that reveal fragments containing hidden type correlations
     <br />
-    <a href="docs/approach.pdf"><strong>« Approach</strong></a> |
-    <a href="docs/tool.pdf"><strong>Tool Demo »</strong></a>
+    <a href="https://doi.org/10.1109/SCAM55253.2022.00022"><strong>« Approach</strong></a> |
+    <a href="#"><strong>Tool Demo (Coming Soon) »</strong></a>
     <br />
     <hr />
   </p>
@@ -78,12 +78,13 @@ So as to validate that the setup was successful, follow the listed steps:
 - alternatively, right-click on the `WaiterTray` class (NOT on the compilation unit `WaiterTray.java`) in the `Package Explorer` view and select `Browse in Insider`. _Note: A class is represented in `Package Explorer` as a 'C' encircled in a green circle icon. Browsing in Insider a compilation unit will result in no entries in the `Insider` view_
 - in either scenarios, you should see an entry in the `Insider` view
 
-For further explanations on how to use jFamilyCounselor, please refer to the [Tool Demo](docs/tool.pdf).
+For further explanations on how to use jFamilyCounselor, please refer to the tool demo (coming soon).
 
 # Notes: Using jFamilyCounselor
 
 - the cast-based approach records a slower progress at the beginning and better afterwards due to caching
 - for better performance, it might be needed to reconfigure the CacheSupervisor depending on the available amount of RAM
+- the visualisation might not be displayed immediately after export due to some permission issues. It is best to configure Eclipse to use an external browser to fix this problem.
 - XCore currently does not run any computation on separate threads and long operations can block the UI. It is best to analyze projects following these steps:
   - export a report using one of the XCore actions. The export is located in the project's root folder
   - use the results to determine the types that might be interesting to be analyzed manually
@@ -128,7 +129,7 @@ So far, the project that was intensively analyzed is `kettle-engine`. In order t
 - export reports with the desired approach
 - the reports can be found in the project's root folder
 
-Other projects that were identified to contain hidden type correlations and which can help improving jFamilyCounselor are present in corpus used in the study: Luis Mastrangelo, Matthias Hauswirth, and Nathaniel Nystrom. 2019. Casting about in the dark: an empirical study of cast operations in Java programs. Proc. ACM Program. Lang. 3, OOPSLA, Article 158 (October 2019), 31 pages. https://doi.org/10.1145/3360584.
+Other projects that were identified to contain hidden type correlations and which can help improving jFamilyCounselor are present in corpus used in the study: Luis Mastrangelo, Matthias Hauswirth, and Nathaniel Nystrom. 2019. Casting about in the dark: an empirical study of cast operations in Java programs. Proc. ACM Program. Lang. 3, OOPSLA, Article 158 (October 2019), 31 pages, https://doi.org/10.1145/3360584.
 
 <!-- LICENSE -->
 # License

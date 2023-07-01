@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public record HTMLIndex(String projectName, List<HTMLPackage> packages) implements HTMLRendable {
-    
+
     private static Logger logger = jFCLogger.getLogger();
 
     private static String indexTemplate;

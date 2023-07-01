@@ -7,7 +7,7 @@ public interface Cache<K, V> {
     void put(K key, V value);
 
     Optional<V> get(K key);
-    
+
     boolean contains(K key);
 
     int size();
@@ -15,7 +15,7 @@ public interface Cache<K, V> {
     boolean isEmpty();
 
     void clear();
-    
+
     boolean isBigMemoryConsumer();
 
 }

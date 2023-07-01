@@ -15,7 +15,7 @@ class MethodDeclarationVisitor extends ASTVisitor {
     }
 
     public boolean visit(MethodDeclaration node) {
-	
+
 	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod))) {
 	    lastNode = Optional.of(node);
 	}

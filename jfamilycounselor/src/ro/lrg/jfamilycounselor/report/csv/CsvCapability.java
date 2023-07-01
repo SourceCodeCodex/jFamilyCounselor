@@ -7,7 +7,6 @@ public class CsvCapability {
     private CsvCapability() {
     }
 
-
     public static String joinAsCSVRow(List<String> data) {
 	return data.stream().map(CsvCapability::escapeSpecialCharacters).collect(Collectors.joining(",")) + "\n";
     }

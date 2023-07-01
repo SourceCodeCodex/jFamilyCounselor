@@ -26,7 +26,8 @@ public class AssignmentsBasedUsedTypes implements IRelationBuilder<MTypesPair, M
 	if (usedTypes.isEmpty())
 	    throw new IllegalStateException("Assignments-based used types computation for pair: " + mReferencesPair.toString() + " failed.");
 
-	// if assignments based cannot find any used types, then consider all possible types
+	// if assignments based cannot find any used types, then consider all possible
+	// types
 	if (usedTypes.get().isEmpty())
 	    usedTypes = Optional.of(mReferencesPair.possibleTypes().getElements().stream().map(mTypesPair -> (Pair<IType, IType>) mTypesPair.getUnderlyingObject()).toList());
 

@@ -30,7 +30,7 @@ public final class MonitoredUnboundedCache<K, V> implements Cache<K, V> {
     public static <K, V> Cache<K, V> getLowConsumingCache() {
 	return new MonitoredUnboundedCache<K, V>(false);
     }
-    
+
     public static <K, V> Cache<K, V> getHighConsumingCache() {
 	return new MonitoredUnboundedCache<K, V>(true);
     }

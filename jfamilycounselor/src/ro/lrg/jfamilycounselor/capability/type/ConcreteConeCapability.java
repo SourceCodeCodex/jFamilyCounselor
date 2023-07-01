@@ -28,58 +28,58 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class ConcreteConeCapability {
-	private ConcreteConeCapability() {
+    private ConcreteConeCapability() {
+    }
+
+    private static final Cache<IType, List<IType>> cache = MonitoredUnboundedCache.getLowConsumingCache();
+
+    private static final Logger logger = jFCLogger.getLogger();
+
+    public static Optional<List<IType>> concreteCone(IType iType) {
+	if (cache.contains(iType))
+	    return cache.get(iType);
+
+	if (iType.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
+	    return Optional.empty();
 	}
 
-	private static final Cache<IType, List<IType>> cache = MonitoredUnboundedCache.getLowConsumingCache();
+	try {
+	    var cone = new ArrayList<>(
+		    Arrays.asList(iType.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType)));
+	    cone.add(iType);
 
-	private static final Logger logger = jFCLogger.getLogger();
-
-	public static Optional<List<IType>> concreteCone(IType iType) {
-		if (cache.contains(iType))
-			return cache.get(iType);
-
-		if (iType.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
-			return Optional.empty();
-		}
-
+	    var concreteCone = cone.stream().filter(t -> {
 		try {
-			var cone = new ArrayList<>(
-					Arrays.asList(iType.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType)));
-			cone.add(iType);
-
-			var concreteCone = cone.stream().filter(t -> {
-				try {
-					return !(t.isAnnotation() || t.isAnonymous() || t.isInterface() || t.isLambda() || t.isLocal()
-							|| t.isBinary() || Flags.isAbstract(t.getFlags()) || Flags.isSynthetic(t.getFlags()));
-				} catch (JavaModelException e) {
-					return false;
-				}
-			}).toList();
-
-			cache.put(iType, concreteCone);
-
-			return Optional.of(concreteCone);
+		    return !(t.isAnnotation() || t.isAnonymous() || t.isInterface() || t.isLambda() || t.isLocal()
+			    || t.isBinary() || Flags.isAbstract(t.getFlags()) || Flags.isSynthetic(t.getFlags()));
 		} catch (JavaModelException e) {
-			logger.warning("JavaModelException encountered: " + e.getMessage());
-			return Optional.empty();
-
+		    return false;
 		}
+	    }).toList();
+
+	    cache.put(iType, concreteCone);
+
+	    return Optional.of(concreteCone);
+	} catch (JavaModelException e) {
+	    logger.warning("JavaModelException encountered: " + e.getMessage());
+	    return Optional.empty();
+
 	}
+    }
 
-	public static Optional<Boolean> isConcreteLeaf(IType iType) {
-		var cone = concreteCone(iType);
-		return cone.map(c -> c.size() == 1 && c.contains(iType));
-	}
+    public static Optional<Boolean> isConcreteLeaf(IType iType) {
+	var cone = concreteCone(iType);
+	return cone.map(c -> c.size() == 1 && c.contains(iType));
+    }
 
-	public static Optional<Boolean> hasConcreteSubtypes(IType iType) {
-		var cone = concreteCone(iType);
-		if (cone.isEmpty())
-			return Optional.empty();
+    public static Optional<Boolean> hasConcreteSubtypes(IType iType) {
+	var cone = concreteCone(iType);
+	if (cone.isEmpty())
+	    return Optional.empty();
 
-		if (cone.get().contains(iType))
-			return Optional.of(cone.get().size() >= 2);
+	if (cone.get().contains(iType))
+	    return Optional.of(cone.get().size() >= 2);
 
-		return Optional.of(cone.get().size() >= 1);
-	}
+	return Optional.of(cone.get().size() >= 1);
+    }
 }

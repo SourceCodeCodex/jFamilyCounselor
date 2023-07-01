@@ -57,7 +57,7 @@ public class ExportReportJob extends Job {
     private final EstimationType estimation;
 
     public ExportReportJob(EstimationType estimation, IJavaProject iJavaProject) {
-	super(estimation + "(" + iJavaProject.getElementName() + ") exporting report...");
+	super(iJavaProject.getElementName() + " - " + estimation + " - Report Export");
 	this.iJavaProject = iJavaProject;
 	this.estimation = estimation;
     }
@@ -276,9 +276,9 @@ public class ExportReportJob extends Job {
 
 	var wsRoot = iJavaProject.getProject().getWorkspace().getRoot();
 
-	var reportsFolder = wsRoot.getFolder(iJavaProject.getPath().append("jFamilyCounselor")).getLocation();
+	var reportsFolder = wsRoot.getFolder(iJavaProject.getPath().append("jFamilyCounselor").append("reports")).getLocation();
 
-	var outputDirName = String.format("%s-%s-%s", iJavaProject.getElementName(), estimation.toString(), timestamp.toString());
+	var outputDirName = String.format("%s-%s-report-%s", iJavaProject.getElementName(), estimation.toString(), timestamp.toString());
 
 	var outputDirPath = reportsFolder.append(outputDirName);
 
