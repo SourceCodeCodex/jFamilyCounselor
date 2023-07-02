@@ -19,49 +19,49 @@ import org.eclipse.jdt.core.dom.SuperMethodInvocation;
  *
  */
 public class MethodArgumentsCapability {
-    private MethodArgumentsCapability() {
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Optional<Expression> extractArgument(Expression invocation, int index) {
-	Optional<List<Expression>> args = switch (invocation.getNodeType()) {
-	case ASTNode.METHOD_INVOCATION: {
-	    var methodInvocation = (MethodInvocation) invocation;
-	    yield Optional.of((List<Expression>) methodInvocation.arguments());
+	private MethodArgumentsCapability() {
 	}
-	case ASTNode.SUPER_METHOD_INVOCATION: {
-	    var superMethodInvocation = (SuperMethodInvocation) invocation;
-	    yield Optional.of((List<Expression>) superMethodInvocation.arguments());
-	}
-	case ASTNode.CLASS_INSTANCE_CREATION: {
-	    var constructorInvocation = (ClassInstanceCreation) invocation;
-	    yield Optional.of((List<Expression>) constructorInvocation.arguments());
-	}
-	default:
-	    yield Optional.empty();
-	};
 
-	return args.flatMap(l -> {
-	    try {
-		return Optional.of(l.get(index));
-	    } catch (Exception e) {
-		return Optional.empty();
-	    }
-	});
-    }
-
-    public static Optional<Integer> indexOfParameter(IMethod iMethod, ILocalVariable iLocalVariable) {
-	try {
-	    var parameters = Stream.of(iMethod.getParameters()).toList();
-	    for (int i = 0; i < parameters.size(); i++) {
-		if (iLocalVariable.equals(parameters.get(i))) {
-		    return Optional.of(i);
+	@SuppressWarnings("unchecked")
+	public static Optional<Expression> extractArgument(Expression invocation, int index) {
+		Optional<List<Expression>> args = switch (invocation.getNodeType()) {
+		case ASTNode.METHOD_INVOCATION: {
+			var methodInvocation = (MethodInvocation) invocation;
+			yield Optional.of((List<Expression>) methodInvocation.arguments());
 		}
-	    }
-	    return Optional.empty();
-	} catch (Exception e) {
-	    return Optional.empty();
+		case ASTNode.SUPER_METHOD_INVOCATION: {
+			var superMethodInvocation = (SuperMethodInvocation) invocation;
+			yield Optional.of((List<Expression>) superMethodInvocation.arguments());
+		}
+		case ASTNode.CLASS_INSTANCE_CREATION: {
+			var constructorInvocation = (ClassInstanceCreation) invocation;
+			yield Optional.of((List<Expression>) constructorInvocation.arguments());
+		}
+		default:
+			yield Optional.empty();
+		};
+
+		return args.flatMap(l -> {
+			try {
+				return Optional.of(l.get(index));
+			} catch (Exception e) {
+				return Optional.empty();
+			}
+		});
 	}
-    }
+
+	public static Optional<Integer> indexOfParameter(IMethod iMethod, ILocalVariable iLocalVariable) {
+		try {
+			var parameters = Stream.of(iMethod.getParameters()).toList();
+			for (int i = 0; i < parameters.size(); i++) {
+				if (iLocalVariable.equals(parameters.get(i))) {
+					return Optional.of(i);
+				}
+			}
+			return Optional.empty();
+		} catch (Exception e) {
+			return Optional.empty();
+		}
+	}
 
 }

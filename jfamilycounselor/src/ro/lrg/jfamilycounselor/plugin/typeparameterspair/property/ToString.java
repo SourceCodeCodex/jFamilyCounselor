@@ -16,25 +16,26 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class ToString implements IPropertyComputer<String, MTypeParametersPair> {
 
-    @Override
-    public String compute(MTypeParametersPair mTypeParametersPair) {
-	var t1 = mTypeParametersPair.getUnderlyingObject()._1;
-	var t2 = mTypeParametersPair.getUnderlyingObject()._2;
-	return "[" + typeParameterToString(t1) + ", " + typeParameterToString(t2) + "]";
-    }
-
-    private String typeParameterToString(IJavaElement typeParameter) {
-	if (typeParameter instanceof ITypeParameter iTypeParameter) {
-	    try {
-		return iTypeParameter.getElementName() + " <: " + Arrays.asList(iTypeParameter.getBounds()).stream().collect(Collectors.joining(","));
-	    } catch (JavaModelException e) {
-		return iTypeParameter.getElementName() + " <: " + "...";
-	    }
-	} else if (typeParameter instanceof IType thiz) {
-	    return Stringify.stringify(thiz);
-	} else {
-	    return "-";
+	@Override
+	public String compute(MTypeParametersPair mTypeParametersPair) {
+		var t1 = mTypeParametersPair.getUnderlyingObject()._1;
+		var t2 = mTypeParametersPair.getUnderlyingObject()._2;
+		return "[" + typeParameterToString(t1) + ", " + typeParameterToString(t2) + "]";
 	}
-    }
+
+	private String typeParameterToString(IJavaElement typeParameter) {
+		if (typeParameter instanceof ITypeParameter iTypeParameter) {
+			try {
+				return iTypeParameter.getElementName() + " <: "
+						+ Arrays.asList(iTypeParameter.getBounds()).stream().collect(Collectors.joining(","));
+			} catch (JavaModelException e) {
+				return iTypeParameter.getElementName() + " <: " + "...";
+			}
+		} else if (typeParameter instanceof IType thiz) {
+			return Stringify.stringify(thiz);
+		} else {
+			return "-";
+		}
+	}
 
 }

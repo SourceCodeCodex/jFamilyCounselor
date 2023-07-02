@@ -8,26 +8,26 @@ import ro.lrg.jfamilycounselor.approach.reference.usedtypes.CorrelationEstimatio
 
 public class NameBasedApproach extends CorrelationEstimationUsedTypesApproach {
 
-    private static final double SIMRATIO = 0.5;
+	private static final double SIMRATIO = 0.5;
 
-    private static NameBasedApproach instance = new NameBasedApproach();
+	private static NameBasedApproach instance = new NameBasedApproach();
 
-    private NameBasedApproach() {
-    }
+	private NameBasedApproach() {
+	}
 
-    public static NameBasedApproach instance() {
-	return instance;
-    }
+	public static NameBasedApproach instance() {
+		return instance;
+	}
 
-    @Override
-    protected boolean areCorrelated(IType t1, IType t2) {
-	var tokens1 = splitNameInTokens(t1);
-	var tokens2 = splitNameInTokens(t2);
+	@Override
+	protected boolean areCorrelated(IType t1, IType t2) {
+		var tokens1 = splitNameInTokens(t1);
+		var tokens2 = splitNameInTokens(t2);
 
-	var avgTokenLength = (tokens1.size() + tokens2.size()) / 2.0;
+		var avgTokenLength = (tokens1.size() + tokens2.size()) / 2.0;
 
-	var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
+		var commonTokensCount = tokens1.stream().filter(s -> tokens2.contains(s)).count();
 
-	return (commonTokensCount / avgTokenLength) >= SIMRATIO;
-    }
+		return (commonTokensCount / avgTokenLength) >= SIMRATIO;
+	}
 }

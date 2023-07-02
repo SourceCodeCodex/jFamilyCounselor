@@ -11,26 +11,22 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 public class RelevantTypesByTypeParametersUtil {
-    private RelevantTypesByTypeParametersUtil() {
-    }
-
-    public static List<IType> relevantTypes(IJavaProject iJavaProject) {
-	return allTypes(iJavaProject).parallelStream().filter(RelevantTypesByTypeParametersUtil::isRelevant).toList();
-    }
-
-    public static boolean isRelevant(IType iType) {
-	try {
-	    return !iType.isAnonymous() &&
-		    !iType.isAnnotation() &&
-		    !iType.isLambda() &&
-		    !iType.isRecord() &&
-		    !iType.isBinary() &&
-		    (iType.isClass() || iType.isInterface()) &&
-		    iType.getTypeParameters().length != 0 &&
-		    !distrinctCombinations2(relevantTypeParameters(iType)).isEmpty();
-	} catch (JavaModelException e) {
-	    return false;
+	private RelevantTypesByTypeParametersUtil() {
 	}
-    }
+
+	public static List<IType> relevantTypes(IJavaProject iJavaProject) {
+		return allTypes(iJavaProject).parallelStream().filter(RelevantTypesByTypeParametersUtil::isRelevant).toList();
+	}
+
+	public static boolean isRelevant(IType iType) {
+		try {
+			return !iType.isAnonymous() && !iType.isAnnotation() && !iType.isLambda() && !iType.isRecord()
+					&& !iType.isBinary() && (iType.isClass() || iType.isInterface())
+					&& iType.getTypeParameters().length != 0
+					&& !distrinctCombinations2(relevantTypeParameters(iType)).isEmpty();
+		} catch (JavaModelException e) {
+			return false;
+		}
+	}
 
 }

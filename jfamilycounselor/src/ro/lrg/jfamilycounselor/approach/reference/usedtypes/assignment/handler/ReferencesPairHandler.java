@@ -16,37 +16,37 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public abstract class ReferencesPairHandler {
-    private static Logger logger = jFCLogger.getLogger();
+	private static Logger logger = jFCLogger.getLogger();
 
-    private Optional<ReferencesPairHandler> nextHandler = Optional.empty();
+	private Optional<ReferencesPairHandler> nextHandler = Optional.empty();
 
-    public void setNextHandler(ReferencesPairHandler handler) {
-	nextHandler = Optional.of(handler);
-    }
-
-    public void submit(AssignemntsPair assignemntsPair, State state) {
-	if (assignemntsPair._1.assignedElement().isEmpty() || assignemntsPair._2.assignedElement().isEmpty()) {
-	    state.markInvalid(assignemntsPair);
-	    return;
+	public void setNextHandler(ReferencesPairHandler handler) {
+		nextHandler = Optional.of(handler);
 	}
 
-	var ae1 = assignemntsPair._1.assignedElement().get();
-	var ae2 = assignemntsPair._2.assignedElement().get();
+	public void submit(AssignemntsPair assignemntsPair, State state) {
+		if (assignemntsPair._1.assignedElement().isEmpty() || assignemntsPair._2.assignedElement().isEmpty()) {
+			state.markInvalid(assignemntsPair);
+			return;
+		}
 
-	if (canHandle(ae1, ae2)) {
-	    handle(assignemntsPair, state);
-	    return;
+		var ae1 = assignemntsPair._1.assignedElement().get();
+		var ae2 = assignemntsPair._2.assignedElement().get();
+
+		if (canHandle(ae1, ae2)) {
+			handle(assignemntsPair, state);
+			return;
+		}
+
+		if (nextHandler.isPresent()) {
+			nextHandler.get().submit(assignemntsPair, state);
+			return;
+		}
+
+		logger.warning("Assignments pair was not handled: " + assignemntsPair);
 	}
 
-	if (nextHandler.isPresent()) {
-	    nextHandler.get().submit(assignemntsPair, state);
-	    return;
-	}
+	protected abstract void handle(AssignemntsPair assignemntsPair, State state);
 
-	logger.warning("Assignments pair was not handled: " + assignemntsPair);
-    }
-
-    protected abstract void handle(AssignemntsPair assignemntsPair, State state);
-
-    protected abstract boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2);
+	protected abstract boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2);
 }

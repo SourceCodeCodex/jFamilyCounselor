@@ -25,24 +25,25 @@ import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Inc
  */
 public class ThisTypeHandler extends ReferencesPairHandler {
 
-    @Override
-    public void handle(AssignemntsPair assignemntsPair, State state) {
-	var assignedThis = (AssignedElement.This) assignemntsPair._1.assignedElement().get();
-	var resolvedType = (AssignedElement.ResolvedType) assignemntsPair._2.assignedElement().get();
+	@Override
+	public void handle(AssignemntsPair assignemntsPair, State state) {
+		var assignedThis = (AssignedElement.This) assignemntsPair._1.assignedElement().get();
+		var resolvedType = (AssignedElement.ResolvedType) assignemntsPair._2.assignedElement().get();
 
-	var thisCone = concreteCone(assignedThis.iType());
-	if (thisCone.isEmpty()) {
-	    state.markInvalid(assignemntsPair);
-	    return;
+		var thisCone = concreteCone(assignedThis.iType());
+		if (thisCone.isEmpty()) {
+			state.markInvalid(assignemntsPair);
+			return;
+		}
+
+		var resolvedTypesPairs = cartesianProduct(thisCone.get(), List.of(resolvedType.iType()));
+
+		resolvedTypesPairs.forEach(p -> state.inconclusive().add(new InconclusiveTypesPair(p, false)));
 	}
 
-	var resolvedTypesPairs = cartesianProduct(thisCone.get(), List.of(resolvedType.iType()));
-
-	resolvedTypesPairs.forEach(p -> state.inconclusive().add(new InconclusiveTypesPair(p, false)));
-    }
-
-    @Override
-    protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
-	return assignedElement1 instanceof AssignedElement.This && assignedElement2 instanceof AssignedElement.ResolvedType;
-    }
+	@Override
+	protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
+		return assignedElement1 instanceof AssignedElement.This
+				&& assignedElement2 instanceof AssignedElement.ResolvedType;
+	}
 }

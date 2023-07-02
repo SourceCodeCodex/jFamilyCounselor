@@ -12,14 +12,14 @@ import ro.lrg.xcore.metametamodel.IActionPerformer;
 @ActionPerformer
 public final class OpenInEditorSecond implements IActionPerformer<Void, MTypeParametersPair, HListEmpty> {
 
-    @Override
-    public Void performAction(MTypeParametersPair mTypeParametersPair, HListEmpty hList) {
-	try {
-	    JavaUI.openInEditor(mTypeParametersPair.getUnderlyingObject()._2, true, true);
-	} catch (PartInitException | JavaModelException e) {
-	    e.printStackTrace();
+	@Override
+	public Void performAction(MTypeParametersPair mTypeParametersPair, HListEmpty hList) {
+		try {
+			JavaUI.openInEditor(mTypeParametersPair.getUnderlyingObject()._2, true, true);
+		} catch (PartInitException | JavaModelException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
-	return null;
-    }
 
 }

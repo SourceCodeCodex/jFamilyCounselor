@@ -4,18 +4,18 @@ import java.util.Optional;
 
 public interface Cache<K, V> {
 
-    void put(K key, V value);
+	void put(K key, V value);
 
-    Optional<V> get(K key);
+	Optional<V> get(K key);
 
-    boolean contains(K key);
+	boolean contains(K key);
 
-    int size();
+	int size();
 
-    boolean isEmpty();
+	boolean isEmpty();
 
-    void clear();
+	void clear();
 
-    boolean isBigMemoryConsumer();
+	boolean isBigMemoryConsumer();
 
 }

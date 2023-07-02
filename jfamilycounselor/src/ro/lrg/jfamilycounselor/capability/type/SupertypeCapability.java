@@ -14,26 +14,26 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class SupertypeCapability {
-    private SupertypeCapability() {
-    }
-
-    private static final Cache<IType, List<IType>> cache = MonitoredUnboundedCache.getLowConsumingCache();
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    public static Optional<List<IType>> getAllSuperTypes(IType iType) {
-	if (cache.contains(iType))
-	    return cache.get(iType);
-
-	try {
-	    var superTypes = Arrays.asList(iType.newSupertypeHierarchy(new NullProgressMonitor()).getSupertypes(iType));
-	    cache.put(iType, superTypes);
-	    return Optional.of(superTypes);
-	} catch (JavaModelException e) {
-	    logger.warning("JavaModelException encountered: " + e.getMessage());
+	private SupertypeCapability() {
 	}
 
-	return Optional.empty();
+	private static final Cache<IType, List<IType>> cache = MonitoredUnboundedCache.getLowConsumingCache();
 
-    }
+	private static final Logger logger = jFCLogger.getLogger();
+
+	public static Optional<List<IType>> getAllSuperTypes(IType iType) {
+		if (cache.contains(iType))
+			return cache.get(iType);
+
+		try {
+			var superTypes = Arrays.asList(iType.newSupertypeHierarchy(new NullProgressMonitor()).getSupertypes(iType));
+			cache.put(iType, superTypes);
+			return Optional.of(superTypes);
+		} catch (JavaModelException e) {
+			logger.warning("JavaModelException encountered: " + e.getMessage());
+		}
+
+		return Optional.empty();
+
+	}
 }

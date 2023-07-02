@@ -24,55 +24,57 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class RelevantTypesJob extends Job {
 
-    private final IJavaProject iJavaProject;
-    private final EstimationType estimation;
+	private final IJavaProject iJavaProject;
+	private final EstimationType estimation;
 
-    private static Logger logger = jFCLogger.getLogger();
+	private static Logger logger = jFCLogger.getLogger();
 
-    public RelevantTypesJob(IJavaProject iJavaProject, EstimationType estimation) {
-	super(iJavaProject.getElementName() + " - " + estimation + " - Relevant Types");
-	this.iJavaProject = iJavaProject;
-	this.estimation = estimation;
-    }
+	public RelevantTypesJob(IJavaProject iJavaProject, EstimationType estimation) {
+		super(iJavaProject.getElementName() + " - " + estimation + " - Relevant Types");
+		this.iJavaProject = iJavaProject;
+		this.estimation = estimation;
+	}
 
-    private final ConcurrentLinkedQueue<IType> relevantTypes = new ConcurrentLinkedQueue<>();
+	private final ConcurrentLinkedQueue<IType> relevantTypes = new ConcurrentLinkedQueue<>();
 
-    protected IStatus run(IProgressMonitor monitor) {
-	var start = Instant.now();
+	protected IStatus run(IProgressMonitor monitor) {
+		var start = Instant.now();
 
-	var types = AllTypesCapability.allTypes(iJavaProject);
+		var types = AllTypesCapability.allTypes(iJavaProject);
 
-	var workload = types.size();
+		var workload = types.size();
 
-	var subMonitor = SubMonitor.convert(monitor, workload);
+		var subMonitor = SubMonitor.convert(monitor, workload);
 
-	if (estimation.equals(EstimationType.TYPE_PARAMETERS_BASED))
-	    types.parallelStream().forEach(t -> {
-		subMonitor.split(1);
-		if (RelevantTypesByTypeParametersUtil.isRelevant(t))
-		    relevantTypes.add(t);
-	    });
-	else
-	    types.parallelStream().forEach(t -> {
-		subMonitor.split(1);
-		if (RelevantTypesByReferencesUtil.isRelevant(t))
-		    relevantTypes.add(t);
-	    });
+		if (estimation.equals(EstimationType.TYPE_PARAMETERS_BASED))
+			types.parallelStream().forEach(t -> {
+				subMonitor.split(1);
+				if (RelevantTypesByTypeParametersUtil.isRelevant(t))
+					relevantTypes.add(t);
+			});
+		else
+			types.parallelStream().forEach(t -> {
+				subMonitor.split(1);
+				if (RelevantTypesByReferencesUtil.isRelevant(t))
+					relevantTypes.add(t);
+			});
 
-	var end = Instant.now();
+		var end = Instant.now();
 
-	logger.info("Relevant types job for " + iJavaProject.getElementName() + " took: " + DurationFormatter.format(Duration.between(start, end)) + ". Number of relevant types: " + relevantTypes.size());
+		logger.info("Relevant types job for " + iJavaProject.getElementName() + " took: "
+				+ DurationFormatter.format(Duration.between(start, end)) + ". Number of relevant types: "
+				+ relevantTypes.size());
 
-	return Status.OK_STATUS;
+		return Status.OK_STATUS;
 
-    }
+	}
 
-    public List<IType> relevantTypes() {
-	return new ArrayList<>(relevantTypes);
-    }
+	public List<IType> relevantTypes() {
+		return new ArrayList<>(relevantTypes);
+	}
 
-    public boolean belongsTo(Object family) {
-	return ExportReportJob.FAMILY.equals(family);
-    }
+	public boolean belongsTo(Object family) {
+		return ExportReportJob.FAMILY.equals(family);
+	}
 
 }

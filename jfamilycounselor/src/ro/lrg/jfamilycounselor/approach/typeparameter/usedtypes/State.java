@@ -8,13 +8,11 @@ import org.eclipse.jdt.core.IType;
 
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 
-public record State(
-	List<Pair<IType, IType>> inconclusive,
-	List<Pair<IType, IType>> resolved,
-	AtomicInteger unknownCounter) {
+public record State(List<Pair<IType, IType>> inconclusive, List<Pair<IType, IType>> resolved,
+		AtomicInteger unknownCounter) {
 
-    public static State empty() {
-	return new State(new ArrayList<>(), new ArrayList<>(), new AtomicInteger(0));
-    }
+	public static State empty() {
+		return new State(new ArrayList<>(), new ArrayList<>(), new AtomicInteger(0));
+	}
 
 }

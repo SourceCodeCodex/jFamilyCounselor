@@ -23,41 +23,42 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class ParseCapability {
-    private ParseCapability() {
-    }
+	private ParseCapability() {
+	}
 
-    private static final Cache<ICompilationUnit, CompilationUnit> cache = MonitoredUnboundedCache.getHighConsumingCache();
+	private static final Cache<ICompilationUnit, CompilationUnit> cache = MonitoredUnboundedCache
+			.getHighConsumingCache();
 
-    private static final Logger logger = jFCLogger.getLogger();
+	private static final Logger logger = jFCLogger.getLogger();
 
-    public static Optional<MethodDeclaration> parse(IMethod iMethod) {
-	return parse(iMethod.getCompilationUnit())
-		.flatMap(cuAST -> {
-		    var visitor = new MethodDeclarationVisitor(iMethod);
-		    cuAST.accept(visitor);
-		    return visitor.getLastNode();
+	public static Optional<MethodDeclaration> parse(IMethod iMethod) {
+		return parse(iMethod.getCompilationUnit()).flatMap(cuAST -> {
+			var visitor = new MethodDeclarationVisitor(iMethod);
+			cuAST.accept(visitor);
+			return visitor.getLastNode();
 		});
-    }
-
-    public static Optional<CompilationUnit> parse(ICompilationUnit iCompilationUnit) {
-	if (cache.contains(iCompilationUnit)) {
-	    return cache.get(iCompilationUnit);
 	}
 
-	var parser = ASTParser.newParser(AST.getJLSLatest());
-	parser.setKind(ASTParser.K_COMPILATION_UNIT);
-	parser.setResolveBindings(true);
-	parser.setSource(iCompilationUnit);
-	parser.setProject(iCompilationUnit.getJavaProject());
+	public static Optional<CompilationUnit> parse(ICompilationUnit iCompilationUnit) {
+		if (cache.contains(iCompilationUnit)) {
+			return cache.get(iCompilationUnit);
+		}
 
-	Optional<CompilationUnit> compUnit = Optional.ofNullable((CompilationUnit) parser.createAST(new NullProgressMonitor()));
+		var parser = ASTParser.newParser(AST.getJLSLatest());
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setResolveBindings(true);
+		parser.setSource(iCompilationUnit);
+		parser.setProject(iCompilationUnit.getJavaProject());
 
-	if (compUnit.isEmpty()) {
-	    logger.warning("Compilation unit AST was null: " + iCompilationUnit.getElementName());
+		Optional<CompilationUnit> compUnit = Optional
+				.ofNullable((CompilationUnit) parser.createAST(new NullProgressMonitor()));
+
+		if (compUnit.isEmpty()) {
+			logger.warning("Compilation unit AST was null: " + iCompilationUnit.getElementName());
+		}
+
+		compUnit.ifPresent(ast -> cache.put(iCompilationUnit, ast));
+
+		return compUnit;
 	}
-
-	compUnit.ifPresent(ast -> cache.put(iCompilationUnit, ast));
-
-	return compUnit;
-    }
 }

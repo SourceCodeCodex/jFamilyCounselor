@@ -13,37 +13,40 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 
 class MethodCallVisitor extends ASTVisitor {
-    private final IMethod iMethod;
+	private final IMethod iMethod;
 
-    private final Set<Expression> invocations = new HashSet<>();
+	private final Set<Expression> invocations = new HashSet<>();
 
-    public MethodCallVisitor(IMethod iMethod) {
-	this.iMethod = iMethod;
-    }
+	public MethodCallVisitor(IMethod iMethod) {
+		this.iMethod = iMethod;
+	}
 
-    public List<Expression> getInvocations() {
-	return List.copyOf(invocations);
-    }
+	public List<Expression> getInvocations() {
+		return List.copyOf(invocations);
+	}
 
-    public boolean visit(ClassInstanceCreation node) {
-	if (Optional.ofNullable(node.resolveConstructorBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod)))
-	    invocations.add(node);
+	public boolean visit(ClassInstanceCreation node) {
+		if (Optional.ofNullable(node.resolveConstructorBinding()).map(b -> b.getJavaElement()).stream()
+				.anyMatch(j -> j.equals(iMethod)))
+			invocations.add(node);
 
-	return false;
-    }
+		return false;
+	}
 
-    public boolean visit(MethodInvocation node) {
-	if (Optional.ofNullable(node.resolveMethodBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod)))
-	    invocations.add(node);
+	public boolean visit(MethodInvocation node) {
+		if (Optional.ofNullable(node.resolveMethodBinding()).map(b -> b.getJavaElement()).stream()
+				.anyMatch(j -> j.equals(iMethod)))
+			invocations.add(node);
 
-	return false;
-    }
+		return false;
+	}
 
-    public boolean visit(SuperMethodInvocation node) {
-	if (Optional.ofNullable(node.resolveMethodBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod)))
-	    invocations.add(node);
+	public boolean visit(SuperMethodInvocation node) {
+		if (Optional.ofNullable(node.resolveMethodBinding()).map(b -> b.getJavaElement()).stream()
+				.anyMatch(j -> j.equals(iMethod)))
+			invocations.add(node);
 
-	return false;
-    }
+		return false;
+	}
 
 }

@@ -22,50 +22,51 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
  *
  */
 public abstract class CorrelationEstimationUsedTypesApproach {
-    private final Cache<Pair<IType, IType>, Boolean> areCorrelatedCache = MonitoredUnboundedCache.getLowConsumingCache();
+	private final Cache<Pair<IType, IType>, Boolean> areCorrelatedCache = MonitoredUnboundedCache
+			.getLowConsumingCache();
 
-    protected abstract boolean areCorrelated(IType t1, IType t2);
+	protected abstract boolean areCorrelated(IType t1, IType t2);
 
-    public Optional<List<Pair<IType, IType>>> usedTypes(IType refType1, IType refType2) {
-	var cone1Opt = concreteCone(refType1);
-	var cone2Opt = concreteCone(refType2);
+	public Optional<List<Pair<IType, IType>>> usedTypes(IType refType1, IType refType2) {
+		var cone1Opt = concreteCone(refType1);
+		var cone2Opt = concreteCone(refType2);
 
-	if (cone1Opt.isEmpty() || cone2Opt.isEmpty())
-	    return Optional.empty();
+		if (cone1Opt.isEmpty() || cone2Opt.isEmpty())
+			return Optional.empty();
 
-	var correlated1 = new ConcurrentLinkedQueue<IType>();
-	var correlated2 = new ConcurrentLinkedQueue<IType>();
+		var correlated1 = new ConcurrentLinkedQueue<IType>();
+		var correlated2 = new ConcurrentLinkedQueue<IType>();
 
-	var result = new ConcurrentLinkedQueue<Pair<IType, IType>>();
+		var result = new ConcurrentLinkedQueue<Pair<IType, IType>>();
 
-	cone1Opt.get().parallelStream().forEach(t1 -> cone2Opt.get().parallelStream().forEach(t2 -> {
-	    var pair = Pair.of(t1, t2);
+		cone1Opt.get().parallelStream().forEach(t1 -> cone2Opt.get().parallelStream().forEach(t2 -> {
+			var pair = Pair.of(t1, t2);
 
-	    boolean areCorrelated;
-	    if (areCorrelatedCache.get(pair).isPresent())
-		areCorrelated = areCorrelatedCache.get(pair).get();
-	    else {
-		areCorrelated = areCorrelated(t1, t2);
-		areCorrelatedCache.put(pair, areCorrelated);
-		areCorrelatedCache.put(pair.swap(), areCorrelated);
-	    }
+			boolean areCorrelated;
+			if (areCorrelatedCache.get(pair).isPresent())
+				areCorrelated = areCorrelatedCache.get(pair).get();
+			else {
+				areCorrelated = areCorrelated(t1, t2);
+				areCorrelatedCache.put(pair, areCorrelated);
+				areCorrelatedCache.put(pair.swap(), areCorrelated);
+			}
 
-	    if (areCorrelated) {
-		result.offer(pair);
-		correlated1.offer(t1);
-		correlated2.offer(t2);
-	    }
-	}));
+			if (areCorrelated) {
+				result.offer(pair);
+				correlated1.offer(t1);
+				correlated2.offer(t2);
+			}
+		}));
 
-	var notCorrelated1 = new ArrayList<>(cone1Opt.get());
-	var notCorrelated2 = new ArrayList<>(cone2Opt.get());
+		var notCorrelated1 = new ArrayList<>(cone1Opt.get());
+		var notCorrelated2 = new ArrayList<>(cone2Opt.get());
 
-	notCorrelated1.removeAll(correlated1);
-	notCorrelated2.removeAll(correlated2);
+		notCorrelated1.removeAll(correlated1);
+		notCorrelated2.removeAll(correlated2);
 
-	result.addAll(cartesianProduct(notCorrelated1, notCorrelated2));
+		result.addAll(cartesianProduct(notCorrelated1, notCorrelated2));
 
-	return Optional.of(result.stream().toList());
-    }
+		return Optional.of(result.stream().toList());
+	}
 
 }

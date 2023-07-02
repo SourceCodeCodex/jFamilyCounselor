@@ -14,30 +14,31 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class SubtypeCapability {
-    private SubtypeCapability() {
-    }
-
-    private static final Cache<IType, List<String>> cache = MonitoredUnboundedCache.getLowConsumingCache();
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    public static boolean isSubtypeOf(IType iType1, IType iType2) {
-	if (iType2.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
-	    return true;
+	private SubtypeCapability() {
 	}
 
-	List<String> subtypesNames;
-	if (cache.contains(iType2))
-	    subtypesNames = cache.get(iType2).get();
-	else
-	    try {
-		subtypesNames = Stream.of(iType2.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType2)).map(t -> t.getFullyQualifiedName()).toList();
-	    } catch (JavaModelException e) {
-		logger.warning("JavaModelException encountered: " + e.getMessage());
-		return false;
-	    }
+	private static final Cache<IType, List<String>> cache = MonitoredUnboundedCache.getLowConsumingCache();
 
-	return subtypesNames.contains(iType1.getFullyQualifiedName());
+	private static final Logger logger = jFCLogger.getLogger();
 
-    }
+	public static boolean isSubtypeOf(IType iType1, IType iType2) {
+		if (iType2.getFullyQualifiedName().equals(Constants.OBJECT_FQN)) {
+			return true;
+		}
+
+		List<String> subtypesNames;
+		if (cache.contains(iType2))
+			subtypesNames = cache.get(iType2).get();
+		else
+			try {
+				subtypesNames = Stream.of(iType2.newTypeHierarchy(new NullProgressMonitor()).getAllSubtypes(iType2))
+						.map(t -> t.getFullyQualifiedName()).toList();
+			} catch (JavaModelException e) {
+				logger.warning("JavaModelException encountered: " + e.getMessage());
+				return false;
+			}
+
+		return subtypesNames.contains(iType1.getFullyQualifiedName());
+
+	}
 }

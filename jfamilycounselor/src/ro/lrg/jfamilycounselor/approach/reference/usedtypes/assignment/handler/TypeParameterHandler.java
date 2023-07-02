@@ -17,46 +17,42 @@ import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Ass
  */
 public class TypeParameterHandler extends ReferencesPairHandler {
 
-    @Override
-    public void handle(AssignemntsPair assignemntsPair, State state) {
-	var assignedParam = (AssignedElement.Parameter) assignemntsPair._2.assignedElement().get();
+	@Override
+	public void handle(AssignemntsPair assignemntsPair, State state) {
+		var assignedParam = (AssignedElement.Parameter) assignemntsPair._2.assignedElement().get();
 
-	var newExpressions = ParameterDerivationWithTargetObject.derive(assignedParam.iLocalVariable());
+		var newExpressions = ParameterDerivationWithTargetObject.derive(assignedParam.iLocalVariable());
 
-	// if there are no new expressions obtained through derivation, mark the pair as
-	// invalid
-	if (newExpressions.isEmpty()) {
-	    state.markInvalid(assignemntsPair);
-	    return;
-	}
+		// if there are no new expressions obtained through derivation, mark the pair as
+		// invalid
+		if (newExpressions.isEmpty()) {
+			state.markInvalid(assignemntsPair);
+			return;
+		}
 
-	var newAssignmentsPairs = newExpressions.parallelStream()
-		.flatMap(pairF -> {
-		    var targetObjectActualParamPair = pairF.get();
+		var newAssignmentsPairs = newExpressions.parallelStream().flatMap(pairF -> {
+			var targetObjectActualParamPair = pairF.get();
 
-		    var partialDerivation = PartialDerivation.partialDerive(targetObjectActualParamPair._2);
+			var partialDerivation = PartialDerivation.partialDerive(targetObjectActualParamPair._2);
 
-		    return partialDerivation.stream()
-			    .map(derivationResult -> {
-				var newAssignmentsPair = new AssignemntsPair(
-					assignemntsPair._1,
-					new Assignment(assignemntsPair._2.reference(),
-						derivationResult.newAssignedElement(),
+			return partialDerivation.stream().map(derivationResult -> {
+				var newAssignmentsPair = new AssignemntsPair(assignemntsPair._1, new Assignment(
+						assignemntsPair._2.reference(), derivationResult.newAssignedElement(),
 						derivationResult.newLowestRecordedType().orElse(assignemntsPair._2.lowestRecordedType())));
 
 				newAssignmentsPair.setDepth(assignemntsPair.depth() + 1);
 
 				return newAssignmentsPair;
-			    });
+			});
 
-		})
-		.toList();
+		}).toList();
 
-	newAssignmentsPairs.forEach(state.assignmentsPairs()::push);
-    }
+		newAssignmentsPairs.forEach(state.assignmentsPairs()::push);
+	}
 
-    @Override
-    protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
-	return assignedElement1 instanceof AssignedElement.ResolvedType && assignedElement2 instanceof AssignedElement.Parameter;
-    }
+	@Override
+	protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
+		return assignedElement1 instanceof AssignedElement.ResolvedType
+				&& assignedElement2 instanceof AssignedElement.Parameter;
+	}
 }

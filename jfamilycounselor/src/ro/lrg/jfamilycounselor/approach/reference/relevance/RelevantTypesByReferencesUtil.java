@@ -10,25 +10,21 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 public class RelevantTypesByReferencesUtil {
-    private RelevantTypesByReferencesUtil() {
-    }
-
-    public static List<IType> relevantTypes(IJavaProject iJavaProject) {
-	return allTypes(iJavaProject).parallelStream().filter(RelevantTypesByReferencesUtil::isRelevant).toList();
-    }
-
-    public static boolean isRelevant(IType iType) {
-	try {
-	    return !iType.isAnonymous() &&
-		    !iType.isAnnotation() &&
-		    !iType.isLambda() &&
-		    !iType.isRecord() &&
-		    !iType.isBinary() &&
-		    (iType.isClass() || iType.isInterface()) &&
-		    !relevantReferencesPairs(iType).isEmpty();
-	} catch (JavaModelException e) {
-	    return false;
+	private RelevantTypesByReferencesUtil() {
 	}
-    }
+
+	public static List<IType> relevantTypes(IJavaProject iJavaProject) {
+		return allTypes(iJavaProject).parallelStream().filter(RelevantTypesByReferencesUtil::isRelevant).toList();
+	}
+
+	public static boolean isRelevant(IType iType) {
+		try {
+			return !iType.isAnonymous() && !iType.isAnnotation() && !iType.isLambda() && !iType.isRecord()
+					&& !iType.isBinary() && (iType.isClass() || iType.isInterface())
+					&& !relevantReferencesPairs(iType).isEmpty();
+		} catch (JavaModelException e) {
+			return false;
+		}
+	}
 
 }

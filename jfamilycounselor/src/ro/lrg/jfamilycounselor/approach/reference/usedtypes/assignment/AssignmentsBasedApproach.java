@@ -56,156 +56,172 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class AssignmentsBasedApproach {
-    private AssignmentsBasedApproach() {
-    }
-
-    // Invalidate the assignments pairs whose depth exceeds this threshold.
-    // This also ensures that the algorithm will not loop infinitely
-    private static final int MAX_DEPTH = 4;
-
-    private static ReferencesPairHandler handlerChain;
-
-    private static Logger logger = jFCLogger.getLogger();
-
-    // Building the chain responsible for the derivation of assigned elements
-    static {
-	// handlers of fields and methods can represent a future extension
-	var inconclusiveHandler = new ReferencesPairHandler() {
-
-	    protected void handle(AssignemntsPair assignemntsPair, State state) {
-		state.markInvalid(assignemntsPair);
-	    }
-
-	    protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
-		return assignedElement1 instanceof AssignedElement.MethodCall || assignedElement1 instanceof AssignedElement.Field || assignedElement2 instanceof AssignedElement.MethodCall
-			|| assignedElement2 instanceof AssignedElement.Field;
-	    }
-	};
-
-	var solutionHandler = new ReferencesPairHandler() {
-
-	    protected void handle(AssignemntsPair assignemntsPair, State state) {
-		state.resolved().add(Pair.of(((AssignedElement.ResolvedType) assignemntsPair._1.assignedElement().get()).iType(), ((AssignedElement.ResolvedType) assignemntsPair._2.assignedElement().get()).iType()));
-	    }
-
-	    protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
-		return assignedElement1 instanceof AssignedElement.ResolvedType && assignedElement2 instanceof AssignedElement.ResolvedType;
-	    }
-	};
-
-	var thisParamHandler = new ThisParameterHandler();
-	var thisTypeHandler = new ThisTypeHandler();
-	var paramParamHandler = new ParameterParameterHandler();
-	var paramTypeHandler = new ParameterTypeHandler();
-	var typeParamHandler = new TypeParameterHandler();
-
-	inconclusiveHandler.setNextHandler(thisParamHandler);
-	thisParamHandler.setNextHandler(thisTypeHandler);
-	thisTypeHandler.setNextHandler(paramParamHandler);
-	paramParamHandler.setNextHandler(paramTypeHandler);
-	paramTypeHandler.setNextHandler(typeParamHandler);
-	typeParamHandler.setNextHandler(solutionHandler);
-
-	handlerChain = inconclusiveHandler;
-    }
-
-    public static Optional<List<Pair<IType, IType>>> usedTypes(Pair<IJavaElement, IJavaElement> referencesPair) {
-	var state = State.empty();
-
-	// The initial assignment = the references are being assigned to themselves
-	var initialAssignmentsPair = initialAssignmentsPair(referencesPair);
-	if (initialAssignmentsPair.isEmpty()) {
-	    logger.severe("The initial assignemnts pair was not contructed for: " + referencesPair.toString() + ". The approach cannot continue.");
-	    return Optional.empty();
+	private AssignmentsBasedApproach() {
 	}
 
-	var referenceType1 = initialAssignmentsPair.get()._1.lowestRecordedType();
-	var referenceType2 = initialAssignmentsPair.get()._2.lowestRecordedType();
+	// Invalidate the assignments pairs whose depth exceeds this threshold.
+	// This also ensures that the algorithm will not loop infinitely
+	private static final int MAX_DEPTH = 4;
 
-	state.assignmentsPairs().push(initialAssignmentsPair.get());
+	private static ReferencesPairHandler handlerChain;
 
-	// it is recommended not to parallelize the derivations of assignments as the
-	// process is consuming a lot of memory
-	while (!state.assignmentsPairs().isEmpty()) {
-	    var assignemntsPair = state.assignmentsPairs().pop();
+	private static Logger logger = jFCLogger.getLogger();
 
-	    if (assignemntsPair.depth() > MAX_DEPTH) {
-		state.markInvalid(assignemntsPair);
-		continue;
-	    }
+	// Building the chain responsible for the derivation of assigned elements
+	static {
+		// handlers of fields and methods can represent a future extension
+		var inconclusiveHandler = new ReferencesPairHandler() {
 
-	    handlerChain.submit(assignemntsPair, state);
+			protected void handle(AssignemntsPair assignemntsPair, State state) {
+				state.markInvalid(assignemntsPair);
+			}
+
+			protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
+				return assignedElement1 instanceof AssignedElement.MethodCall
+						|| assignedElement1 instanceof AssignedElement.Field
+						|| assignedElement2 instanceof AssignedElement.MethodCall
+						|| assignedElement2 instanceof AssignedElement.Field;
+			}
+		};
+
+		var solutionHandler = new ReferencesPairHandler() {
+
+			protected void handle(AssignemntsPair assignemntsPair, State state) {
+				state.resolved()
+						.add(Pair.of(
+								((AssignedElement.ResolvedType) assignemntsPair._1.assignedElement().get()).iType(),
+								((AssignedElement.ResolvedType) assignemntsPair._2.assignedElement().get()).iType()));
+			}
+
+			protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
+				return assignedElement1 instanceof AssignedElement.ResolvedType
+						&& assignedElement2 instanceof AssignedElement.ResolvedType;
+			}
+		};
+
+		var thisParamHandler = new ThisParameterHandler();
+		var thisTypeHandler = new ThisTypeHandler();
+		var paramParamHandler = new ParameterParameterHandler();
+		var paramTypeHandler = new ParameterTypeHandler();
+		var typeParamHandler = new TypeParameterHandler();
+
+		inconclusiveHandler.setNextHandler(thisParamHandler);
+		thisParamHandler.setNextHandler(thisTypeHandler);
+		thisTypeHandler.setNextHandler(paramParamHandler);
+		paramParamHandler.setNextHandler(paramTypeHandler);
+		paramTypeHandler.setNextHandler(typeParamHandler);
+		typeParamHandler.setNextHandler(solutionHandler);
+
+		handlerChain = inconclusiveHandler;
 	}
 
-	var possibleTypes = distinctConcreteConeProduct(referenceType1, referenceType2);
-	if (possibleTypes.isEmpty())
-	    return Optional.empty();
+	public static Optional<List<Pair<IType, IType>>> usedTypes(Pair<IJavaElement, IJavaElement> referencesPair) {
+		var state = State.empty();
 
-	var result = new HashSet<Pair<IType, IType>>();
-	result.addAll(state.resolved());
+		// The initial assignment = the references are being assigned to themselves
+		var initialAssignmentsPair = initialAssignmentsPair(referencesPair);
+		if (initialAssignmentsPair.isEmpty()) {
+			logger.severe("The initial assignemnts pair was not contructed for: " + referencesPair.toString()
+					+ ". The approach cannot continue.");
+			return Optional.empty();
+		}
 
-	// An alternative to comparing the number of resolved and inconclusive cases
-	// could be to set a max percentage threshold of the number of inconclusive
-	// cases. If exceeded, take into consideration the inconclusive cases
-	if (state.resolved().size() < state.inconclusive().size()) {
-	    var distinctInconclusives = state.inconclusive().stream().distinct().toList();
+		var referenceType1 = initialAssignmentsPair.get()._1.lowestRecordedType();
+		var referenceType2 = initialAssignmentsPair.get()._2.lowestRecordedType();
 
-	    if (distinctInconclusives.stream().anyMatch(i -> i.needsExpansion() && i.types().equals(Pair.of(referenceType1, referenceType2))))
-		return possibleTypes;
+		state.assignmentsPairs().push(initialAssignmentsPair.get());
 
-	    for (InconclusiveTypesPair inconclusive : distinctInconclusives) {
-		if (possibleTypes.get().size() <= result.size())
-		    return possibleTypes;
+		// it is recommended not to parallelize the derivations of assignments as the
+		// process is consuming a lot of memory
+		while (!state.assignmentsPairs().isEmpty()) {
+			var assignemntsPair = state.assignmentsPairs().pop();
 
-		if (inconclusive.needsExpansion()) {
-		    var inconclusiveDistinctConcreteConeProduct = distinctConcreteConeProduct(inconclusive.types()._1, inconclusive.types()._2);
-		    result.addAll(inconclusiveDistinctConcreteConeProduct.orElse(List.of()));
-		} else
-		    result.add(inconclusive.types());
-	    }
+			if (assignemntsPair.depth() > MAX_DEPTH) {
+				state.markInvalid(assignemntsPair);
+				continue;
+			}
+
+			handlerChain.submit(assignemntsPair, state);
+		}
+
+		var possibleTypes = distinctConcreteConeProduct(referenceType1, referenceType2);
+		if (possibleTypes.isEmpty())
+			return Optional.empty();
+
+		var result = new HashSet<Pair<IType, IType>>();
+		result.addAll(state.resolved());
+
+		// An alternative to comparing the number of resolved and inconclusive cases
+		// could be to set a max percentage threshold of the number of inconclusive
+		// cases. If exceeded, take into consideration the inconclusive cases
+		if (state.resolved().size() < state.inconclusive().size()) {
+			var distinctInconclusives = state.inconclusive().stream().distinct().toList();
+
+			if (distinctInconclusives.stream()
+					.anyMatch(i -> i.needsExpansion() && i.types().equals(Pair.of(referenceType1, referenceType2))))
+				return possibleTypes;
+
+			for (InconclusiveTypesPair inconclusive : distinctInconclusives) {
+				if (possibleTypes.get().size() <= result.size())
+					return possibleTypes;
+
+				if (inconclusive.needsExpansion()) {
+					var inconclusiveDistinctConcreteConeProduct = distinctConcreteConeProduct(inconclusive.types()._1,
+							inconclusive.types()._2);
+					result.addAll(inconclusiveDistinctConcreteConeProduct.orElse(List.of()));
+				} else
+					result.add(inconclusive.types());
+			}
+		}
+
+		// We filter the result such that all types pairs are included in the possible
+		// types pairs set
+		return Optional.of(result.stream().filter(pair -> possibleTypes.get().contains(pair)).toList());
 	}
 
-	// We filter the result such that all types pairs are included in the possible
-	// types pairs set
-	return Optional.of(result.stream().filter(pair -> possibleTypes.get().contains(pair)).toList());
-    }
+	/**
+	 * The initial assignments pair is considered such that a reference is being
+	 * written by itself (i.e. the assignment element wraps the JDT element that
+	 * represents the reference) in order to be able to begin the derivation
+	 * process.
+	 */
+	private static Optional<AssignemntsPair> initialAssignmentsPair(Pair<IJavaElement, IJavaElement> referencesPair) {
 
-    /**
-     * The initial assignments pair is considered such that a reference is being
-     * written by itself (i.e. the assignment element wraps the JDT element that
-     * represents the reference) in order to be able to begin the derivation
-     * process.
-     */
-    private static Optional<AssignemntsPair> initialAssignmentsPair(Pair<IJavaElement, IJavaElement> referencesPair) {
+		if (referencesPair._1 instanceof IType iType1 && referencesPair._2 instanceof ILocalVariable iLocalVariable) {
+			var iType2 = parameterType(iLocalVariable);
+			if (iType2.isEmpty()) {
+				logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString()
+						+ " failed as one of the references' type could not be determined.");
+				return Optional.<AssignemntsPair>empty();
+			}
 
-	if (referencesPair._1 instanceof IType iType1 && referencesPair._2 instanceof ILocalVariable iLocalVariable) {
-	    var iType2 = parameterType(iLocalVariable);
-	    if (iType2.isEmpty()) {
-		logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString() + " failed as one of the references' type could not be determined.");
+			return Optional.of(AssignemntsPair.initial(
+					new Assignment(referencesPair._1, Optional.of(new AssignedElement.This(iType1)), iType1),
+					new Assignment(referencesPair._2, Optional.of(new AssignedElement.Parameter(iLocalVariable)),
+							iType2.get())));
+
+		} else if (referencesPair._1 instanceof ILocalVariable iLocalVariable1
+				&& referencesPair._2 instanceof ILocalVariable iLocalVariable2) {
+			var iType1 = parameterType(iLocalVariable1);
+			var iType2 = parameterType(iLocalVariable2);
+
+			if (iType1.isEmpty() || iType2.isEmpty()) {
+				logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString()
+						+ " failed as one of the references' type could not be determined.");
+				return Optional.<AssignemntsPair>empty();
+			}
+
+			return Optional.of(AssignemntsPair.initial(
+					new Assignment(referencesPair._1, Optional.of(new AssignedElement.Parameter(iLocalVariable1)),
+							iType1.get()),
+					new Assignment(referencesPair._2, Optional.of(new AssignedElement.Parameter(iLocalVariable2)),
+							iType2.get())));
+		}
+
+		logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString()
+				+ " failed as the provided referencesPair cannot be analyzed.");
+
 		return Optional.<AssignemntsPair>empty();
-	    }
-
-	    return Optional.of(AssignemntsPair.initial(
-		    new Assignment(referencesPair._1, Optional.of(new AssignedElement.This(iType1)), iType1),
-		    new Assignment(referencesPair._2, Optional.of(new AssignedElement.Parameter(iLocalVariable)), iType2.get())));
-
-	} else if (referencesPair._1 instanceof ILocalVariable iLocalVariable1 && referencesPair._2 instanceof ILocalVariable iLocalVariable2) {
-	    var iType1 = parameterType(iLocalVariable1);
-	    var iType2 = parameterType(iLocalVariable2);
-
-	    if (iType1.isEmpty() || iType2.isEmpty()) {
-		logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString() + " failed as one of the references' type could not be determined.");
-		return Optional.<AssignemntsPair>empty();
-	    }
-
-	    return Optional.of(AssignemntsPair.initial(
-		    new Assignment(referencesPair._1, Optional.of(new AssignedElement.Parameter(iLocalVariable1)), iType1.get()),
-		    new Assignment(referencesPair._2, Optional.of(new AssignedElement.Parameter(iLocalVariable2)), iType2.get())));
 	}
-
-	logger.severe("The construction of the initial assignemnts pair for: " + referencesPair.toString() + " failed as the provided referencesPair cannot be analyzed.");
-
-	return Optional.<AssignemntsPair>empty();
-    }
 
 }

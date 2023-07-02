@@ -11,16 +11,16 @@ import org.eclipse.jdt.core.search.SearchRequestor;
 
 public class EnclosingMemberRequestor extends SearchRequestor {
 
-    private Set<IMember> matches = new HashSet<IMember>();
+	private Set<IMember> matches = new HashSet<IMember>();
 
-    public List<IMember> getMatches() {
-	return List.copyOf(matches);
-    }
-
-    public void acceptSearchMatch(SearchMatch match) throws CoreException {
-	if (match.getElement() != null && match.getElement() instanceof IMember m && !m.isBinary()) {
-	    matches.add((IMember) match.getElement());
+	public List<IMember> getMatches() {
+		return List.copyOf(matches);
 	}
-    }
+
+	public void acceptSearchMatch(SearchMatch match) throws CoreException {
+		if (match.getElement() != null && match.getElement() instanceof IMember m && !m.isBinary()) {
+			matches.add((IMember) match.getElement());
+		}
+	}
 
 }

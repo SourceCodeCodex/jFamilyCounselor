@@ -28,17 +28,16 @@ import ro.lrg.jfamilycounselor.util.datatype.Pair;
  * @author rosualinpetru
  *
  */
-public record State(
-	Stack<AssignemntsPair> assignmentsPairs,
-	List<InconclusiveTypesPair> inconclusive,
-	List<Pair<IType, IType>> resolved) {
+public record State(Stack<AssignemntsPair> assignmentsPairs, List<InconclusiveTypesPair> inconclusive,
+		List<Pair<IType, IType>> resolved) {
 
-    public static State empty() {
-	return new State(new Stack<>(), new ArrayList<>(), new ArrayList<>());
-    }
+	public static State empty() {
+		return new State(new Stack<>(), new ArrayList<>(), new ArrayList<>());
+	}
 
-    public void markInvalid(AssignemntsPair assignemntsPair) {
-	inconclusive.add(new InconclusiveTypesPair(Pair.of(assignemntsPair._1.lowestRecordedType(), assignemntsPair._2.lowestRecordedType()), true));
-    }
+	public void markInvalid(AssignemntsPair assignemntsPair) {
+		inconclusive.add(new InconclusiveTypesPair(
+				Pair.of(assignemntsPair._1.lowestRecordedType(), assignemntsPair._2.lowestRecordedType()), true));
+	}
 
 }

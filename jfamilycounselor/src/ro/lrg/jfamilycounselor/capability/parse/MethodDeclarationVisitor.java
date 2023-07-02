@@ -7,23 +7,24 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 class MethodDeclarationVisitor extends ASTVisitor {
-    private Optional<MethodDeclaration> lastNode = Optional.empty();
-    private final IMethod iMethod;
+	private Optional<MethodDeclaration> lastNode = Optional.empty();
+	private final IMethod iMethod;
 
-    public MethodDeclarationVisitor(IMethod iMethod) {
-	this.iMethod = iMethod;
-    }
-
-    public boolean visit(MethodDeclaration node) {
-
-	if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream().anyMatch(j -> j.equals(iMethod))) {
-	    lastNode = Optional.of(node);
+	public MethodDeclarationVisitor(IMethod iMethod) {
+		this.iMethod = iMethod;
 	}
 
-	return false;
-    }
+	public boolean visit(MethodDeclaration node) {
 
-    public Optional<MethodDeclaration> getLastNode() {
-	return lastNode;
-    }
+		if (Optional.ofNullable(node.resolveBinding()).map(b -> b.getJavaElement()).stream()
+				.anyMatch(j -> j.equals(iMethod))) {
+			lastNode = Optional.of(node);
+		}
+
+		return false;
+	}
+
+	public Optional<MethodDeclaration> getLastNode() {
+		return lastNode;
+	}
 }

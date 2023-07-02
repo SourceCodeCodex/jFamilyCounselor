@@ -10,31 +10,26 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public record HTMLIndex(String projectName, List<HTMLPackage> packages) implements HTMLRendable {
 
-    private static Logger logger = jFCLogger.getLogger();
+	private static Logger logger = jFCLogger.getLogger();
 
-    private static String indexTemplate;
+	private static String indexTemplate;
 
-    static {
-	try {
-	    var classLoader = HTMLIndex.class.getClassLoader();
-	    indexTemplate = new String(classLoader.getResourceAsStream("index.html").readAllBytes(), StandardCharsets.UTF_8);
-	} catch (Exception e) {
-	    logger.severe("Could not load propper resources");
-	    System.exit(0);
+	static {
+		try {
+			var classLoader = HTMLIndex.class.getClassLoader();
+			indexTemplate = new String(classLoader.getResourceAsStream("index.html").readAllBytes(),
+					StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			logger.severe("Could not load propper resources");
+			System.exit(0);
+		}
 	}
-    }
 
-    public String htmlRaw() {
-	var packagesHtml = packages.stream()
-		.sorted(Comparator.comparing(HTMLPackage::packageName))
-		.map(p -> p.html())
-		.filter(o -> o.isPresent())
-		.map(o -> o.get())
-		.collect(Collectors.joining("\n"));
+	public String htmlRaw() {
+		var packagesHtml = packages.stream().sorted(Comparator.comparing(HTMLPackage::packageName)).map(p -> p.html())
+				.filter(o -> o.isPresent()).map(o -> o.get()).collect(Collectors.joining("\n"));
 
-	return indexTemplate
-		.replace("{PACKAGE_ENTRIES}", packagesHtml)
-		.replace("{PROJECT_NAME}", projectName);
-    }
+		return indexTemplate.replace("{PACKAGE_ENTRIES}", packagesHtml).replace("{PROJECT_NAME}", projectName);
+	}
 
 }

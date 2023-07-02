@@ -11,17 +11,13 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 
 public class ParameterizedReferencesUtil {
-    private ParameterizedReferencesUtil() {
-    }
+	private ParameterizedReferencesUtil() {
+	}
 
-    public static Optional<List<Supplier<ParameterizedType>>> parameterizedReferences(IType parameterizedType) {
-	return extractTypeReferences(parameterizedType)
-		.map(l -> l.stream()
-			.map(s -> s.get())
-			.filter(t -> t instanceof ParameterizedType pt && !pt.typeArguments().isEmpty())
-			.map(t -> (ParameterizedType) t)
-			.map(pt -> lazy(pt))
-			.toList());
+	public static Optional<List<Supplier<ParameterizedType>>> parameterizedReferences(IType parameterizedType) {
+		return extractTypeReferences(parameterizedType).map(l -> l.stream().map(s -> s.get())
+				.filter(t -> t instanceof ParameterizedType pt && !pt.typeArguments().isEmpty())
+				.map(t -> (ParameterizedType) t).map(pt -> lazy(pt)).toList());
 
-    }
+	}
 }

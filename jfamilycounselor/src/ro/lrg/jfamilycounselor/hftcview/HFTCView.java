@@ -17,38 +17,39 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * @author Bogdan316
  */
 class HFTCView {
-    private static final Logger logger = jFCLogger.getLogger();
-    private static String hftcTemplate;
+	private static final Logger logger = jFCLogger.getLogger();
+	private static String hftcTemplate;
 
-    static {
-	try {
-	    var classLoader = HFTCView.class.getClassLoader();
-	    hftcTemplate = new String(classLoader.getResourceAsStream("hftc-view.html").readAllBytes(), StandardCharsets.UTF_8);
-	} catch (Exception e) {
-	    logger.severe("Could not load propper resources");
-	    System.exit(0);
+	static {
+		try {
+			var classLoader = HFTCView.class.getClassLoader();
+			hftcTemplate = new String(classLoader.getResourceAsStream("hftc-view.html").readAllBytes(),
+					StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			logger.severe("Could not load propper resources");
+			System.exit(0);
+		}
 	}
-    }
 
-    private final URL diagramHtmlUrl;
+	private final URL diagramHtmlUrl;
 
-    public HFTCView(File htmlFilePath) throws MalformedURLException {
-	diagramHtmlUrl = Paths.get(htmlFilePath.getAbsolutePath()).toUri().toURL();
-    }
-
-    public String getHtml(String viewTitle) {
-	return hftcTemplate.replace("|diagram-title|", viewTitle);
-    }
-
-    public void startBrowser() {
-	try {
-	    var support = PlatformUI.getWorkbench().getBrowserSupport();
-	    var browser = support.createBrowser(IWorkbenchBrowserSupport.AS_VIEW, null, null, null);
-
-	    var diagramUrl = diagramHtmlUrl;
-	    browser.openURL(diagramUrl);
-	} catch (PartInitException e) {
-	    logger.warning("PartInitException encountered: " + e.getMessage());
+	public HFTCView(File htmlFilePath) throws MalformedURLException {
+		diagramHtmlUrl = Paths.get(htmlFilePath.getAbsolutePath()).toUri().toURL();
 	}
-    }
+
+	public String getHtml(String viewTitle) {
+		return hftcTemplate.replace("|diagram-title|", viewTitle);
+	}
+
+	public void startBrowser() {
+		try {
+			var support = PlatformUI.getWorkbench().getBrowserSupport();
+			var browser = support.createBrowser(IWorkbenchBrowserSupport.AS_VIEW, null, null, null);
+
+			var diagramUrl = diagramHtmlUrl;
+			browser.openURL(diagramUrl);
+		} catch (PartInitException e) {
+			logger.warning("PartInitException encountered: " + e.getMessage());
+		}
+	}
 }

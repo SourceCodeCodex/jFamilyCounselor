@@ -26,47 +26,48 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 @SuppressWarnings("restriction")
 public class ParameterTypeCapability {
-    private ParameterTypeCapability() {
-    }
-
-    private static final Cache<ILocalVariable, IType> cache = MonitoredUnboundedCache.getLowConsumingCache();
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    public static Optional<IType> parameterType(ILocalVariable iLocalVariable) {
-	if (iLocalVariable.isParameter() && iLocalVariable.getDeclaringMember() instanceof IMethod iMethod) {
-	    if (cache.contains(iLocalVariable))
-		return cache.get(iLocalVariable);
-
-	    Optional<String> resolvedTypeName = Optional.empty();
-	    try {
-		resolvedTypeName = Optional.ofNullable(JavaModelUtil.getResolvedTypeName(iLocalVariable.getTypeSignature(), iMethod.getDeclaringType()));
-	    } catch (JavaModelException e) {
-		logger.warning("JavaModelException encountered: " + e.getMessage());
-		return Optional.empty();
-	    }
-
-	    resolvedTypeName = resolvedTypeName.map(s -> s.replace('/', '.'));
-
-	    var iType = resolvedTypeName.flatMap(typeName -> {
-		var project = Optional.ofNullable(iLocalVariable.getJavaProject());
-
-		return project.flatMap(p -> {
-		    try {
-			return Optional.ofNullable(p.findType(typeName, new NullProgressMonitor()));
-		    } catch (JavaModelException e) {
-			logger.warning("JavaModelException encountered: " + e.getMessage());
-			return Optional.empty();
-		    }
-		});
-	    });
-
-	    if (iType.isPresent())
-		cache.put(iLocalVariable, iType.get());
-
-	    return iType;
+	private ParameterTypeCapability() {
 	}
 
-	return Optional.empty();
-    }
+	private static final Cache<ILocalVariable, IType> cache = MonitoredUnboundedCache.getLowConsumingCache();
+
+	private static final Logger logger = jFCLogger.getLogger();
+
+	public static Optional<IType> parameterType(ILocalVariable iLocalVariable) {
+		if (iLocalVariable.isParameter() && iLocalVariable.getDeclaringMember() instanceof IMethod iMethod) {
+			if (cache.contains(iLocalVariable))
+				return cache.get(iLocalVariable);
+
+			Optional<String> resolvedTypeName = Optional.empty();
+			try {
+				resolvedTypeName = Optional.ofNullable(JavaModelUtil
+						.getResolvedTypeName(iLocalVariable.getTypeSignature(), iMethod.getDeclaringType()));
+			} catch (JavaModelException e) {
+				logger.warning("JavaModelException encountered: " + e.getMessage());
+				return Optional.empty();
+			}
+
+			resolvedTypeName = resolvedTypeName.map(s -> s.replace('/', '.'));
+
+			var iType = resolvedTypeName.flatMap(typeName -> {
+				var project = Optional.ofNullable(iLocalVariable.getJavaProject());
+
+				return project.flatMap(p -> {
+					try {
+						return Optional.ofNullable(p.findType(typeName, new NullProgressMonitor()));
+					} catch (JavaModelException e) {
+						logger.warning("JavaModelException encountered: " + e.getMessage());
+						return Optional.empty();
+					}
+				});
+			});
+
+			if (iType.isPresent())
+				cache.put(iLocalVariable, iType.get());
+
+			return iType;
+		}
+
+		return Optional.empty();
+	}
 }

@@ -7,13 +7,10 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class TypeParametersApertureCoverage implements IPropertyComputer<Double, MType> {
 
-    @Override
-    public Double compute(MType mType) {
-	return mType.relevantTypeParametersPairs().getElements().parallelStream()
-		.map(p -> p.apertureCoverage())
-		.toList().stream()
-		.min(Double::compareTo)
-		.orElse(0.);
-    }
+	@Override
+	public Double compute(MType mType) {
+		return mType.relevantTypeParametersPairs().getElements().parallelStream().map(p -> p.apertureCoverage())
+				.toList().stream().min(Double::compareTo).orElse(0.);
+	}
 
 }

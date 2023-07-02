@@ -31,104 +31,92 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class RelevantParametersUtil {
-    private RelevantParametersUtil() {
-    }
+	private RelevantParametersUtil() {
+	}
 
-    private static Cache<IJavaElement, Boolean> cache = MonitoredUnboundedCache.getLowConsumingCache();
+	private static Cache<IJavaElement, Boolean> cache = MonitoredUnboundedCache.getLowConsumingCache();
 
-    private static Logger logger = jFCLogger.getLogger();
+	private static Logger logger = jFCLogger.getLogger();
 
-    public static List<IJavaElement> relevantParameters(IType iType) {
-	try {
-	    var result = new ArrayList<IJavaElement>();
+	public static List<IJavaElement> relevantParameters(IType iType) {
+		try {
+			var result = new ArrayList<IJavaElement>();
 
-	    // 'this' parameter
-	    if (isRelevant(iType))
-		result.add(iType);
+			// 'this' parameter
+			if (isRelevant(iType))
+				result.add(iType);
 
-	    // add the rest of the parameters
-	    var iMethods = Arrays.asList(iType.getMethods());
-	    iMethods
-		    .stream()
-		    .filter(m -> {
+			// add the rest of the parameters
+			var iMethods = Arrays.asList(iType.getMethods());
+			iMethods.stream().filter(m -> {
+				try {
+					return !Flags.isStatic(m.getFlags());
+				} catch (Throwable e) {
+					return false;
+				}
+			}).flatMap(m -> {
+				try {
+					return Arrays.asList(m.getParameters()).stream();
+				} catch (JavaModelException e) {
+					return Stream.of();
+				}
+			}).filter(p -> isRelevant(p, iType)).toList().forEach(p -> result.add(p));
+
+			return result;
+		} catch (JavaModelException e) {
+			logger.warning("JavaModelException encountered: " + e.getMessage());
+			return List.of();
+		}
+	}
+
+	// parameter relevance
+	private static boolean isRelevant(ILocalVariable iLocalVariable, IType declaringType) {
+		if (cache.contains(iLocalVariable))
+			return cache.get(iLocalVariable).get();
+
+		var iType = parameterType(iLocalVariable);
+
+		if (iType.isEmpty()) {
+			cache.put(iLocalVariable, false);
+			return false;
+		} else {
+			var t = iType.get();
+
 			try {
-			    return !Flags.isStatic(m.getFlags());
+				var result = !t.getFullyQualifiedName().equals(Constants.OBJECT_FQN) && t.getCompilationUnit() != null
+						&& !t.isAnonymous() && !t.isLambda() && (t.isClass() || t.isInterface()) && !t.isBinary()
+						&& Arrays.asList(t.getTypeParameters()).isEmpty()
+						&& !t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName())
+						&& hasConcreteSubtypes(t).orElse(false) && Signature.getTypeSignatureKind(
+								iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
+
+				cache.put(iLocalVariable, result);
+				return result;
 			} catch (Throwable e) {
-			    return false;
+				cache.put(iLocalVariable, false);
+				return false;
 			}
-		    })
-		    .flatMap(m -> {
-			try {
-			    return Arrays.asList(m.getParameters()).stream();
-			} catch (JavaModelException e) {
-			    return Stream.of();
-			}
-		    })
-		    .filter(p -> isRelevant(p, iType))
-		    .toList()
-		    .forEach(p -> result.add(p));
 
-	    return result;
-	} catch (JavaModelException e) {
-	    logger.warning("JavaModelException encountered: " + e.getMessage());
-	    return List.of();
-	}
-    }
-
-    // parameter relevance
-    private static boolean isRelevant(ILocalVariable iLocalVariable, IType declaringType) {
-	if (cache.contains(iLocalVariable))
-	    return cache.get(iLocalVariable).get();
-
-	var iType = parameterType(iLocalVariable);
-
-	if (iType.isEmpty()) {
-	    cache.put(iLocalVariable, false);
-	    return false;
-	} else {
-	    var t = iType.get();
-
-	    try {
-		var result = !t.getFullyQualifiedName().equals(Constants.OBJECT_FQN) &&
-			t.getCompilationUnit() != null &&
-			!t.isAnonymous() &&
-			!t.isLambda() &&
-			(t.isClass() || t.isInterface()) && !t.isBinary() &&
-			Arrays.asList(t.getTypeParameters()).isEmpty() &&
-			!t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName()) &&
-			hasConcreteSubtypes(t).orElse(false) &&
-			Signature.getTypeSignatureKind(iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
-
-		cache.put(iLocalVariable, result);
-		return result;
-	    } catch (Throwable e) {
-		cache.put(iLocalVariable, false);
-		return false;
-	    }
-
-	}
-    }
-
-    // 'this' relevance
-    private static boolean isRelevant(IType t) {
-	if (cache.contains(t))
-	    return cache.get(t).get();
-
-	try {
-	    var result = t.getCompilationUnit() != null &&
-		    !t.isAnonymous() &&
-		    !t.isLambda() && !t.isBinary() &&
-		    (t.isClass() || t.isInterface()) &&
-		    Arrays.asList(t.getTypeParameters()).isEmpty() &&
-		    hasConcreteSubtypes(t).orElse(false);
-
-	    cache.put(t, result);
-	    return result;
-	} catch (Throwable e) {
-	    cache.put(t, false);
-	    return false;
+		}
 	}
 
-    }
+	// 'this' relevance
+	private static boolean isRelevant(IType t) {
+		if (cache.contains(t))
+			return cache.get(t).get();
+
+		try {
+			var result = t.getCompilationUnit() != null && !t.isAnonymous() && !t.isLambda() && !t.isBinary()
+					&& (t.isClass() || t.isInterface()) && Arrays.asList(t.getTypeParameters()).isEmpty()
+					&& hasConcreteSubtypes(t).orElse(false);
+
+			cache.put(t, result);
+			return result;
+		} catch (Throwable e) {
+			cache.put(t, false);
+			return false;
+		}
+
+	}
 
 }

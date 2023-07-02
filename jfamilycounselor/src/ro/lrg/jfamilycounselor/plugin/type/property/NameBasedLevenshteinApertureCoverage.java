@@ -7,13 +7,10 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class NameBasedLevenshteinApertureCoverage implements IPropertyComputer<Double, MType> {
 
-    @Override
-    public Double compute(MType mType) {
-	return mType.relevantReferencesPairs().getElements().parallelStream()
-		.map(p -> p.nameBasedLevenshteinApertureCoverage())
-		.toList().stream()
-		.min(Double::compareTo)
-		.orElse(0.);
-    }
+	@Override
+	public Double compute(MType mType) {
+		return mType.relevantReferencesPairs().getElements().parallelStream()
+				.map(p -> p.nameBasedLevenshteinApertureCoverage()).toList().stream().min(Double::compareTo).orElse(0.);
+	}
 
 }

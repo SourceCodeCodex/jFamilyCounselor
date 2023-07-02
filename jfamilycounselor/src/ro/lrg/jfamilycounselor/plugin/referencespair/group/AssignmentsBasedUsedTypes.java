@@ -18,24 +18,25 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 @RelationBuilder
 public class AssignmentsBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPair> {
 
-    @Override
-    public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
-	var group = new Group<MTypesPair>();
-	Optional<List<Pair<IType, IType>>> usedTypes = usedTypes(mReferencesPair.getUnderlyingObject());
+	@Override
+	public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
+		var group = new Group<MTypesPair>();
+		Optional<List<Pair<IType, IType>>> usedTypes = usedTypes(mReferencesPair.getUnderlyingObject());
 
-	if (usedTypes.isEmpty())
-	    throw new IllegalStateException("Assignments-based used types computation for pair: " + mReferencesPair.toString() + " failed.");
+		if (usedTypes.isEmpty())
+			throw new IllegalStateException(
+					"Assignments-based used types computation for pair: " + mReferencesPair.toString() + " failed.");
 
-	// if assignments based cannot find any used types, then consider all possible
-	// types
-	if (usedTypes.get().isEmpty())
-	    usedTypes = Optional.of(mReferencesPair.possibleTypes().getElements().stream().map(mTypesPair -> (Pair<IType, IType>) mTypesPair.getUnderlyingObject()).toList());
+		// if assignments based cannot find any used types, then consider all possible
+		// types
+		if (usedTypes.get().isEmpty())
+			usedTypes = Optional.of(mReferencesPair.possibleTypes().getElements().stream()
+					.map(mTypesPair -> (Pair<IType, IType>) mTypesPair.getUnderlyingObject()).toList());
 
-	usedTypes.ifPresent(l -> l.stream()
-		.map(p -> Factory.getInstance().createMTypesPair(p))
-		.forEach(p -> group.add(p)));
+		usedTypes.ifPresent(
+				l -> l.stream().map(p -> Factory.getInstance().createMTypesPair(p)).forEach(p -> group.add(p)));
 
-	return group;
-    }
+		return group;
+	}
 
 }

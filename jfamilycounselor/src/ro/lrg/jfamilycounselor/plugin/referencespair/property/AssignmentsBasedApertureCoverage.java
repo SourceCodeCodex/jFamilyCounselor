@@ -8,11 +8,10 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 
 @PropertyComputer
 public class AssignmentsBasedApertureCoverage implements IPropertyComputer<Double, MReferencesPair> {
-    public Double compute(MReferencesPair mReferencesPair) {
-	Group<MTypesPair> usedConcreteTypePairs = mReferencesPair.assignmentsBasedUsedTypes();
-	double cardinalityUsedConcreteTypePairs = usedConcreteTypePairs.getElements().size();
-	double cardinalityPossibleConcreteTypePairs = mReferencesPair.aperture();
-	return cardinalityUsedConcreteTypePairs
-		/ cardinalityPossibleConcreteTypePairs;
-    }
+	public Double compute(MReferencesPair mReferencesPair) {
+		Group<MTypesPair> usedConcreteTypePairs = mReferencesPair.assignmentsBasedUsedTypes();
+		double cardinalityUsedConcreteTypePairs = usedConcreteTypePairs.getElements().size();
+		double cardinalityPossibleConcreteTypePairs = mReferencesPair.aperture();
+		return cardinalityUsedConcreteTypePairs / cardinalityPossibleConcreteTypePairs;
+	}
 }

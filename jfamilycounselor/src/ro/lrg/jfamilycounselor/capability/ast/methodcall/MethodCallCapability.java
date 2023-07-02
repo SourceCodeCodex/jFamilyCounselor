@@ -20,29 +20,26 @@ import ro.lrg.jfamilycounselor.capability.search.methodcall.MethodCallSearchCapa
  *
  */
 public class MethodCallCapability {
-    private MethodCallCapability() {
-    }
+	private MethodCallCapability() {
+	}
 
-    public static Optional<List<Supplier<Expression>>> extractMethodCallsFromScope(IMethod iMethod, List<IMethod> enclosingMethods) {
-	return Optional.of(
-		enclosingMethods.stream()
-			.map(ParseCapability::parse)
-			.filter(o -> o.isPresent())
-			.map(o -> o.get())
-			.flatMap(ast -> {
-			    var visitor = new MethodCallVisitor(iMethod);
-			    ast.accept(visitor);
-			    return visitor.getInvocations().stream().map(p -> lazy(p));
-			}).toList());
-    }
+	public static Optional<List<Supplier<Expression>>> extractMethodCallsFromScope(IMethod iMethod,
+			List<IMethod> enclosingMethods) {
+		return Optional.of(enclosingMethods.stream().map(ParseCapability::parse).filter(o -> o.isPresent())
+				.map(o -> o.get()).flatMap(ast -> {
+					var visitor = new MethodCallVisitor(iMethod);
+					ast.accept(visitor);
+					return visitor.getInvocations().stream().map(p -> lazy(p));
+				}).toList());
+	}
 
-    public static Optional<List<Supplier<Expression>>> extractMethodCalls(IMethod iMethod) {
-	var methodCallsEnclosingMethodsOpt = MethodCallSearchCapability.searchMethodCalls(iMethod);
+	public static Optional<List<Supplier<Expression>>> extractMethodCalls(IMethod iMethod) {
+		var methodCallsEnclosingMethodsOpt = MethodCallSearchCapability.searchMethodCalls(iMethod);
 
-	if (methodCallsEnclosingMethodsOpt.isEmpty())
-	    return Optional.empty();
+		if (methodCallsEnclosingMethodsOpt.isEmpty())
+			return Optional.empty();
 
-	return extractMethodCallsFromScope(iMethod, methodCallsEnclosingMethodsOpt.get());
-    }
+		return extractMethodCallsFromScope(iMethod, methodCallsEnclosingMethodsOpt.get());
+	}
 
 }

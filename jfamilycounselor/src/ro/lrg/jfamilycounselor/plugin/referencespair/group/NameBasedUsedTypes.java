@@ -20,24 +20,25 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 @RelationBuilder
 public class NameBasedUsedTypes implements IRelationBuilder<MTypesPair, MReferencesPair> {
 
-    @Override
-    public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
-	var group = new Group<MTypesPair>();
-	var pair = mReferencesPair.getUnderlyingObject();
-	Optional<List<Pair<IType, IType>>> usedTypes = Optional.empty();
-	if (pair._1 instanceof IType thiz && pair._2 instanceof ILocalVariable param)
-	    usedTypes = parameterType(param).flatMap(paramType -> NameBasedApproach.instance().usedTypes(thiz, paramType));
-	else if (pair._1 instanceof ILocalVariable param1 && pair._2 instanceof ILocalVariable param2)
-	    usedTypes = parameterType(param1).flatMap(t1 -> parameterType(param2).flatMap(t2 -> NameBasedApproach.instance().usedTypes(t1, t2)));
+	@Override
+	public Group<MTypesPair> buildGroup(MReferencesPair mReferencesPair) {
+		var group = new Group<MTypesPair>();
+		var pair = mReferencesPair.getUnderlyingObject();
+		Optional<List<Pair<IType, IType>>> usedTypes = Optional.empty();
+		if (pair._1 instanceof IType thiz && pair._2 instanceof ILocalVariable param)
+			usedTypes = parameterType(param)
+					.flatMap(paramType -> NameBasedApproach.instance().usedTypes(thiz, paramType));
+		else if (pair._1 instanceof ILocalVariable param1 && pair._2 instanceof ILocalVariable param2)
+			usedTypes = parameterType(param1)
+					.flatMap(t1 -> parameterType(param2).flatMap(t2 -> NameBasedApproach.instance().usedTypes(t1, t2)));
 
-	if (usedTypes.isEmpty() || usedTypes.get().isEmpty())
-	    throw new IllegalStateException("Name-based used types computation for pair: " + mReferencesPair.toString() + " failed. The result should be a non-empty list.");
+		if (usedTypes.isEmpty() || usedTypes.get().isEmpty())
+			throw new IllegalStateException("Name-based used types computation for pair: " + mReferencesPair.toString()
+					+ " failed. The result should be a non-empty list.");
 
-	usedTypes.get().stream()
-		.map(p -> Factory.getInstance().createMTypesPair(p))
-		.forEach(p -> group.add(p));
+		usedTypes.get().stream().map(p -> Factory.getInstance().createMTypesPair(p)).forEach(p -> group.add(p));
 
-	return group;
-    }
+		return group;
+	}
 
 }

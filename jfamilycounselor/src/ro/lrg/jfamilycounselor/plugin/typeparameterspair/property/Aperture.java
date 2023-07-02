@@ -7,9 +7,9 @@ import ro.lrg.xcore.metametamodel.PropertyComputer;
 @PropertyComputer
 public class Aperture implements IPropertyComputer<Integer, MTypeParametersPair> {
 
-    @Override
-    public Integer compute(MTypeParametersPair mTypeParametersPair) {
-	return mTypeParametersPair.possibleTypes().getElements().size();
-    }
+	@Override
+	public Integer compute(MTypeParametersPair mTypeParametersPair) {
+		return mTypeParametersPair.possibleTypes().getElements().size();
+	}
 
 }

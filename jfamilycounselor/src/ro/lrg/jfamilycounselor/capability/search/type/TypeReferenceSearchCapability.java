@@ -23,44 +23,45 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
 public class TypeReferenceSearchCapability {
-    private TypeReferenceSearchCapability() {
+	private TypeReferenceSearchCapability() {
 
-    }
-
-    private static final Cache<IType, List<IMember>> cache = MonitoredUnboundedCache.getLowConsumingCache();
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    private static final SearchEngine engine = new SearchEngine();
-
-    public static Optional<List<IMember>> searchTypeReferences(IType iType) {
-	if (cache.contains(iType)) {
-	    return cache.get(iType);
 	}
 
-	var requestor = new EnclosingMemberRequestor();
+	private static final Cache<IType, List<IMember>> cache = MonitoredUnboundedCache.getLowConsumingCache();
 
-	try {
-	    var searchParticipant = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
+	private static final Logger logger = jFCLogger.getLogger();
 
-	    var pattern = SearchPattern.createPattern(iType, IJavaSearchConstants.REFERENCES);
+	private static final SearchEngine engine = new SearchEngine();
 
-	    var projects = JavaProjectsCapability.getJavaProjects();
-	    var scope = SearchEngine.createJavaSearchScope(projects.toArray(new IJavaProject[projects.size()]), IJavaSearchScope.SOURCES);
-	    engine.search(pattern, searchParticipant, scope, requestor, new NullProgressMonitor());
-	} catch (JavaModelException e) {
-	    logger.warning("JavaModelException encountered: " + e.getMessage());
-	    return Optional.empty();
-	} catch (CoreException e) {
-	    logger.warning("CoreException encountered: " + e.getMessage());
-	    return Optional.empty();
+	public static Optional<List<IMember>> searchTypeReferences(IType iType) {
+		if (cache.contains(iType)) {
+			return cache.get(iType);
+		}
+
+		var requestor = new EnclosingMemberRequestor();
+
+		try {
+			var searchParticipant = new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() };
+
+			var pattern = SearchPattern.createPattern(iType, IJavaSearchConstants.REFERENCES);
+
+			var projects = JavaProjectsCapability.getJavaProjects();
+			var scope = SearchEngine.createJavaSearchScope(projects.toArray(new IJavaProject[projects.size()]),
+					IJavaSearchScope.SOURCES);
+			engine.search(pattern, searchParticipant, scope, requestor, new NullProgressMonitor());
+		} catch (JavaModelException e) {
+			logger.warning("JavaModelException encountered: " + e.getMessage());
+			return Optional.empty();
+		} catch (CoreException e) {
+			logger.warning("CoreException encountered: " + e.getMessage());
+			return Optional.empty();
+		}
+
+		var enclosingMembers = requestor.getMatches();
+
+		cache.put(iType, enclosingMembers);
+
+		return Optional.of(enclosingMembers);
 	}
-
-	var enclosingMembers = requestor.getMatches();
-
-	cache.put(iType, enclosingMembers);
-
-	return Optional.of(enclosingMembers);
-    }
 
 }

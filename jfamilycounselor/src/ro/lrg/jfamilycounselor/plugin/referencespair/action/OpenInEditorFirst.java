@@ -12,13 +12,13 @@ import ro.lrg.xcore.metametamodel.IActionPerformer;
 @ActionPerformer
 public final class OpenInEditorFirst implements IActionPerformer<Void, MReferencesPair, HListEmpty> {
 
-    @Override
-    public Void performAction(MReferencesPair mReferencesPair, HListEmpty hList) {
-	try {
-	    JavaUI.openInEditor(mReferencesPair.getUnderlyingObject()._1, true, true);
-	} catch (PartInitException | JavaModelException e) {
+	@Override
+	public Void performAction(MReferencesPair mReferencesPair, HListEmpty hList) {
+		try {
+			JavaUI.openInEditor(mReferencesPair.getUnderlyingObject()._1, true, true);
+		} catch (PartInitException | JavaModelException e) {
+		}
+		return null;
 	}
-	return null;
-    }
 
 }

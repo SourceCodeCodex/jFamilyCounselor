@@ -18,35 +18,33 @@ import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
  *
  */
 public class MethodOverrideCapability {
-    private MethodOverrideCapability() {
-    }
+	private MethodOverrideCapability() {
+	}
 
-    private static final Cache<IMethod, Boolean> cache = MonitoredUnboundedCache.getLowConsumingCache();
+	private static final Cache<IMethod, Boolean> cache = MonitoredUnboundedCache.getLowConsumingCache();
 
-    public static Optional<Boolean> isMethodOverriding(IMethod iMethod) {
-	if (cache.contains(iMethod))
-	    return cache.get(iMethod);
+	public static Optional<Boolean> isMethodOverriding(IMethod iMethod) {
+		if (cache.contains(iMethod))
+			return cache.get(iMethod);
 
-	var supertypesOpt = SupertypeCapability.getAllSuperTypes(iMethod.getDeclaringType());
+		var supertypesOpt = SupertypeCapability.getAllSuperTypes(iMethod.getDeclaringType());
 
-	var isOverriding = supertypesOpt.map(supertypes -> supertypes.stream()
-		.flatMap(t -> {
-		    try {
-			return Arrays.asList(t.getMethods()).stream();
-		    } catch (JavaModelException e) {
-			return Stream.empty();
-		    }
-		})
-		.anyMatch(m -> checkSignature(m, iMethod)));
+		var isOverriding = supertypesOpt.map(supertypes -> supertypes.stream().flatMap(t -> {
+			try {
+				return Arrays.asList(t.getMethods()).stream();
+			} catch (JavaModelException e) {
+				return Stream.empty();
+			}
+		}).anyMatch(m -> checkSignature(m, iMethod)));
 
-	isOverriding.ifPresent(b -> cache.put(iMethod, b));
+		isOverriding.ifPresent(b -> cache.put(iMethod, b));
 
-	return isOverriding;
-    }
+		return isOverriding;
+	}
 
-    private static boolean checkSignature(IMethod iMethod1, IMethod iMethod2) {
-	return iMethod1.getElementName().equals(iMethod2.getElementName()) &&
-		Arrays.asList(iMethod1.getParameterTypes()).equals(Arrays.asList(iMethod2.getParameterTypes()));
-    }
+	private static boolean checkSignature(IMethod iMethod1, IMethod iMethod2) {
+		return iMethod1.getElementName().equals(iMethod2.getElementName())
+				&& Arrays.asList(iMethod1.getParameterTypes()).equals(Arrays.asList(iMethod2.getParameterTypes()));
+	}
 
 }

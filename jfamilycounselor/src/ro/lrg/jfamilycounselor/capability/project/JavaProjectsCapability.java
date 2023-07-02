@@ -22,36 +22,36 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class JavaProjectsCapability {
-    private JavaProjectsCapability() {
-    }
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    private static List<IJavaProject> javaProjects = javaProjects();
-
-    public static List<IJavaProject> getJavaProjects() {
-	return javaProjects;
-    }
-
-    public static void reloadProjects() {
-	javaProjects = javaProjects();
-    }
-
-    private static List<IJavaProject> javaProjects() {
-	List<IJavaProject> projectList = new LinkedList<IJavaProject>();
-	IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-	IProject[] projects = workspaceRoot.getProjects();
-	for (int i = 0; i < projects.length; i++) {
-	    IProject project = projects[i];
-	    try {
-		if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
-		    projectList.add(JavaCore.create(project));
-		}
-	    } catch (CoreException e) {
-		logger.warning("CoreException encountered for: " + project.getName() + ". Message: " + e.getMessage());
-	    }
+	private JavaProjectsCapability() {
 	}
-	return projectList;
-    }
+
+	private static final Logger logger = jFCLogger.getLogger();
+
+	private static List<IJavaProject> javaProjects = javaProjects();
+
+	public static List<IJavaProject> getJavaProjects() {
+		return javaProjects;
+	}
+
+	public static void reloadProjects() {
+		javaProjects = javaProjects();
+	}
+
+	private static List<IJavaProject> javaProjects() {
+		List<IJavaProject> projectList = new LinkedList<IJavaProject>();
+		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+		IProject[] projects = workspaceRoot.getProjects();
+		for (int i = 0; i < projects.length; i++) {
+			IProject project = projects[i];
+			try {
+				if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+					projectList.add(JavaCore.create(project));
+				}
+			} catch (CoreException e) {
+				logger.warning("CoreException encountered for: " + project.getName() + ". Message: " + e.getMessage());
+			}
+		}
+		return projectList;
+	}
 
 }

@@ -34,51 +34,48 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class RelevantReferencesPairsUtil {
-    private RelevantReferencesPairsUtil() {
-    }
+	private RelevantReferencesPairsUtil() {
+	}
 
-    private static Logger logger = jFCLogger.getLogger();
+	private static Logger logger = jFCLogger.getLogger();
 
-    public static List<Pair<IJavaElement, IJavaElement>> relevantReferencesPairs(IType iType) {
-	return filteredParametersPairs(iType);
-    }
+	public static List<Pair<IJavaElement, IJavaElement>> relevantReferencesPairs(IType iType) {
+		return filteredParametersPairs(iType);
+	}
 
-    private static List<Pair<IJavaElement, IJavaElement>> filteredParametersPairs(IType iType) {
-	var parameterPairs = distrinctCombinations2(relevantParameters(iType));
-	return parameterPairs
-		.stream()
-		.map(p -> {
-		    if (p._1 instanceof ILocalVariable && p._2 instanceof IType)
-			return p.swap();
-		    else
-			return p;
-		})
-		.filter(p -> {
-		    if (p._1 instanceof ILocalVariable p1 && p._2 instanceof ILocalVariable p2) {
-			var m1 = (IMethod) p1.getDeclaringMember();
-			var m2 = (IMethod) p2.getDeclaringMember();
+	private static List<Pair<IJavaElement, IJavaElement>> filteredParametersPairs(IType iType) {
+		var parameterPairs = distrinctCombinations2(relevantParameters(iType));
+		return parameterPairs.stream().map(p -> {
+			if (p._1 instanceof ILocalVariable && p._2 instanceof IType)
+				return p.swap();
+			else
+				return p;
+		}).filter(p -> {
+			if (p._1 instanceof ILocalVariable p1 && p._2 instanceof ILocalVariable p2) {
+				var m1 = (IMethod) p1.getDeclaringMember();
+				var m2 = (IMethod) p2.getDeclaringMember();
 
-			var t1Opt = parameterType(p1);
-			var t2Opt = parameterType(p2);
-			try {
-			    return !(m1.isConstructor() && !m2.isConstructor() ||
-				    !m1.isConstructor() && m2.isConstructor() ||
-				    m1.isConstructor() && m2.isConstructor() && !m1.equals(m2) ||
-				    t1Opt.equals(t2Opt) ||
-				    t1Opt.flatMap(t1 -> t2Opt.flatMap(t2 -> distinctConcreteConeProduct(t1, t2))).map(cp -> cp.isEmpty()).orElse(true));
-			} catch (JavaModelException e) {
-			    logger.warning("JavaModelException encountered: " + e.getMessage());
-			    return false;
+				var t1Opt = parameterType(p1);
+				var t2Opt = parameterType(p2);
+				try {
+					return !(m1.isConstructor() && !m2.isConstructor() || !m1.isConstructor() && m2.isConstructor()
+							|| m1.isConstructor() && m2.isConstructor() && !m1.equals(m2) || t1Opt.equals(t2Opt)
+							|| t1Opt.flatMap(t1 -> t2Opt.flatMap(t2 -> distinctConcreteConeProduct(t1, t2)))
+									.map(cp -> cp.isEmpty()).orElse(true));
+				} catch (JavaModelException e) {
+					logger.warning("JavaModelException encountered: " + e.getMessage());
+					return false;
+				}
 			}
-		    }
 
-		    if (p._1 instanceof IType t && p._2 instanceof ILocalVariable param)
-			return parameterType(param).flatMap(tp -> distinctConcreteConeProduct(tp, t)).map(cp -> !cp.isEmpty()).orElse(false);
+			if (p._1 instanceof IType t && p._2 instanceof ILocalVariable param)
+				return parameterType(param).flatMap(tp -> distinctConcreteConeProduct(tp, t)).map(cp -> !cp.isEmpty())
+						.orElse(false);
 
-		    return true;
+			return true;
 		})
 
-		.toList();
-    }
+				.toList();
+	}
 
 }

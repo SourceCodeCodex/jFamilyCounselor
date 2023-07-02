@@ -103,208 +103,228 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  *
  */
 public class PartialDerivation {
-    private PartialDerivation() {
-    }
-
-    private static final Logger logger = jFCLogger.getLogger();
-
-    public static List<PartialDerivationResult> partialDerive(Expression expression) {
-	// track all derived expressions to prevent loops
-	var derived = new Stack<Expression>();
-
-	// for each derivation, track the last recorded type
-	var workingStack = new Stack<Pair<Expression, Optional<IType>>>();
-
-	// all results will be added in this stack
-	var succeddedOrHaltedResults = new Stack<PartialDerivationResult>();
-
-	workingStack.push(Pair.of(expression, Optional.empty()));
-
-	while (!workingStack.isEmpty()) {
-	    var current = workingStack.pop();
-	    var currentExpression = current._1;
-	    var lastRecordedType = current._2;
-
-	    if (derived.contains(currentExpression)) {
-		continue;
-	    }
-
-	    derived.push(currentExpression);
-
-	    var newRecordedType = Optional.ofNullable(currentExpression.resolveTypeBinding()).filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
-
-	    var updatedLowestRecordedType = updateLowestRecordedType(lastRecordedType, newRecordedType);
-
-	    var haltNoElementResult = new PartialDerivationResult(Optional.empty(), updatedLowestRecordedType);
-	    var successResult = new PartialDerivationResult(newRecordedType.map(AssignedElement.ResolvedType::new), updatedLowestRecordedType);
-
-	    if (newRecordedType.flatMap(t -> isConcreteLeaf(t)).orElse(false)) {
-		succeddedOrHaltedResults.add(successResult);
-		continue;
-	    }
-
-	    switch (currentExpression.getNodeType()) {
-	    case ASTNode.ARRAY_ACCESS: {
-		succeddedOrHaltedResults.add(haltNoElementResult);
-		break;
-	    }
-
-	    case ASTNode.ARRAY_CREATION: {
-		succeddedOrHaltedResults.add(haltNoElementResult);
-		break;
-	    }
-
-	    case ASTNode.ASSIGNMENT: {
-		var assignment = (Assignment) currentExpression;
-		workingStack.push(Pair.of(assignment.getRightHandSide(), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.CAST_EXPRESSION: {
-		var cast = (CastExpression) currentExpression;
-		workingStack.push(Pair.of(cast.getExpression(), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.CLASS_INSTANCE_CREATION: {
-		succeddedOrHaltedResults.add(successResult);
-		break;
-	    }
-
-	    case ASTNode.CONDITIONAL_EXPRESSION: {
-		var conditionalExpression = (ConditionalExpression) currentExpression;
-		workingStack.push(Pair.of(conditionalExpression.getThenExpression(), updatedLowestRecordedType));
-		workingStack.push(Pair.of(conditionalExpression.getElseExpression(), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.FIELD_ACCESS: {
-		var fieldAccess = (FieldAccess) currentExpression;
-		var field = Optional.ofNullable(fieldAccess.resolveFieldBinding()).map(b -> (IField) b.getJavaElement());
-
-		succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.METHOD_INVOCATION: {
-		var methodInvocation = (MethodInvocation) currentExpression;
-		var method = Optional.ofNullable(methodInvocation.resolveMethodBinding()).map(b -> (IMethod) b.getJavaElement());
-
-		succeddedOrHaltedResults.add(new PartialDerivationResult(method.map(AssignedElement.MethodCall::new), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.SIMPLE_NAME: {
-		var simpleName = (SimpleName) currentExpression;
-		var bindingOpt = Optional.ofNullable(simpleName.resolveBinding());
-
-		if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
-		    var binding = (IVariableBinding) bindingOpt.get();
-
-		    if (binding.isParameter()) {
-			var param = Optional.of((ILocalVariable) binding.getJavaElement());
-			succeddedOrHaltedResults.add(new PartialDerivationResult(param.map(AssignedElement.Parameter::new), updatedLowestRecordedType));
-			break;
-		    }
-
-		    if (binding.isField()) {
-			var field = Optional.ofNullable(simpleName.resolveBinding()).map(b -> (IField) b.getJavaElement());
-			succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
-			break;
-		    }
-
-		    // local variable
-		    if (!binding.isRecordComponent() && !binding.isEnumConstant() && Optional.ofNullable(binding.getDeclaringMethod()).isPresent() && Optional.ofNullable(binding.getJavaElement()).isPresent()) {
-			var method = (IMethod) binding.getDeclaringMethod().getJavaElement();
-			var methodAST = ParseCapability.parse(method);
-			var visitor = new LocalVariableAssignemntVisitor((ILocalVariable) binding.getJavaElement());
-			methodAST.stream().forEach(ast -> ast.accept(visitor));
-			if (visitor.getAssignments().isEmpty())
-			    succeddedOrHaltedResults.add(haltNoElementResult);
-			else
-			    visitor.getAssignments().forEach(e -> workingStack.push(Pair.of(e, updatedLowestRecordedType)));
-			break;
-		    }
-
-		    logger.warning("Simple name expression skipped: " + simpleName);
-		    break;
-		}
-		logger.warning("Simple name was not a variable: " + simpleName + ".Type: " + bindingOpt.map(b -> b.getKind()));
-		break;
-	    }
-
-	    case ASTNode.QUALIFIED_NAME: {
-		var qualifiedName = (QualifiedName) currentExpression;
-		var bindingOpt = Optional.ofNullable(qualifiedName.resolveBinding());
-
-		if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
-		    var binding = (IVariableBinding) bindingOpt.get();
-
-		    if (binding.isField()) {
-			var field = Optional.ofNullable(qualifiedName.resolveBinding()).map(b -> (IField) b.getJavaElement());
-			succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
-			break;
-		    }
-
-		    logger.warning("Qualified name expression skipped: " + qualifiedName);
-		    succeddedOrHaltedResults.add(haltNoElementResult);
-		    break;
-		}
-		logger.warning("Qualified name was not a variable: " + qualifiedName);
-		succeddedOrHaltedResults.add(haltNoElementResult);
-		break;
-	    }
-
-	    case ASTNode.PARENTHESIZED_EXPRESSION: {
-		var parenthesizedExpression = (ParenthesizedExpression) currentExpression;
-		workingStack.push(Pair.of(parenthesizedExpression.getExpression(), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.SUPER_FIELD_ACCESS: {
-		var superFieldAccess = (SuperFieldAccess) currentExpression;
-		var field = Optional.ofNullable(superFieldAccess.resolveFieldBinding()).map(b -> (IField) b.getJavaElement());
-
-		succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.SUPER_METHOD_INVOCATION: {
-		var superMethodInvocation = (SuperMethodInvocation) currentExpression;
-		var method = Optional.ofNullable(superMethodInvocation.resolveMethodBinding()).map(b -> (IMethod) b.getJavaElement());
-
-		succeddedOrHaltedResults.add(new PartialDerivationResult(method.map(AssignedElement.MethodCall::new), updatedLowestRecordedType));
-		break;
-	    }
-
-	    case ASTNode.THIS_EXPRESSION: {
-		succeddedOrHaltedResults.add(haltNoElementResult);
-		break;
-	    }
-
-	    case ASTNode.NULL_LITERAL: {
-		succeddedOrHaltedResults.add(haltNoElementResult);
-		break;
-	    }
-
-	    case ASTNode.EXPRESSION_METHOD_REFERENCE: {
-		succeddedOrHaltedResults.add(successResult);
-		break;
-	    }
-
-	    case ASTNode.LAMBDA_EXPRESSION: {
-		succeddedOrHaltedResults.add(successResult);
-		break;
-	    }
-
-	    default:
-		logger.info("Irrelevant expression was encountered: " + currentExpression + ". Type: " + currentExpression.getNodeType());
-		succeddedOrHaltedResults.add(new PartialDerivationResult(Optional.empty(), lastRecordedType));
-	    }
-
+	private PartialDerivation() {
 	}
 
-	return succeddedOrHaltedResults;
+	private static final Logger logger = jFCLogger.getLogger();
 
-    }
+	public static List<PartialDerivationResult> partialDerive(Expression expression) {
+		// track all derived expressions to prevent loops
+		var derived = new Stack<Expression>();
+
+		// for each derivation, track the last recorded type
+		var workingStack = new Stack<Pair<Expression, Optional<IType>>>();
+
+		// all results will be added in this stack
+		var succeddedOrHaltedResults = new Stack<PartialDerivationResult>();
+
+		workingStack.push(Pair.of(expression, Optional.empty()));
+
+		while (!workingStack.isEmpty()) {
+			var current = workingStack.pop();
+			var currentExpression = current._1;
+			var lastRecordedType = current._2;
+
+			if (derived.contains(currentExpression)) {
+				continue;
+			}
+
+			derived.push(currentExpression);
+
+			var newRecordedType = Optional.ofNullable(currentExpression.resolveTypeBinding())
+					.filter(b -> b.getJavaElement() instanceof IType).map(b -> (IType) b.getJavaElement());
+
+			var updatedLowestRecordedType = updateLowestRecordedType(lastRecordedType, newRecordedType);
+
+			var haltNoElementResult = new PartialDerivationResult(Optional.empty(), updatedLowestRecordedType);
+			var successResult = new PartialDerivationResult(newRecordedType.map(AssignedElement.ResolvedType::new),
+					updatedLowestRecordedType);
+
+			if (newRecordedType.flatMap(t -> isConcreteLeaf(t)).orElse(false)) {
+				succeddedOrHaltedResults.add(successResult);
+				continue;
+			}
+
+			switch (currentExpression.getNodeType()) {
+			case ASTNode.ARRAY_ACCESS: {
+				succeddedOrHaltedResults.add(haltNoElementResult);
+				break;
+			}
+
+			case ASTNode.ARRAY_CREATION: {
+				succeddedOrHaltedResults.add(haltNoElementResult);
+				break;
+			}
+
+			case ASTNode.ASSIGNMENT: {
+				var assignment = (Assignment) currentExpression;
+				workingStack.push(Pair.of(assignment.getRightHandSide(), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.CAST_EXPRESSION: {
+				var cast = (CastExpression) currentExpression;
+				workingStack.push(Pair.of(cast.getExpression(), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.CLASS_INSTANCE_CREATION: {
+				succeddedOrHaltedResults.add(successResult);
+				break;
+			}
+
+			case ASTNode.CONDITIONAL_EXPRESSION: {
+				var conditionalExpression = (ConditionalExpression) currentExpression;
+				workingStack.push(Pair.of(conditionalExpression.getThenExpression(), updatedLowestRecordedType));
+				workingStack.push(Pair.of(conditionalExpression.getElseExpression(), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.FIELD_ACCESS: {
+				var fieldAccess = (FieldAccess) currentExpression;
+				var field = Optional.ofNullable(fieldAccess.resolveFieldBinding())
+						.map(b -> (IField) b.getJavaElement());
+
+				succeddedOrHaltedResults.add(
+						new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.METHOD_INVOCATION: {
+				var methodInvocation = (MethodInvocation) currentExpression;
+				var method = Optional.ofNullable(methodInvocation.resolveMethodBinding())
+						.map(b -> (IMethod) b.getJavaElement());
+
+				succeddedOrHaltedResults.add(new PartialDerivationResult(method.map(AssignedElement.MethodCall::new),
+						updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.SIMPLE_NAME: {
+				var simpleName = (SimpleName) currentExpression;
+				var bindingOpt = Optional.ofNullable(simpleName.resolveBinding());
+
+				if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
+					var binding = (IVariableBinding) bindingOpt.get();
+
+					if (binding.isParameter()) {
+						var param = Optional.of((ILocalVariable) binding.getJavaElement());
+						succeddedOrHaltedResults.add(new PartialDerivationResult(
+								param.map(AssignedElement.Parameter::new), updatedLowestRecordedType));
+						break;
+					}
+
+					if (binding.isField()) {
+						var field = Optional.ofNullable(simpleName.resolveBinding())
+								.map(b -> (IField) b.getJavaElement());
+						succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new),
+								updatedLowestRecordedType));
+						break;
+					}
+
+					// local variable
+					if (!binding.isRecordComponent() && !binding.isEnumConstant()
+							&& Optional.ofNullable(binding.getDeclaringMethod()).isPresent()
+							&& Optional.ofNullable(binding.getJavaElement()).isPresent()) {
+						var method = (IMethod) binding.getDeclaringMethod().getJavaElement();
+						var methodAST = ParseCapability.parse(method);
+						var visitor = new LocalVariableAssignemntVisitor((ILocalVariable) binding.getJavaElement());
+						methodAST.stream().forEach(ast -> ast.accept(visitor));
+						if (visitor.getAssignments().isEmpty())
+							succeddedOrHaltedResults.add(haltNoElementResult);
+						else
+							visitor.getAssignments()
+									.forEach(e -> workingStack.push(Pair.of(e, updatedLowestRecordedType)));
+						break;
+					}
+
+					logger.warning("Simple name expression skipped: " + simpleName);
+					break;
+				}
+				logger.warning(
+						"Simple name was not a variable: " + simpleName + ".Type: " + bindingOpt.map(b -> b.getKind()));
+				break;
+			}
+
+			case ASTNode.QUALIFIED_NAME: {
+				var qualifiedName = (QualifiedName) currentExpression;
+				var bindingOpt = Optional.ofNullable(qualifiedName.resolveBinding());
+
+				if (bindingOpt.isPresent() && bindingOpt.stream().anyMatch(b -> b.getKind() == IBinding.VARIABLE)) {
+					var binding = (IVariableBinding) bindingOpt.get();
+
+					if (binding.isField()) {
+						var field = Optional.ofNullable(qualifiedName.resolveBinding())
+								.map(b -> (IField) b.getJavaElement());
+						succeddedOrHaltedResults.add(new PartialDerivationResult(field.map(AssignedElement.Field::new),
+								updatedLowestRecordedType));
+						break;
+					}
+
+					logger.warning("Qualified name expression skipped: " + qualifiedName);
+					succeddedOrHaltedResults.add(haltNoElementResult);
+					break;
+				}
+				logger.warning("Qualified name was not a variable: " + qualifiedName);
+				succeddedOrHaltedResults.add(haltNoElementResult);
+				break;
+			}
+
+			case ASTNode.PARENTHESIZED_EXPRESSION: {
+				var parenthesizedExpression = (ParenthesizedExpression) currentExpression;
+				workingStack.push(Pair.of(parenthesizedExpression.getExpression(), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.SUPER_FIELD_ACCESS: {
+				var superFieldAccess = (SuperFieldAccess) currentExpression;
+				var field = Optional.ofNullable(superFieldAccess.resolveFieldBinding())
+						.map(b -> (IField) b.getJavaElement());
+
+				succeddedOrHaltedResults.add(
+						new PartialDerivationResult(field.map(AssignedElement.Field::new), updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.SUPER_METHOD_INVOCATION: {
+				var superMethodInvocation = (SuperMethodInvocation) currentExpression;
+				var method = Optional.ofNullable(superMethodInvocation.resolveMethodBinding())
+						.map(b -> (IMethod) b.getJavaElement());
+
+				succeddedOrHaltedResults.add(new PartialDerivationResult(method.map(AssignedElement.MethodCall::new),
+						updatedLowestRecordedType));
+				break;
+			}
+
+			case ASTNode.THIS_EXPRESSION: {
+				succeddedOrHaltedResults.add(haltNoElementResult);
+				break;
+			}
+
+			case ASTNode.NULL_LITERAL: {
+				succeddedOrHaltedResults.add(haltNoElementResult);
+				break;
+			}
+
+			case ASTNode.EXPRESSION_METHOD_REFERENCE: {
+				succeddedOrHaltedResults.add(successResult);
+				break;
+			}
+
+			case ASTNode.LAMBDA_EXPRESSION: {
+				succeddedOrHaltedResults.add(successResult);
+				break;
+			}
+
+			default:
+				logger.info("Irrelevant expression was encountered: " + currentExpression + ". Type: "
+						+ currentExpression.getNodeType());
+				succeddedOrHaltedResults.add(new PartialDerivationResult(Optional.empty(), lastRecordedType));
+			}
+
+		}
+
+		return succeddedOrHaltedResults;
+
+	}
 }

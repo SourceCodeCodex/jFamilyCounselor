@@ -11,13 +11,12 @@ import ro.lrg.xcore.metametamodel.RelationBuilder;
 @RelationBuilder
 public class RelevantTypesByTypeParameters implements IRelationBuilder<MType, MProject> {
 
-    @Override
-    public Group<MType> buildGroup(MProject mProject) {
-	var group = new Group<MType>();
-	RelevantTypesByTypeParametersUtil.relevantTypes(mProject.getUnderlyingObject()).stream()
-		.map(Factory.getInstance()::createMType)
-		.forEach(mType -> group.add(mType));
-	return group;
-    }
+	@Override
+	public Group<MType> buildGroup(MProject mProject) {
+		var group = new Group<MType>();
+		RelevantTypesByTypeParametersUtil.relevantTypes(mProject.getUnderlyingObject()).stream()
+				.map(Factory.getInstance()::createMType).forEach(mType -> group.add(mType));
+		return group;
+	}
 
 }

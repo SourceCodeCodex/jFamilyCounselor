@@ -41,94 +41,91 @@ import ro.lrg.jfamilycounselor.approach.reference.usedtypes.assignment.model.Ass
  */
 public class ThisParameterHandler extends ReferencesPairHandler {
 
-    @Override
-    public void handle(AssignemntsPair assignemntsPair, State state) {
-	var assignedThis = (AssignedElement.This) assignemntsPair._1.assignedElement().get();
-	var assignedParam = (AssignedElement.Parameter) assignemntsPair._2.assignedElement().get();
+	@Override
+	public void handle(AssignemntsPair assignemntsPair, State state) {
+		var assignedThis = (AssignedElement.This) assignemntsPair._1.assignedElement().get();
+		var assignedParam = (AssignedElement.Parameter) assignemntsPair._2.assignedElement().get();
 
-	var newExpressions = ParameterDerivationWithTargetObject.derive(assignedParam.iLocalVariable());
+		var newExpressions = ParameterDerivationWithTargetObject.derive(assignedParam.iLocalVariable());
 
-	// if there are no new expressions obtained through derivation, mark the pair as
-	// invalid
-	if (newExpressions.isEmpty()) {
-	    state.markInvalid(assignemntsPair);
-	    return;
+		// if there are no new expressions obtained through derivation, mark the pair as
+		// invalid
+		if (newExpressions.isEmpty()) {
+			state.markInvalid(assignemntsPair);
+			return;
+		}
+
+		var newAssignmentsPairs = newExpressions.parallelStream().flatMap(pairF -> {
+			var targetObjectActualParamPair = pairF.get();
+
+			var actualParamPartialDerivation = PartialDerivation.partialDerive(targetObjectActualParamPair._2);
+
+			// the derivation is still somewhere within the cone of the type of This
+			if (targetObjectActualParamPair._1.isEmpty()) {
+				// identify the type that encloses the method call of the actual parameter
+				var newTypeScope = determineNewScopeOfActualParameter(targetObjectActualParamPair._2);
+
+				// update the new assigned This element and the lowestRecordedType
+				var newAssignedThis = newTypeScope.map(AssignedElement.This::new).orElse(assignedThis);
+				var newRecordedType = updateLowestRecordedType(Optional.of(assignemntsPair._1.lowestRecordedType()),
+						newTypeScope);
+
+				return actualParamPartialDerivation.stream().map(derivationResult -> {
+					var newAssignmentsPair = new AssignemntsPair(
+							new Assignment(assignemntsPair._1.reference(), Optional.of(newAssignedThis),
+									newRecordedType.orElse(assignemntsPair._1.lowestRecordedType())),
+							new Assignment(assignemntsPair._2.reference(), derivationResult.newAssignedElement(),
+									derivationResult.newLowestRecordedType()
+											.orElse(assignemntsPair._2.lowestRecordedType())));
+
+					newAssignmentsPair.setDepth(assignemntsPair.depth() + 1);
+
+					return newAssignmentsPair;
+				});
+			} else {
+				var targetObject = targetObjectActualParamPair._1.get();
+
+				var targetObjectDerivation = PartialDerivation.partialDerive(targetObject);
+
+				var product = cartesianProduct(targetObjectDerivation, actualParamPartialDerivation);
+
+				return product.stream().map(derivationResultsPair -> {
+					var r1 = derivationResultsPair._1;
+					var r2 = derivationResultsPair._2;
+
+					var newAssignmentsPair = new AssignemntsPair(
+							new Assignment(assignemntsPair._1.reference(), r1.newAssignedElement(),
+									r1.newLowestRecordedType().orElse(assignemntsPair._1.lowestRecordedType())),
+							new Assignment(assignemntsPair._2.reference(), r2.newAssignedElement(),
+									r2.newLowestRecordedType().orElse(assignemntsPair._2.lowestRecordedType())));
+
+					newAssignmentsPair.setDepth(assignemntsPair.depth() + 1);
+					return newAssignmentsPair;
+				});
+			}
+
+		}).toList();
+
+		newAssignmentsPairs.forEach(state.assignmentsPairs()::push);
 	}
 
-	var newAssignmentsPairs = newExpressions.parallelStream()
-		.flatMap(pairF -> {
-		    var targetObjectActualParamPair = pairF.get();
+	private Optional<IType> determineNewScopeOfActualParameter(Expression actualParameter) {
+		ASTNode auxNode = actualParameter;
+		while (auxNode != null && auxNode.getNodeType() != ASTNode.TYPE_DECLARATION) {
+			auxNode = auxNode.getParent();
+		}
 
-		    var actualParamPartialDerivation = PartialDerivation.partialDerive(targetObjectActualParamPair._2);
+		if (auxNode == null)
+			return Optional.empty();
 
-		    // the derivation is still somewhere within the cone of the type of This
-		    if (targetObjectActualParamPair._1.isEmpty()) {
-			// identify the type that encloses the method call of the actual parameter
-			var newTypeScope = determineNewScopeOfActualParameter(targetObjectActualParamPair._2);
+		return Optional.ofNullable(((TypeDeclaration) auxNode).resolveBinding()).map(tb -> tb.getJavaElement())
+				.filter(j -> j instanceof IType).map(t -> (IType) t);
 
-			// update the new assigned This element and the lowestRecordedType
-			var newAssignedThis = newTypeScope.map(AssignedElement.This::new).orElse(assignedThis);
-			var newRecordedType = updateLowestRecordedType(Optional.of(assignemntsPair._1.lowestRecordedType()), newTypeScope);
-
-			return actualParamPartialDerivation.stream()
-				.map(derivationResult -> {
-				    var newAssignmentsPair = new AssignemntsPair(
-					    new Assignment(assignemntsPair._1.reference(),
-						    Optional.of(newAssignedThis),
-						    newRecordedType.orElse(assignemntsPair._1.lowestRecordedType())),
-					    new Assignment(assignemntsPair._2.reference(),
-						    derivationResult.newAssignedElement(),
-						    derivationResult.newLowestRecordedType().orElse(assignemntsPair._2.lowestRecordedType())));
-
-				    newAssignmentsPair.setDepth(assignemntsPair.depth() + 1);
-
-				    return newAssignmentsPair;
-				});
-		    } else {
-			var targetObject = targetObjectActualParamPair._1.get();
-
-			var targetObjectDerivation = PartialDerivation.partialDerive(targetObject);
-
-			var product = cartesianProduct(targetObjectDerivation, actualParamPartialDerivation);
-
-			return product.stream()
-				.map(derivationResultsPair -> {
-				    var r1 = derivationResultsPair._1;
-				    var r2 = derivationResultsPair._2;
-
-				    var newAssignmentsPair = new AssignemntsPair(
-					    new Assignment(assignemntsPair._1.reference(), r1.newAssignedElement(), r1.newLowestRecordedType().orElse(assignemntsPair._1.lowestRecordedType())),
-					    new Assignment(assignemntsPair._2.reference(), r2.newAssignedElement(), r2.newLowestRecordedType().orElse(assignemntsPair._2.lowestRecordedType())));
-
-				    newAssignmentsPair.setDepth(assignemntsPair.depth() + 1);
-				    return newAssignmentsPair;
-				});
-		    }
-
-		})
-		.toList();
-
-	newAssignmentsPairs.forEach(state.assignmentsPairs()::push);
-    }
-
-    private Optional<IType> determineNewScopeOfActualParameter(Expression actualParameter) {
-	ASTNode auxNode = actualParameter;
-	while (auxNode != null && auxNode.getNodeType() != ASTNode.TYPE_DECLARATION) {
-	    auxNode = auxNode.getParent();
 	}
 
-	if (auxNode == null)
-	    return Optional.empty();
-
-	return Optional.ofNullable(((TypeDeclaration) auxNode).resolveBinding())
-		.map(tb -> tb.getJavaElement())
-		.filter(j -> j instanceof IType)
-		.map(t -> (IType) t);
-
-    }
-
-    @Override
-    protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
-	return assignedElement1 instanceof AssignedElement.This && assignedElement2 instanceof AssignedElement.Parameter;
-    }
+	@Override
+	protected boolean canHandle(AssignedElement assignedElement1, AssignedElement assignedElement2) {
+		return assignedElement1 instanceof AssignedElement.This
+				&& assignedElement2 instanceof AssignedElement.Parameter;
+	}
 }
