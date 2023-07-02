@@ -1,4 +1,4 @@
 */.metadata/
 .metadata
 *.DS_Store*
-ro.lrg.insider
+*/bin/
