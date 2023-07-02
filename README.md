@@ -142,6 +142,8 @@ _Note: Make sure the plugin is properly installed in order to continue._
 - The cast-based approach records a slower progress at the beginning, and becomes better afterwards owing to caching
 - The implemented analyses perform heavy computations and use a lot of memory and CPU. It is recommended to allocate at least 6GB RAM for the Eclipse application that runs jFamilyCounselor in order to obtain results in a feasible amount of time
 - The visualisation might not be displayed immediately after export due to some permission issues. It is best to configure Eclipse to use an external browser to fix this problem.
+- The visualisation might not perform well for large projects when zooming 
+- In a visualisation, is a correlation has multiple clients and the tooltip overflows, press `F2` in order to lock the tooltip be so to scroll through the list; another press unlocks the tooltip
 - XCore currently does not run any computation on separate threads and long operations can block the UI. It is best to analyse projects following these steps:
   - Export a report using one of the XCore actions. The export is located in the project's root folder
   - Use the results to determine the types that might be interesting to be analysed manually

@@ -10,6 +10,10 @@
 </head>
 
 <style>
+	html {
+		overflow: hidden;
+	}
+
     body {
         margin: 0;
         padding: 0;
@@ -144,12 +148,28 @@
 
         const RADIUS = WIDTH * 0.2;
 
-        const svg = d3.select("#chart")
-            .append("svg")
-            .attr("width", WIDTH)
-            .attr("height", HEIGHT)
-            .append("g")
-            .attr("transform", `translate(${WIDTH / 2}, ${HEIGHT / 2})`);
+		let zoom = d3.zoom()
+    		.scaleExtent([1, 4])
+    		.on('zoom', handleZoom);
+
+		function handleZoom(e) {
+		    d3.select('svg')
+		        .attr('transform', e.transform);
+		}
+
+		const svg = d3.select("#chart")
+		    .append("svg")
+		    .attr("width", WIDTH)
+		    .attr("height", HEIGHT)
+		    .append("g")
+		    .attr("transform", `translate(${WIDTH / 2}, ${HEIGHT / 2})`)
+		    .call(zoom)
+		
+		svg.append("rect")
+		    .attr("width", WIDTH)
+		    .attr("height", HEIGHT)
+		    .style("fill", "transparent")
+		    .attr("transform", `translate(${-WIDTH / 2}, ${-HEIGHT / 2})`);
 
         /* DRAW ARCS */
 
