@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Date;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
@@ -179,7 +180,7 @@ public class ExportHFTCViewJob extends Job {
 			return correlations;
 		}).collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
 
-		var clientsPairs = pairToClients.entrySet().parallelStream()
+		var clientsMap = pairToClients.entrySet().parallelStream()
 				.collect(Collectors.toMap(e -> stringify(e.getKey()._1) + stringify(e.getKey()._2), e -> e.getValue()));
 
 		var correlatedTypes = pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).distinct().toList();
@@ -270,7 +271,7 @@ public class ExportHFTCViewJob extends Job {
 		var subMonitor4 = SubMonitor.convert(monitor, "(4/4) Exporting JSON of Correlated Types ",
 				typeHierarchiesMap.size());
 
-		var pairsFQNs = pairToClients.entrySet().parallelStream().flatMap(entry -> {
+		var clientsCountMap = pairToClients.entrySet().parallelStream().flatMap(entry -> {
 			var p1FQN = stringify(entry.getKey()._1);
 			var p2FQN = stringify(entry.getKey()._2);
 
@@ -293,18 +294,17 @@ public class ExportHFTCViewJob extends Job {
 			var hierarchiesJsonFile = reportsFolder.append("hierarchies.js").toFile();
 			var clientsPairsJsonFile = reportsFolder.append("clients.js").toFile();
 
-			var pairsJson = objectMapper.writeValueAsString(pairsFQNs);
-			var leavesDataOutput = String.format("var pairs = %s;", pairsJson);
+			var clientsCountMapOutputJSON = String.format("var pairs = %s;",
+					objectMapper.writeValueAsString(clientsCountMap));
+			var clientsMapOutputJSON = String.format("var clients = %s;", objectMapper.writeValueAsString(clientsMap));
 
-			var hierarchiesJson = objectMapper.writeValueAsString(hierarchiesList.stream().collect(Collectors.toSet()));
+			var hierarchiesJson = objectMapper
+					.writeValueAsString(hierarchiesList.stream().collect(Collectors.toCollection(TreeSet::new)));
 			var hierarchiesDataOutput = String.format("var hierarchies = %s;", hierarchiesJson);
 
-			var clientsPairsJson = objectMapper.writeValueAsString(clientsPairs);
-			var clientsPairsDataOutput = String.format("var clients = %s;", clientsPairsJson);
-
-			writeStringToFile(pairsJsonFile, leavesDataOutput);
+			writeStringToFile(pairsJsonFile, clientsCountMapOutputJSON);
 			writeStringToFile(hierarchiesJsonFile, hierarchiesDataOutput);
-			writeStringToFile(clientsPairsJsonFile, clientsPairsDataOutput);
+			writeStringToFile(clientsPairsJsonFile, clientsMapOutputJSON);
 
 			try {
 				var hftcView = new HFTCView(diagramOutputFile);

@@ -38,7 +38,7 @@
     }
 
     .arc {
-        filter: opacity(0.5);
+        filter: opacity(0.55);
     }
 
     .arc:hover {
@@ -263,10 +263,6 @@
 
         const arcs = svg.append("g");
 
-        const arcsColorScale = d3.scaleSequential()
-            .domain([0, classHierarchy.children.length - 1])
-            .interpolator(d3.interpolateCool)
-
         const drawArcs = function (tree, chord, color) {
             // use bfs to draw arcs for the provided hierarchy
             updateAngles(chord);
@@ -312,7 +308,7 @@
             }
         }
 
-        classHierarchy.children.forEach((c, idx) => drawArcs(c, leaves, arcsColorScale(idx)))
+        classHierarchy.children.forEach((c, idx) => drawArcs(c, leaves, d3.color(d3.schemeCategory10[(idx + 7) % 10])))
 
         /* DRAW EDGES */
 

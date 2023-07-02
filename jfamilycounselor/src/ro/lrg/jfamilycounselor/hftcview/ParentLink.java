@@ -7,7 +7,7 @@ import java.util.Objects;
  * 
  * @author Bogdan316
  */
-class ParentLink {
+class ParentLink implements Comparable<ParentLink> {
 	@Override
 	public int hashCode() {
 		return Objects.hash(name, parent);
@@ -40,4 +40,13 @@ class ParentLink {
 	public String getName() {
 		return name;
 	}
+
+	public int compareTo(ParentLink arg) {
+		var cmpParent = parent.compareTo(arg.parent);
+		if (cmpParent != 0)
+			return cmpParent;
+
+		return name.compareTo(arg.name);
+	}
+
 }
