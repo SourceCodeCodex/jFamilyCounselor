@@ -14,7 +14,7 @@
 [![Eclipse][eclipse-shield]][eclipse-url]
 [![Release][release-shield]][release-url]
 [![MIT License][license-shield]][license-url]
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7027355.svg)](https://doi.org/10.5281/zenodo.7027355)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8110647.svg)](https://doi.org/10.5281/zenodo.8110647)
 
 
 
