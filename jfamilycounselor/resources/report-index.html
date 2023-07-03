@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+    <title>{TITLE}</title>
+</head>
+
+<body>
+    <div class="d-flex align-items-center justify-content-center z-index-1 bg-white w-100 h-100 position-absolute"
+        id="loader">
+        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+    <div class="m-5">
+        <h2><u>{TITLE}</u></h2>
+        <div class="collapse show multi-collapse p-3">
+            <input type="search" class="form-control rounded w-50 mb-2" placeholder="Search" aria-label="Search"
+                aria-describedby="search-addon" id="search-bar" onkeyup="updateTypesList(this.value)" />
+            <div class="m-auto" id="types"></div>
+        </div>
+        <div class="m-auto collapse multi-collapse p-3" id="correlations">
+            <button type="button" class="btn btn-secondary rounded-circle m-2" aria-label="Close"
+                data-bs-toggle="collapse" data-bs-target=".multi-collapse"><b>X</b></button>
+            <div id="correlations-content" class="m-3"></div>
+
+        </div>
+    </div>
+
+</body>
+
+<script type="text/javascript" src="types.js"></script>
+<script type="text/javascript" src="correlations.js"></script>
+
+<script type="text/javascript">
+    let typesList = Array.from(Object.keys(types)).sort()
+
+    updateTypesList("")
+
+
+    function displayCorrelations(t) {
+        document.getElementById('correlations-content').innerHTML = prepareCorrelationsHtml(t)
+        document.getElementById('search-bar').value = ''
+        updateTypesList("")
+    }
+
+
+    function prepareCorrelationsHtml(t) {
+        console.log(types[t])
+        return `
+            <h4><u>${t}</u></h4>
+            <br>
+            <b>Aperture coverage:</b> ${apertureCoverage(t)} <br>
+            <b>References Pairs:</b>
+            <ul>
+                ${types[t]
+                .map(p => {
+                    let randId1 = crypto.randomUUID()
+
+                    if(p.correlationIds.length === 0)
+                        return `<li>${p.name} (${p.apertureCoverage})</li>`
+
+                    return `
+                    <li>
+                        <a href="#${randId1}" data-bs-toggle="collapse">${p.name}</a> (${p.apertureCoverage})
+                        <div id="${randId1}" class="collapse">
+                            <b>Aperture coverage:</b> ${p.apertureCoverage} <br>
+                            <b>Duration:</b> ${p.duration} <br>
+                            <b>Used Types:</b>
+                            <ul>
+                                ${
+                                    p.correlationIds.map(id => `<li>${correlations[id]}</li>`).join('')
+                                }
+                            </ul>
+                        </div>
+                        
+                    </li>`}).join('')
+            }
+            </ul>
+        `
+    }
+
+    function apertureCoverage(t) {
+        return Math.min.apply(null, (types[t].map(a => parseFloat(a.apertureCoverage))))
+    }
+
+
+    function updateTypesList(pattern) {
+        document.getElementById('types').innerHTML = prepareTypesHtml(typesList, pattern)
+    }
+
+    function prepareTypesHtml(list, pattern) {
+        let grouped = groupedTypes(list, pattern)
+
+        return `
+            <ul>
+                ${[...grouped.keys()]
+                .map(
+                    pkg => `
+                        <li>
+                            <b><a href="#${pkg}" data-bs-toggle="collapse">${pkg}</a></b>
+                            <div id="${pkg}" class="collapse">
+                                <ul>
+					                ${grouped.get(pkg).map(t => `<li><a data-bs-toggle="collapse" href=".multi-collapse" onclick="displayCorrelations(this.innerText)">${pkg + '.' + t}</a></li>`).join('')}
+                                </ul>
+                            </div>
+                        </li>
+                    `
+                ).join('')}
+            </ul>
+        `
+    }
+
+    function groupedTypes(list, pattern) {
+        let zippedWithPrefix = list.map(t => {
+            let lastIndex = t.lastIndexOf('.');
+            let package = t.slice(0, lastIndex);
+            let typeSimpleName = t.slice(lastIndex + 1);
+
+            return [package, typeSimpleName]
+        })
+
+        let checkInsensitive = s =>
+            s.toLowerCase().includes(pattern.toLowerCase())
+
+        let filtered = zippedWithPrefix.filter(z => checkInsensitive(z[0]) || checkInsensitive(z[1]))
+
+        let groupedMap = new Map(filtered.map(z => [z[0], []]))
+        filtered.forEach(z => {
+            groupedMap.get(z[0]).push(z[1])
+        })
+
+        Array.from(groupedMap.values()).forEach(a => a.sort())
+
+        return groupedMap
+    }
+    document.getElementById('loader').remove()
+</script>
+
+</html>

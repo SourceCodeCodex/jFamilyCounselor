@@ -1,5 +1,7 @@
 package ro.lrg.jfamilycounselor.report;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -7,13 +9,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -25,19 +28,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IType;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import jfamilycounselor.metamodel.entity.MTypesPair;
 import jfamilycounselor.metamodel.factory.Factory;
 import ro.lrg.jfamilycounselor.report.csv.CsvCapability;
-import ro.lrg.jfamilycounselor.report.html.HTMLIndex;
-import ro.lrg.jfamilycounselor.report.html.HTMLPackage;
-import ro.lrg.jfamilycounselor.report.html.HTMLReferencesPair;
-import ro.lrg.jfamilycounselor.report.html.HTMLType;
+import ro.lrg.jfamilycounselor.report.html.ReportIndex;
 import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
-import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.duration.DurationFormatter;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -91,8 +91,6 @@ public class ExportReportJob extends Job {
 		var workload = relevantTypes.size();
 		var subMonitor = SubMonitor.convert(monitor, workload);
 
-		var packages = relevantTypes.stream().collect(Collectors.groupingBy(t -> t.getPackageFragment()));
-
 		// ------------------------------------------------------------------------------------
 		// CSV - Flushing Thread
 		// ------------------------------------------------------------------------------------
@@ -124,102 +122,102 @@ public class ExportReportJob extends Job {
 			csvFlushThread.start();
 
 			// ------------------------------------------------------------------------------------
-			// Create Initial HTML Report Structure
+			// Compute Export Data
 			// ------------------------------------------------------------------------------------
-			try {
-				createHTMLReportStructure(outputDirPath, packages);
-			} catch (IOException e) {
-				logger.warning("IOException encountered: " + e.getMessage());
-				return Status.error("IOException while creating the HTML report structure");
-			}
+			var exportTypesMap = new ConcurrentHashMap<String, Queue<AnalysedPairEntry>>();
 
-			// ------------------------------------------------------------------------------------
-			// Compute and Export Data
-			// ------------------------------------------------------------------------------------
+			var exportCorrelationsMap = new ConcurrentHashMap<String, String>();
+
 			relevantTypes.parallelStream().forEach(t -> {
 				var metaType = Factory.getInstance().createMType(t);
 
 				var apertureCoverages = new ConcurrentLinkedQueue<Double>();
 
-				var referencesPairHTML = new ConcurrentLinkedQueue<Pair<Integer, HTMLReferencesPair>>();
-
-				var conter = new AtomicInteger(0);
+				exportTypesMap.putIfAbsent(t.getFullyQualifiedName(), new ConcurrentLinkedQueue<>());
 
 				var start = Instant.now();
 
 				if (estimation.equals(EstimationType.TYPE_PARAMETERS_BASED)) {
 					var typeParametersPairs = metaType.relevantTypeParametersPairs().getElements();
-					typeParametersPairs.stream().map(rp -> Pair.of(conter.getAndIncrement(), rp)).toList()
-							.parallelStream().forEach(zippedWithIndex -> {
-								var index = zippedWithIndex._1;
-								var tp = zippedWithIndex._2;
+					typeParametersPairs.parallelStream().forEach(tp -> {
 
-								var startRP = Instant.now();
+						var startTP = Instant.now();
 
-								var possibleTypes = tp.possibleTypes().getElements();
+						var possibleTypes = tp.possibleTypes().getElements();
 
-								var usedTypes = tp.usedTypes().getElements();
+						var usedTypes = tp.usedTypes().getElements();
 
-								var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
+						var apertureCoverageTP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
-								var endRP = Instant.now();
+						var endTP = Instant.now();
 
-								var durationRP = Duration.between(startRP, endRP);
+						var durationTP = Duration.between(startTP, endTP);
 
-								var html = new HTMLReferencesPair(tp.toString(), apertureCoverageRP, durationRP,
-										usedTypes.stream().map(p -> p.toString()).toList());
+						apertureCoverages.add(apertureCoverageTP);
 
-								referencesPairHTML.add(Pair.of(index, html));
+						var exportAnalysedPairs = exportTypesMap.get(t.getFullyQualifiedName());
 
-								apertureCoverages.add(apertureCoverageRP);
-							});
+						if(apertureCoverageTP < 1.0) {
+							usedTypes.forEach(u -> exportCorrelationsMap
+									.putIfAbsent("" + u.getUnderlyingObject().hashCode(), u.toString()));
+
+							exportAnalysedPairs.add(new AnalysedPairEntry(tp.toString(),
+									DurationFormatter.format(durationTP), apertureCoverageTP,
+									usedTypes.stream().map(u -> "" + u.getUnderlyingObject().hashCode()).toList()));
+						} else {
+							exportAnalysedPairs.add(new AnalysedPairEntry(tp.toString(),
+									DurationFormatter.format(durationTP), apertureCoverageTP,
+									List.of()));
+						}
+
+					});
 
 				} else {
 					var referencesPairs = metaType.relevantReferencesPairs().getElements();
-					referencesPairs.stream().map(rp -> Pair.of(conter.getAndIncrement(), rp)).toList().parallelStream()
-							.forEach(zippedWithIndex -> {
-								var index = zippedWithIndex._1;
-								var rp = zippedWithIndex._2;
+					referencesPairs.parallelStream().forEach(rp -> {
 
-								var startRP = Instant.now();
+						var startRP = Instant.now();
 
-								var possibleTypes = rp.possibleTypes().getElements();
+						var possibleTypes = rp.possibleTypes().getElements();
 
-								var usedTypes = usedTypes(rp);
+						var usedTypes = usedTypes(rp);
 
-								var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
+						var apertureCoverageRP = (1.0 * usedTypes.size()) / possibleTypes.size();
 
-								var endRP = Instant.now();
+						var endRP = Instant.now();
 
-								var durationRP = Duration.between(startRP, endRP);
+						var durationRP = Duration.between(startRP, endRP);
 
-								var html = new HTMLReferencesPair(rp.toString(), apertureCoverageRP, durationRP,
-										usedTypes.stream().map(p -> p.toString()).toList());
+						apertureCoverages.add(apertureCoverageRP);
 
-								referencesPairHTML.add(Pair.of(index, html));
+						var exportAnalysedPairs = exportTypesMap.get(t.getFullyQualifiedName());
+						
+						if(apertureCoverageRP < 1.0) {
+							usedTypes.forEach(u -> exportCorrelationsMap
+									.putIfAbsent("" + u.getUnderlyingObject().hashCode(), u.toString()));
 
-								apertureCoverages.add(apertureCoverageRP);
-							});
+							exportAnalysedPairs.add(new AnalysedPairEntry(rp.toString(),
+									DurationFormatter.format(durationRP), apertureCoverageRP,
+									usedTypes.stream().map(u -> "" + u.getUnderlyingObject().hashCode()).toList()));
+						} else {
+							exportAnalysedPairs.add(new AnalysedPairEntry(rp.toString(),
+									DurationFormatter.format(durationRP), apertureCoverageRP,
+									List.of()));
+						}
+	
+					});
 				}
 
 				var end = Instant.now();
 
-				var ac = apertureCoverages.stream().filter(d -> d != 0).min(Double::compareTo).orElseGet(() -> 0.);
+				var ac = apertureCoverages.stream().min(Double::compareTo).orElseGet(() -> 0.);
 				var duration = Duration.between(start, end);
 
 				logger.info(t.getFullyQualifiedName() + ": " + ac + " in: " + DurationFormatter.format(duration));
 
-				var sortedHtmlRefPairs = referencesPairHTML.stream()
-						.sorted(Comparator.<Pair<Integer, HTMLReferencesPair>, Integer>comparing(p -> p._1))
-						.map(p -> p._2).toList();
-
-				var htmlRenderer = new HTMLType(iJavaProject.getElementName(), t.getFullyQualifiedName(), ac, duration,
-						sortedHtmlRefPairs);
-
 				try {
-					csvFileWriter.write(CsvCapability.joinAsCSVRow(
-							List.of(t.getFullyQualifiedName(), ac.toString(), DurationFormatter.format(duration))));
-					writeTypeHTMLFile(outputDirPath, t, htmlRenderer);
+					csvFileWriter.write(CsvCapability
+							.joinAsCSVRow(List.of(t.getFullyQualifiedName(), ac.toString(), DurationFormatter.format(duration))));
 				} catch (IOException e) {
 					logger.warning("IOException encountered: " + e.getMessage());
 				}
@@ -229,9 +227,24 @@ public class ExportReportJob extends Job {
 			});
 
 			csvFlushThread.interrupt();
-
 			csvFileWriter.close();
 
+			
+			// ------------------------------------------------------------------------------------
+			// Write Files
+			// ------------------------------------------------------------------------------------
+			try {
+				var indexHtml = outputDirPath.append("html").append("index.html").toFile();
+				writeStringToFile(indexHtml, ReportIndex.html(estimation + ": " + iJavaProject.getElementName()));
+				writeJSFiles(outputDirPath, exportTypesMap, exportCorrelationsMap);
+			} catch (JsonProcessingException e) {
+				logger.warning("JsonProcessingException encountered: " + e.getMessage());
+				return Status.error("JsonProcessingException during serialization of diagram relations");
+			}
+
+			// ------------------------------------------------------------------------------------
+			// Refresh
+			// ------------------------------------------------------------------------------------
 			try {
 				iJavaProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 			} catch (CoreException e) {
@@ -282,43 +295,39 @@ public class ExportReportJob extends Job {
 
 		var outputDirPath = reportsFolder.append(outputDirName);
 
-		var outputDir = outputDirPath.toFile();
-		outputDir.mkdirs();
+		outputDirPath.toFile().mkdir();
+		outputDirPath.append("html").toFile().mkdirs();
 
 		return Optional.of(outputDirPath);
 	}
 
-	private void createHTMLReportStructure(IPath outputDirPath, Map<IPackageFragment, List<IType>> packages)
-			throws IOException {
-		var htmlFile = outputDirPath.append("index.html").toFile();
-		var content = new HTMLIndex(iJavaProject.getElementName(),
-				packages.entrySet().stream().map(p -> new HTMLPackage(p.getKey().getElementName(),
-						p.getValue().stream().map(t -> t.getElementName()).toList())).toList())
-				.html();
+	private void writeJSFiles(IPath outputDirPath, Map<String, Queue<AnalysedPairEntry>> exportedTypesMap,
+			Map<String, String> exportCorrelationsMap) throws IOException, JsonProcessingException {
+		var typesJS = outputDirPath.append("html").append("types.js").toFile();
+		var correlationsJS = outputDirPath.append("html").append("correlations.js").toFile();
 
-		if (content.isPresent()) {
-			htmlFile.createNewFile();
-			var fileWriter = new FileWriter(htmlFile);
-			fileWriter.write(content.get());
-			fileWriter.close();
-		}
-
-		packages.keySet().stream().forEach(p -> {
-			var dirPath = outputDirPath.append(p.getElementName());
-			dirPath.toFile().mkdirs();
+		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
+		
+		var sortedExportedTypesMap = new HashMap<String, List<AnalysedPairEntry>>();
+		exportedTypesMap.forEach((k, v) -> {
+			var sorted = v.stream().sorted(Comparator.comparing(AnalysedPairEntry::apertureCoverage)).toList();
+			sortedExportedTypesMap.put(k, sorted);
 		});
+
+		var typesOutputJS = String.format("var types = %s;", objectMapper.writeValueAsString(sortedExportedTypesMap));
+		var correlationsOutputJS = String.format("var correlations = %s;",
+				objectMapper.writeValueAsString(exportCorrelationsMap));
+
+		writeStringToFile(typesJS, typesOutputJS);
+		writeStringToFile(correlationsJS, correlationsOutputJS);
 	}
 
-	private void writeTypeHTMLFile(IPath outputDirPath, IType iType, HTMLType renderer) throws IOException {
-		var htmlFile = outputDirPath.append(iType.getPackageFragment().getElementName())
-				.append(iType.getElementName() + ".html").toFile();
-		var content = renderer.html();
-		if (content.isPresent()) {
-			htmlFile.createNewFile();
-			var fileWriter = new FileWriter(htmlFile);
-			fileWriter.write(content.get());
-			fileWriter.close();
-		}
+	private void writeStringToFile(File outputFile, String outputString) throws IOException {
+		outputFile.createNewFile();
+		BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile.getAbsolutePath()));
+		writer.write(outputString);
+		writer.flush();
+		writer.close();
 	}
 
 	public boolean belongsTo(Object family) {

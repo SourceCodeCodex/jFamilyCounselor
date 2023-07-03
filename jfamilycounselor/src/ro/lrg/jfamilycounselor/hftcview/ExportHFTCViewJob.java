@@ -38,6 +38,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jfamilycounselor.metamodel.factory.Factory;
+import ro.lrg.jfamilycounselor.hftcview.html.HFTCView;
 import ro.lrg.jfamilycounselor.report.ExportReportJob;
 import ro.lrg.jfamilycounselor.report.RelevantTypesJob;
 import ro.lrg.jfamilycounselor.util.Constants;
@@ -277,12 +278,12 @@ public class ExportHFTCViewJob extends Job {
 		var clientsMap = pairToClients.entrySet().parallelStream()
 				.filter(e ->  leaves.contains(e.getKey()._1) && leaves.contains(e.getKey()._2))
 				.collect(Collectors.toMap(e -> stringify(e.getKey()._1) + "|" + stringify(e.getKey()._2), e -> e.getValue()));
-
-		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
-
-		IPath reportsFolder;
+		
 		try {
-			reportsFolder = createExportFolder();
+
+			var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
+			var reportsFolder = createExportFolder();
+			
 			var diagramOutputFile = reportsFolder.append("index.html").toFile();
 			var hierarchiesJsonFile = reportsFolder.append("hierarchies.js").toFile();
 			var clientsPairsJsonFile = reportsFolder.append("clients.js").toFile();
