@@ -70,25 +70,24 @@
 <body>
 
     <div id="chart">
-        <h1 id="diagramtitle">&emsp;|diagram-title|</h1>
+        <h1 id="diagramtitle">&emsp;kettle-engine - Name-based - HFTC View</h1>
         <div id="tooltip" class="arc-tooltip">
             <span id="class-name" class="tooltip-text"></span>
         </div>
 
     </div>
 
-
-    <script type="text/javascript" src="pairs.js"></script>
     <script type="text/javascript" src="hierarchies.js"></script>
     <script type="text/javascript" src="clients.js"></script>
     <script type="text/javascript">
         const OBJECT_FQN = "java.lang.Object";
 
         const adjacencyList = new Map();
-        const pairClientsCount = new Map();
-
-        for (pairFQNs of Object.keys(pairs)) {
-            const [p0, p1] = pairFQNs.split("|");
+        
+        const tooltipClientsMap = new Map();
+        
+        for (pair of Object.keys(clients)) {
+            const [p0, p1] = pair.split("|");
 
             // create adjacency list from list of pairs
             if (!adjacencyList.has(p0)) {
@@ -96,16 +95,8 @@
             }
 
             adjacencyList.get(p0).add(p1);
-
-            // count how many clients use the pair of classes
-            if (!pairClientsCount.has(p0)) {
-                pairClientsCount.set(p0, new Map());
-            }
-
-            const p0Map = pairClientsCount.get(p0)
-            if (!p0Map.has(p1)) {
-                p0Map.set(p1, pairs[pairFQNs]);
-            }
+            
+            tooltipClientsMap.set(pair, "<br/>" + clients[pair].join("<br/>"));
         }
 
         const classHierarchyJson = hierarchies;
@@ -125,14 +116,6 @@
             // map name of leaf to its index
             leavesMap.set(l.id, i);
         });
-
-        const clientsMap = new Map();
-
-        for (pair of Object.keys(clients)) {
-            clientsMap.set(pair, "<br/>" + clients[pair].join("<br/>"));
-        }
-
-        // import * as d3 from "d3"
 
         const ARC_THICKNESS = 15;
 
@@ -339,7 +322,7 @@
             .angle(function (d) { return d.x / 180 * Math.PI; });
 
         // TODO: change from adjacencyMatrix
-        const weightExtend = d3.extent(Object.values(pairs));
+        const weightExtend = d3.extent(Object.values(clients).map(c => c.length));
         weightExtend[0] = weightExtend[0] - weightExtend[1] * 0.3;
 
         const linksColorScale = d3.scaleSequential()
@@ -361,10 +344,10 @@
             const source = datum.source.id;
             const target = datum.target.id;
             // the order of the pairs in the key is alphabetical
-            const pairKey = [source, target].sort().join("");
+            const pairKey = [source, target].sort().join("|");
             const tooltipText = `${source.slice(source.lastIndexOf(".") + 1)} \u2194 ${target.slice(target.lastIndexOf(".") + 1)}`;
 
-            tooltip.select("#class-name").html(tooltipText + ":" + clientsMap.get(pairKey));
+            tooltip.select("#class-name").html(tooltipText + ":" + tooltipClientsMap.get(pairKey));
             tooltip.style("transform", `translate(${event.x}px, ${event.y}px)`);
             tooltip.style("opacity", 1);
         }
@@ -396,7 +379,7 @@
             .attr("fill", "none")
             .style("stroke", d => {
                 const key = [d.source.id, d.target.id].sort().join("|");
-                return linksColorScale(pairs[key]);
+                return linksColorScale(clients[key].length);
             })
             .style("stroke-width", 0.8)
             .on("mouseenter", onMouseEnterLink)

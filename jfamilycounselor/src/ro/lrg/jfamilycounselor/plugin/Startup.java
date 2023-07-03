@@ -1,5 +1,6 @@
 package ro.lrg.jfamilycounselor.plugin;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IResource;
@@ -77,7 +78,8 @@ public final class Startup implements IStartup {
 						if ((delta.getResource().getType() & IResource.PROJECT) != 0
 								&& (delta.getFlags() & IResourceDelta.OPEN) != 0
 								|| (delta.getResource().getType() & IResource.FILE) != 0
-										&& delta.getResource().getFileExtension().contains("java")
+										&& Optional.ofNullable(delta.getResource().getFileExtension()).stream()
+												.anyMatch(e -> e.contains("java"))
 										&& (delta.getFlags() & IResourceDelta.CONTENT) != 0) {
 							logger.info("Clearing caches and reloading sources");
 							CacheSupervisor.clearAllCaches();

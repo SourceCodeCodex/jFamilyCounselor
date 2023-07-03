@@ -42,6 +42,8 @@ import ro.lrg.jfamilycounselor.report.ExportReportJob;
 import ro.lrg.jfamilycounselor.report.RelevantTypesJob;
 import ro.lrg.jfamilycounselor.util.Constants;
 import ro.lrg.jfamilycounselor.util.Constants.EstimationType;
+import ro.lrg.jfamilycounselor.util.cache.Cache;
+import ro.lrg.jfamilycounselor.util.cache.MonitoredUnboundedCache;
 import ro.lrg.jfamilycounselor.util.datatype.Pair;
 import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
 
@@ -49,6 +51,8 @@ import ro.lrg.jfamilycounselor.util.logging.jFCLogger;
  * @author Bogdan316
  */
 public class ExportHFTCViewJob extends Job {
+
+	private static Cache<IType, ITypeHierarchy> hierarchyCache = MonitoredUnboundedCache.getHighConsumingCache();
 
 	private static final double APERTURE_COVERAGE_THRESHOLD = 0.5;
 
@@ -118,7 +122,7 @@ public class ExportHFTCViewJob extends Job {
 
 		var start = Instant.now();
 
-		var subMonitor1 = SubMonitor.convert(monitor, "(1/4) Computing Aperture Coverages", relevantTypes.size());
+		var subMonitor1 = SubMonitor.convert(monitor, "(1/3) Computing Aperture Coverages", relevantTypes.size());
 
 		var pairToClients = relevantTypes.parallelStream().flatMap(t -> {
 			var mType = Factory.getInstance().createMType(t);
@@ -180,19 +184,21 @@ public class ExportHFTCViewJob extends Job {
 			return correlations;
 		}).collect(Collectors.groupingBy(p -> p._2, Collectors.mapping(p -> p._1, Collectors.toSet())));
 
-		var clientsMap = pairToClients.entrySet().parallelStream()
-				.collect(Collectors.toMap(e -> stringify(e.getKey()._1) + stringify(e.getKey()._2), e -> e.getValue()));
-
 		var correlatedTypes = pairToClients.keySet().stream().flatMap(p -> Stream.of(p._1, p._2)).distinct().toList();
 
-		var subMonitor2 = SubMonitor.convert(monitor, "(2/4) Computing Type Hierarchies", correlatedTypes.size());
+		var subMonitor2 = SubMonitor.convert(monitor, "(2/3) Computing Type Hierarchies", correlatedTypes.size());
 
 		var typeHierarchiesMap = new ConcurrentHashMap<String, ITypeHierarchy>();
-		var leavesMap = new ConcurrentHashMap<String, String>();
+		var leaves = new ConcurrentLinkedQueue<IType>();
 
 		correlatedTypes.parallelStream().forEach(t -> {
 			try {
-				var typeHierarchy = t.newTypeHierarchy(null);
+				var typeHierarchyOpt = hierarchyCache.get(t);
+
+				var typeHierarchy = typeHierarchyOpt.isPresent() ? typeHierarchyOpt.get() : t.newTypeHierarchy(null);
+
+				if (typeHierarchyOpt.isEmpty())
+					hierarchyCache.put(t, typeHierarchy);
 
 				var s = stringify(t);
 
@@ -204,7 +210,7 @@ public class ExportHFTCViewJob extends Job {
 					return;
 				}
 
-				leavesMap.putIfAbsent(s, s);
+				leaves.add(t);
 
 				var superClasses = typeHierarchy.getAllSuperclasses(t);
 
@@ -241,7 +247,7 @@ public class ExportHFTCViewJob extends Job {
 			}
 		});
 
-		var subMonitor3 = SubMonitor.convert(monitor, "(3/4) Rebuilding Type Hierarchies Trees",
+		var subMonitor3 = SubMonitor.convert(monitor, "(3/3) Rebuilding Type Hierarchies Trees",
 				typeHierarchiesMap.size());
 
 		var hierarchiesList = new ConcurrentLinkedQueue<ParentLink>();
@@ -267,42 +273,26 @@ public class ExportHFTCViewJob extends Job {
 
 			subMonitor3.split(1);
 		});
-
-		var subMonitor4 = SubMonitor.convert(monitor, "(4/4) Exporting JSON of Correlated Types ",
-				typeHierarchiesMap.size());
-
-		var clientsCountMap = pairToClients.entrySet().parallelStream().flatMap(entry -> {
-			var p1FQN = stringify(entry.getKey()._1);
-			var p2FQN = stringify(entry.getKey()._2);
-
-			if (leavesMap.containsKey(p1FQN) && leavesMap.containsKey(p2FQN)) {
-				subMonitor4.split(1);
-				return Stream.of(Pair.of(p1FQN + "|" + p2FQN, entry.getValue().size()));
-			}
-
-			subMonitor4.split(1);
-			return Stream.empty();
-		}).collect(Collectors.toMap(p -> p._1, p -> p._2));
+		
+		var clientsMap = pairToClients.entrySet().parallelStream()
+				.filter(e ->  leaves.contains(e.getKey()._1) && leaves.contains(e.getKey()._2))
+				.collect(Collectors.toMap(e -> stringify(e.getKey()._1) + "|" + stringify(e.getKey()._2), e -> e.getValue()));
 
 		var objectMapper = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
 		IPath reportsFolder;
 		try {
 			reportsFolder = createExportFolder();
-			var diagramOutputFile = reportsFolder.append("chord-diagram.html").toFile();
-			var pairsJsonFile = reportsFolder.append("pairs.js").toFile();
+			var diagramOutputFile = reportsFolder.append("index.html").toFile();
 			var hierarchiesJsonFile = reportsFolder.append("hierarchies.js").toFile();
 			var clientsPairsJsonFile = reportsFolder.append("clients.js").toFile();
 
-			var clientsCountMapOutputJSON = String.format("var pairs = %s;",
-					objectMapper.writeValueAsString(clientsCountMap));
 			var clientsMapOutputJSON = String.format("var clients = %s;", objectMapper.writeValueAsString(clientsMap));
 
 			var hierarchiesJson = objectMapper
 					.writeValueAsString(hierarchiesList.stream().collect(Collectors.toCollection(TreeSet::new)));
 			var hierarchiesDataOutput = String.format("var hierarchies = %s;", hierarchiesJson);
 
-			writeStringToFile(pairsJsonFile, clientsCountMapOutputJSON);
 			writeStringToFile(hierarchiesJsonFile, hierarchiesDataOutput);
 			writeStringToFile(clientsPairsJsonFile, clientsMapOutputJSON);
 
