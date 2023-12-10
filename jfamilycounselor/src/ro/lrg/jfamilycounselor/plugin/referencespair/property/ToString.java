@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 
 import jfamilycounselor.metamodel.entity.MReferencesPair;
 import ro.lrg.jfamilycounselor.util.stringify.Stringify;
@@ -30,12 +31,13 @@ public class ToString implements IPropertyComputer<String, MReferencesPair> {
 			var method = (IMethod) param.getDeclaringMember();
 			String params;
 			try {
-				params = Arrays.asList(method.getParameters()).stream().map(p -> p.getElementName())
+				params = Arrays.asList(method.getParameters()).stream().map(p -> Signature.toString(p.getTypeSignature()))
 						.collect(Collectors.joining(","));
 			} catch (JavaModelException e) {
 				params = "...";
 			}
-			return method.getElementName() + "(" + params + ")/" + param.getElementName();
+
+			return method.getElementName() + "(" + params + ")/" + Signature.toString(param.getTypeSignature());
 		} else if (ref instanceof IType thiz) {
 			return Stringify.stringify(thiz);
 		} else {

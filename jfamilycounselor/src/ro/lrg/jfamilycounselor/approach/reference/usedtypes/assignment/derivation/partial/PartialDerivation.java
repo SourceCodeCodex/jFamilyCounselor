@@ -12,7 +12,9 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CastExpression;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
@@ -152,7 +154,22 @@ public class PartialDerivation {
 			}
 
 			case ASTNode.ARRAY_CREATION: {
-				succeddedOrHaltedResults.add(haltNoElementResult);
+				var arrCreation = (ArrayCreation) currentExpression;
+				var initializer = arrCreation.getInitializer();
+				if (initializer == null) {
+					succeddedOrHaltedResults.add(haltNoElementResult);
+					break;
+				}
+
+				var exps = initializer.expressions();
+				if (exps.isEmpty()) {
+					succeddedOrHaltedResults.add(haltNoElementResult);
+					break;
+				}
+
+				for (var e : exps) {
+					workingStack.push(Pair.of((Expression) e, updatedLowestRecordedType));
+				}
 				break;
 			}
 
@@ -228,6 +245,19 @@ public class PartialDerivation {
 							&& Optional.ofNullable(binding.getJavaElement()).isPresent()) {
 						var method = (IMethod) binding.getDeclaringMethod().getJavaElement();
 						var methodAST = ParseCapability.parse(method);
+
+						if (binding.getType().isArray()) {
+							// TODO: should keep both the element assigned types and the assigned type ?
+							var visitor = new LocalArrayElementAssignmentVisitor(
+									(ILocalVariable) binding.getJavaElement());
+							methodAST.stream().forEach(ast -> ast.accept(visitor));
+							if (!visitor.getAssignments().isEmpty()) {
+								visitor.getAssignments()
+										.forEach(e -> workingStack.push(Pair.of(e, updatedLowestRecordedType)));
+								break;
+							}
+						}
+
 						var visitor = new LocalVariableAssignemntVisitor((ILocalVariable) binding.getJavaElement());
 						methodAST.stream().forEach(ast -> ast.accept(visitor));
 						if (visitor.getAssignments().isEmpty())
@@ -235,6 +265,7 @@ public class PartialDerivation {
 						else
 							visitor.getAssignments()
 									.forEach(e -> workingStack.push(Pair.of(e, updatedLowestRecordedType)));
+
 						break;
 					}
 

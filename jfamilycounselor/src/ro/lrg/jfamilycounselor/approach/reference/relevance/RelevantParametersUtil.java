@@ -87,8 +87,7 @@ public class RelevantParametersUtil {
 						&& !t.isAnonymous() && !t.isLambda() && (t.isClass() || t.isInterface()) && !t.isBinary()
 						&& Arrays.asList(t.getTypeParameters()).isEmpty()
 						&& !t.getFullyQualifiedName().equals(declaringType.getFullyQualifiedName())
-						&& hasConcreteSubtypes(t).orElse(false) && Signature.getTypeSignatureKind(
-								iLocalVariable.getTypeSignature()) != Signature.ARRAY_TYPE_SIGNATURE;
+						&& hasConcreteSubtypes(t).orElse(false);
 
 				cache.put(iLocalVariable, result);
 				return result;
